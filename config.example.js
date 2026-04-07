@@ -1,22 +1,23 @@
 /* ═══════════════════════════════════════════════
-   CLARIX — CONFIG
-   AI Engine: Gemini → Groq → Local Fallback
+   CLARIX — CONFIG (TEMPLATE)
+   Copy this file to config.js and add your keys
+   NEVER commit config.js to GitHub!
 ═══════════════════════════════════════════════ */
 
 const CLARIX_CONFIG = {
   // ─── GOOGLE GEMINI (Primary AI) ──────────────
-  // Get FREE key in 30 sec: aistudio.google.com → "Get API key"
-  geminiApiKey: 'AIzaSyBV4urzw3EkRHinMH4LSQAOwxjqRfabC4c',
+  // Get FREE key: aistudio.google.com → "Get API key"
+  geminiApiKey: '',
 
   // ─── GROQ (Backup AI — Llama 3) ──────────────
   // Get FREE key: console.groq.com → "Create API Key"
-  groqApiKey: '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',
+  groqApiKey: '',
 
-  // ─── ANTHROPIC CLAUDE (Legacy) ───────────────
-  claudeApiKey: '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',
+  // ─── ANTHROPIC CLAUDE (Optional) ─────────────
+  // Get key: console.anthropic.com
+  claudeApiKey: '',
 
   // AI Engine priority: 'gemini' | 'groq' | 'claude' | 'local'
-  // Clarix auto-tries each in order until one works
   aiEngine: 'auto',
 
   // Max tokens for responses

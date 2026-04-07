@@ -2,6 +2,9 @@
 node_modules/
 npm-debug.log*
 
+# API Keys — NEVER commit this!
+config.js
+
 # Environment / secrets
 .env
 .env.local
