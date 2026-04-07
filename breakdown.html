@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Expert Breakdown — Clarix</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%23ff7043'/><text x='50%' y='55%' font-size='18' text-anchor='middle' dominant-baseline='middle' fill='white'>✦</text></svg>">
+  <link rel="stylesheet" href="css/design.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/pages/breakdown.css">
+</head>
+<body class="theme-dark">
+  <nav class="topnav dark" style="position:sticky;top:0;z-index:100">
+    <div class="nav-left" style="display:flex;align-items:center;gap:12px">
+      <button class="btn btn-ghost btn-sm" onclick="goBack()" title="Back to Write" style="display:flex;align-items:center;gap:6px;font-size:13px">
+        ← Back
+      </button>
+      <div class="nav-logo" style="cursor:default"><span class="nav-star">✦</span> clarix</div>
+    </div>
+    <div style="font-size:13px;color:#555;flex:1;text-align:center">Expert Breakdown</div>
+    <div class="nav-right">
+      <button class="btn btn-ghost btn-sm" onclick="copyAll()">📋 Copy All</button>
+      <button class="btn btn-ghost btn-sm" onclick="exportTXT()">📄 Export</button>
+      <button class="btn btn-primary btn-sm" onclick="openPlatform()">Open in AI →</button>
+    </div>
+  </nav>
+
+  <div class="breakdown-page container-lg" id="breakdownPage">
+    <div class="bd-empty" id="bdEmpty">⚡ Loading breakdown...</div>
+  </div>
+
+  <script src="config.js"></script>
+  <script src="js/languages.js"></script>
+  <script src="js/core.js"></script>
+  <script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const raw = localStorage.getItem('clarix_breakdown_data');
+    if (!raw) { document.getElementById('bdEmpty').textContent = '❌ No breakdown data found. Please generate from the Write page.'; return; }
+    const d = JSON.parse(raw);
+    render(d);
+  });
+
+  function goBack() {
+    // window.opener is the Write tab that opened this breakdown tab
+    if (window.opener && !window.opener.closed) {
+      window.opener.focus(); // bring Write tab to front
+      window.close();        // close this breakdown tab
+    } else {
+      // Fallback: navigate in same tab (no opener available)
+      window.location.href = 'write.html';
+    }
+  }
+
+  function render(d) {
+    const bd = d.breakdown || {};
+    const s  = bd.settings || {};
+    const page = document.getElementById('breakdownPage');
+
+    // ChatGPT-Pro style full output
+    page.innerHTML = `
+      <!-- HEADER -->
+      <div class="bd-header">
+        <div class="bd-header-left">
+          <div class="ai-badge"><span class="badge-star">✦</span> Expert Breakdown</div>
+          <h1 class="display-md" style="margin-top:10px">Full Analysis</h1>
+          <div class="bd-meta-row">
+            <span class="bd-meta">${d.langFlag||'🌐'} ${d.lang||'English'}</span>
+            <span class="bd-meta">${d.platform ? '→ ' + d.platform : ''}</span>
+            <span class="bd-meta">Model: ${d.model||'Claude'}</span>
+            <span class="bd-meta score">⭐ Score: ${d.score||0}/100</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ORIGINAL INPUT -->
+      <div class="bd-section">
+        <div class="bd-section-label">📝 Original Input</div>
+        <div class="bd-block muted">${esc(d.text)}</div>
+      </div>
+
+      <!-- ENHANCED PROMPT -->
+      <div class="bd-section">
+        <div class="bd-section-header">
+          <div class="bd-section-label">⚡ Enhanced Prompt</div>
+          <button class="btn-copy-inline" onclick="copyText('${escJ(d.enhanced)}')">📋 Copy</button>
+        </div>
+        <div class="bd-block highlight">${esc(d.enhanced)}</div>
+      </div>
+
+      <!-- PHOTOGRAPHY SETTINGS (ChatGPT-Pro style grid) -->
+      <div class="bd-section">
+        <div class="bd-section-label">📷 Technical Settings</div>
+        <div class="bd-settings-grid">
+          ${[['🎨 Style', s.style],['💡 Lighting', s.lighting],['📷 Camera', s.camera],['✨ Quality', s.quality]].map(([k,v])=>v?`
+            <div class="bd-setting-card">
+              <div class="bd-setting-key">${k}</div>
+              <div class="bd-setting-val">${esc(v)}</div>
+            </div>`:'').join('')}
+        </div>
+      </div>
+
+      <!-- 3 VARIATIONS -->
+      <div class="bd-section">
+        <div class="bd-section-label">🔀 3 Variations</div>
+        ${(d.variations||[]).map((v,i)=>`
+          <div class="bd-variation">
+            <div class="bd-var-num">V${i+1}</div>
+            <div class="bd-var-text">${esc(v)}</div>
+            <button class="btn-copy-inline" onclick="copyText('${escJ(v)}')">📋</button>
+          </div>`).join('')}
+      </div>
+
+      <!-- PRO UPGRADE PROMPT -->
+      <div class="bd-section">
+        <div class="bd-section-header">
+          <div class="bd-section-label">🚀 Pro Upgrade Prompt</div>
+          <div style="display:flex;gap:8px">
+            <button class="btn-copy-inline" onclick="copyText('${escJ(bd.proPrompt||d.enhanced)}')">📋 Copy</button>
+            <button class="btn btn-primary btn-sm" onclick="openPlatform()">Open in ${d.platform||'AI'} →</button>
+          </div>
+        </div>
+        <div class="bd-block pro-block">${esc(bd.proPrompt || '[ADVANCED] ' + d.enhanced + ', hyperdetailed, award-winning, trending on ArtStation')}</div>
+      </div>
+
+      <!-- PLATFORM MATCH SCORES — Visual Chart -->
+      <div class="bd-section">
+        <div class="bd-section-label">📊 Platform Fit Scores</div>
+        <div class="bd-platform-chart">
+          ${(bd.platforms||[
+            {name:'ChatGPT',match:92,reason:'Best for text generation and roleplay'},
+            {name:'Claude',match:95,reason:'Ideal for nuanced, detailed prompts'},
+            {name:'Gemini',match:88,reason:'Great for visual descriptions'},
+            {name:'Midjourney',match:97,reason:'Optimised for image generation'},
+            {name:'DALL-E',match:85,reason:'Good for photo-realistic outputs'},
+          ]).sort((a,b)=>b.match-a.match).map((p,i)=>{
+            const icons = {ChatGPT:'🤖',Claude:'🧠',Gemini:'♊',Midjourney:'🎨','DALL-E':'🌄',Grok:'⚡',Perplexity:'🔍',DeepSeek:'🌊',Copilot:'🪟','Meta AI':'🤳'};
+            const color = p.match >= 90 ? '#22c55e' : p.match >= 80 ? '#ff9800' : '#ef4444';
+            const isTop = i === 0;
+            return `
+            <div class="bd-chart-row">
+              <div class="bd-chart-label">
+                <span class="bd-chart-icon">${icons[p.name]||'🤖'}</span>
+                <span class="bd-chart-name">${p.name}</span>
+                ${isTop ? '<span class="bd-top-badge">⭐ TOP PICK</span>' : ''}
+              </div>
+              <div class="bd-chart-bar-wrap">
+                <div class="bd-chart-bar-track">
+                  <div class="bd-chart-bar-fill" data-width="${p.match}" style="width:0%;background:${color}"></div>
+                </div>
+                <span class="bd-chart-pct" style="color:${color}">${p.match}%</span>
+              </div>
+              <div class="bd-chart-reason">${p.reason||''}</div>
+            </div>`;
+          }).join('')}
+        </div>
+      </div>
+
+      <!-- SOCIAL CAPTION -->
+
+      ${d.socialCaption ? `
+      <div class="bd-section">
+        <div class="bd-section-header">
+          <div class="bd-section-label">📣 Social Caption</div>
+          <button class="btn-copy-inline" onclick="copyText('${escJ(d.socialCaption)}')">📋 Copy</button>
+        </div>
+        <div class="bd-block">${esc(d.socialCaption)}</div>
+      </div>` : ''}
+
+      <!-- EXPORT FOOTER -->
+      <div class="bd-footer">
+        <button class="btn btn-ghost btn-sm" onclick="copyAll()">📋 Copy All</button>
+        <button class="btn btn-ghost btn-sm" onclick="exportTXT()">📄 Export TXT</button>
+        <button class="btn btn-primary btn-sm" onclick="openPlatform()">Open in ${d.platform||'AI'} →</button>
+      </div>
+    `;
+    // Animate new chart bars using data-width
+    setTimeout(() => {
+      document.querySelectorAll('.bd-chart-bar-fill[data-width]').forEach(el => {
+        el.style.transition = 'width 0.9s cubic-bezier(0.4,0,0.2,1)';
+        el.style.width = el.getAttribute('data-width') + '%';
+      });
+    }, 120);
+  }
+
+  function esc(s) { return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;'); }
+  function escJ(s) { return (s||'').replace(/'/g,"\\'").replace(/\n/g,' ').slice(0,500); }
+
+  function copyAll() {
+    const d = JSON.parse(localStorage.getItem('clarix_breakdown_data') || '{}');
+    const all = [
+      'CLARIX EXPERT BREAKDOWN', '='.repeat(50),
+      `Original: ${d.text}`,
+      `Enhanced: ${d.enhanced}`,
+      d.variations?.length ? `Variations:\n${d.variations.map((v,i)=>`${i+1}. ${v}`).join('\n')}` : '',
+      `Social Caption: ${d.socialCaption||'—'}`,
+      '='.repeat(50), 'Generated by Clarix ✦'
+    ].filter(Boolean).join('\n\n');
+    copyText(all);
+  }
+
+  function exportTXT() {
+    const d = JSON.parse(localStorage.getItem('clarix_breakdown_data') || '{}');
+    const content = `CLARIX EXPERT BREAKDOWN\n${'='.repeat(50)}\n\nOriginal:\n${d.text}\n\nEnhanced:\n${d.enhanced}\n\nVariations:\n${(d.variations||[]).map((v,i)=>`${i+1}. ${v}`).join('\n')}\n\nSocial Caption:\n${d.socialCaption||'—'}\n\n${'='.repeat(50)}\nGenerated by Clarix ✦`;
+    downloadFile('clarix-breakdown.txt', content);
+    Toast.show('Exported!', 'success');
+  }
+
+  function openPlatform() {
+    const d = JSON.parse(localStorage.getItem('clarix_breakdown_data') || '{}');
+    const platforms = [
+      {name:'ChatGPT',url:'https://chat.openai.com'},{name:'Claude',url:'https://claude.ai'},
+      {name:'Gemini',url:'https://gemini.google.com'},{name:'Midjourney',url:'https://midjourney.com'},
+      {name:'Grok',url:'https://grok.x.ai'},
+    ];
+    const p = platforms.find(pl => pl.name === d.platform);
+    const pro = d.breakdown?.proPrompt || d.enhanced;
+    copyText(pro, null, false);
+    setTimeout(() => window.open(p ? p.url : 'https://chat.openai.com', '_blank'), 400);
+    Toast.show('Pro prompt copied! Opening ' + (d.platform||'AI') + '...', 'success');
+  }
+  </script>
+</body>
+</html>

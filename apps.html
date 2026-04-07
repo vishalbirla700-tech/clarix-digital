@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Apps & Create Hub — Clarix AI</title>
+  <meta name="description" content="8 intent shortcuts: Email, Blog, Video Script, Image Prompt, LinkedIn & more. Access specialized AI hubs for video, blog, 3D, and social content.">
+  <meta name="keywords" content="AI content apps, prompt shortcuts, video script generator, blog writer AI, Clarix apps">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://clarix.in/apps.html">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://clarix.in/apps.html">
+  <meta property="og:title" content="Apps & Create Hub — Clarix AI">
+  <meta property="og:description" content="8 AI intent shortcuts for Email, Blog, Video, Image prompts and more. One-click to launch.">
+  <meta property="og:image" content="https://clarix.in/icons/og-image.png">
+  <meta property="og:site_name" content="Clarix AI">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Apps & Create Hub — Clarix AI">
+  <meta name="twitter:image" content="https://clarix.in/icons/og-image.png">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#ff7043">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Clarix">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%23ff7043'/><text x='50%' y='55%' font-size='18' text-anchor='middle' dominant-baseline='middle' fill='white'>✦</text></svg>">
+  <link rel="stylesheet" href="css/design.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/sidebar.css">
+  <link rel="stylesheet" href="css/onboarding.css">
+  <link rel="stylesheet" href="css/pages/apps.css">
+</head>
+<body class="theme-dark">
+
+  <!-- TOP NAV -->
+  <nav class="topnav dark">
+    <div class="nav-left">
+      <button class="sidebar-toggle-btn" onclick="Sidebar.toggle()" aria-label="Menu">
+        <span></span><span></span><span></span>
+      </button>
+      <div class="nav-logo" onclick="location.href='index.html'"><span class="nav-star">✦</span> clarix</div>
+    </div>
+    <div class="nav-links">
+      <a href="index.html" class="nav-link">Home</a>
+      <a href="write.html" class="nav-link">Write</a>
+      <a href="inspire.html" class="nav-link">Inspire</a>
+      <a href="library.html" class="nav-link">Library</a>
+      <a href="community.html" class="nav-link">Community</a>
+      <a href="apps.html" class="nav-link">Apps</a>
+      <a href="profile.html" class="nav-link">Profile</a>
+    </div>
+    <div class="nav-right">
+      <div class="usage-counter" id="usage-counter" onclick="UpgradeModal.show()">10/10 free</div>
+    </div>
+  </nav>
+
+  <div class="apps-page container">
+
+    <!-- PAGE HEADER -->
+    <div class="apps-header">
+      <div class="ai-badge"><span class="badge-star">✦</span> Create Hub</div>
+      <h1 class="display-md" style="margin-top:12px">What do you want to <span class="gradient-text">create?</span></h1>
+      <p class="body-md text-muted" style="margin-top:8px">Pick an intent — your template loads in Write instantly.</p>
+    </div>
+
+    <!-- INTENT CARDS -->
+    <div class="intent-grid" id="intentGrid"></div>
+
+    <!-- DIVIDER -->
+    <div class="apps-divider">
+      <div class="divider"></div>
+      <span class="divider-label">Specialized Hubs</span>
+      <div class="divider"></div>
+    </div>
+
+    <!-- HUB TABS -->
+    <div class="hub-tabs" id="hubTabs">
+      <button class="hub-tab active" data-hub="video" onclick="switchHub('video')">🎬 Video</button>
+      <button class="hub-tab" data-hub="blog" onclick="switchHub('blog')">✍️ Blog</button>
+      <button class="hub-tab" data-hub="3d" onclick="switchHub('3d')">🎮 3D</button>
+      <button class="hub-tab" data-hub="aitools" onclick="switchHub('aitools')">🤖 AI Tools</button>
+    </div>
+
+    <!-- HUB CONTENT -->
+    <div class="hub-content" id="hubContent"></div>
+
+  </div>
+
+  <!-- MOBILE BOTTOM NAV -->
+  <nav class="mobile-nav">
+    <div class="mnav-items">
+      <a href="index.html" class="mnav-item"><span class="mnav-icon">🏠</span>Home</a>
+      <a href="write.html" class="mnav-item"><span class="mnav-icon">✍️</span>Write</a>
+      <a href="inspire.html" class="mnav-item"><span class="mnav-icon">🎨</span>Inspire</a>
+      <a href="library.html" class="mnav-item"><span class="mnav-icon">📚</span>Library</a>
+      <a href="apps.html" class="mnav-item active"><span class="mnav-icon">🚀</span>Apps</a>
+    </div>
+  </nav>
+
+  <script src="config.js"></script>
+  <script src="js/languages.js"></script>
+  <script src="js/core.js"></script>
+  <script src="js/ai.js"></script>
+  <script src="js/voice.js"></script>
+  <script src="js/onboarding.js"></script>
+  <script src="js/sidebar.js"></script>
+  <script src="js/pages/apps.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => { Sidebar.init(); Onboarding.init(); });
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js').catch(() => {});
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Prompt Library — Clarix</title>
+  <meta name="description" content="18 ready-made AI prompts for Email, Social, Coding, Business, Study, Creative, and AI generation. Free and Pro tiers.">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%23ff7043'/><text x='50%' y='55%' font-size='18' text-anchor='middle' dominant-baseline='middle' fill='white'>✦</text></svg>">
+  <link rel="stylesheet" href="css/design.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/sidebar.css">
+  <link rel="stylesheet" href="css/onboarding.css">
+  <link rel="stylesheet" href="css/pages/library.css">
+</head>
+<body class="theme-dark">
+
+  <nav class="topnav dark">
+    <div class="nav-left">
+      <button class="sidebar-toggle-btn" onclick="Sidebar.toggle()" aria-label="Menu">
+        <span></span><span></span><span></span>
+      </button>
+      <div class="nav-logo" onclick="location.href='index.html'"><span class="nav-star">✦</span> clarix</div>
+    </div>
+    <div class="nav-links">
+      <a href="index.html" class="nav-link">Home</a>
+      <a href="write.html" class="nav-link">Write</a>
+      <a href="inspire.html" class="nav-link">Inspire</a>
+      <a href="library.html" class="nav-link">Library</a>
+      <a href="apps.html" class="nav-link">Apps</a>
+      <a href="profile.html" class="nav-link">Profile</a>
+    </div>
+    <div class="nav-right">
+      <div class="usage-counter" id="usage-counter" onclick="UpgradeModal.show()">10/10 free</div>
+    </div>
+  </nav>
+
+  <div class="library-page container">
+    <div class="library-header">
+      <div class="ai-badge"><span class="badge-star">✦</span> Prompt Library</div>
+      <h1 class="display-md" style="margin-top:12px"><span class="gradient-text">Ready-made</span> prompts</h1>
+      <p class="body-md text-muted" style="margin-top:8px">Click any prompt to load it directly into Write.</p>
+    </div>
+
+    <!-- Category filter -->
+    <div class="chip-group lib-filter" id="libFilter">
+      <div class="chip active" data-libcat="all" onclick="filterLib('all')">All</div>
+      <div class="chip" data-libcat="email" onclick="filterLib('email')">📧 Email</div>
+      <div class="chip" data-libcat="social" onclick="filterLib('social')">📱 Social</div>
+      <div class="chip" data-libcat="coding" onclick="filterLib('coding')">💻 Coding</div>
+      <div class="chip" data-libcat="business" onclick="filterLib('business')">💼 Business</div>
+      <div class="chip" data-libcat="study" onclick="filterLib('study')">📚 Study</div>
+      <div class="chip" data-libcat="creative" onclick="filterLib('creative')">🎨 Creative</div>
+      <div class="chip" data-libcat="ai" onclick="filterLib('ai')">🤖 AI Prompts</div>
+    </div>
+
+    <!-- Library grid -->
+    <div class="lib-grid" id="libGrid"></div>
+  </div>
+
+  <nav class="mobile-nav">
+    <div class="mnav-items">
+      <a href="index.html" class="mnav-item"><span class="mnav-icon">🏠</span>Home</a>
+      <a href="write.html" class="mnav-item"><span class="mnav-icon">✍️</span>Write</a>
+      <a href="inspire.html" class="mnav-item"><span class="mnav-icon">🎨</span>Inspire</a>
+      <a href="library.html" class="mnav-item active"><span class="mnav-icon">📚</span>Library</a>
+      <a href="apps.html" class="mnav-item"><span class="mnav-icon">🚀</span>Apps</a>
+    </div>
+  </nav>
+
+  <script src="config.js"></script>
+  <script src="js/languages.js"></script>
+  <script src="js/core.js"></script>
+  <script src="js/ai.js"></script>
+  <script src="js/voice.js"></script>
+  <script src="js/onboarding.js"></script>
+  <script src="js/sidebar.js"></script>
+  <script src="js/pages/library.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => { Sidebar.init(); Onboarding.init(); });
+  </script>
+</body>
+</html>

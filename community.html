@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Community Prompts — Clarix AI</title>
+  <meta name="description" content="Browse 35+ curated AI prompts for ChatGPT, Midjourney, Claude & more. Categories: Art, Writing, Business, Education, India Special. Copy, use, and share in one click.">
+  <meta name="keywords" content="AI prompts, ChatGPT prompts, Midjourney prompts, Hindi prompts, Indian AI, prompt library, clarix">
+  <meta name="author" content="Clarix AI">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://clarix.in/community.html">
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://clarix.in/community.html">
+  <meta property="og:title" content="Community Prompts — Clarix AI">
+  <meta property="og:description" content="Browse 35+ curated AI prompts across art, writing, business, education & India-special categories. Free to use & share.">
+  <meta property="og:image" content="https://clarix.in/icons/og-image.png">
+  <meta property="og:locale" content="en_IN">
+  <meta property="og:site_name" content="Clarix AI">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:site" content="@ClarixAI">
+  <meta name="twitter:title" content="Community Prompts — Clarix AI">
+  <meta name="twitter:description" content="35+ curated AI prompts. Copy, use & share in one click. Free forever.">
+  <meta name="twitter:image" content="https://clarix.in/icons/og-image.png">
+
+  <!-- PWA -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#ff7043">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Clarix">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%23ff7043'/><text x='50%' y='55%' font-size='18' text-anchor='middle' dominant-baseline='middle' fill='white'>✦</text></svg>">
+
+  <link rel="stylesheet" href="css/design.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/pages/community.css">
+</head>
+<body class="theme-dark">
+
+  <!-- TOP NAV -->
+  <nav class="topnav dark" id="topnav">
+    <div class="nav-logo" onclick="location.href='index.html'">
+      <span class="nav-star">✦</span> clarix
+    </div>
+    <div class="nav-links">
+      <a href="index.html" class="nav-link">Home</a>
+      <a href="write.html" class="nav-link">Write</a>
+      <a href="inspire.html" class="nav-link">Inspire</a>
+      <a href="library.html" class="nav-link">Library</a>
+      <a href="community.html" class="nav-link">Community</a>
+      <a href="apps.html" class="nav-link">Apps</a>
+    </div>
+    <div class="nav-right">
+      <div class="usage-counter" id="usage-counter" onclick="UpgradeModal.show()">10/10 free</div>
+      <a href="profile.html" class="btn btn-ghost btn-sm">Profile</a>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <div class="comm-hero">
+    <div class="ai-badge" style="margin-bottom:16px;justify-content:center">
+      <span class="badge-star">🤝</span> Community Library
+    </div>
+    <h1 class="comm-hero-title">
+      Prompts crafted by<br><span class="gradient-text">Clarix creators</span>
+    </h1>
+    <p class="comm-hero-sub">
+      Browse 35+ curated, high-scoring prompts. Copy, use in Write, or share with your community. New prompts added weekly.
+    </p>
+
+    <!-- Stats -->
+    <div class="comm-stats-bar">
+      <div class="comm-stat">
+        <span class="comm-stat-num" id="comm-total-prompts">35+</span>
+        <span class="comm-stat-label">Curated Prompts</span>
+      </div>
+      <div class="comm-stat">
+        <span class="comm-stat-num" id="comm-total-uses">50K+</span>
+        <span class="comm-stat-label">Total Uses</span>
+      </div>
+      <div class="comm-stat">
+        <span class="comm-stat-num">7</span>
+        <span class="comm-stat-label">Categories</span>
+      </div>
+      <div class="comm-stat">
+        <span class="comm-stat-num">Free</span>
+        <span class="comm-stat-label">Always</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN CONTENT -->
+  <div class="container" style="padding-bottom:80px">
+
+    <!-- Categories -->
+    <div class="comm-categories" id="comm-categories"></div>
+
+    <!-- Controls -->
+    <div class="comm-controls">
+      <div class="comm-search-wrap">
+        <span class="comm-search-icon">🔍</span>
+        <input
+          type="text"
+          id="comm-search"
+          class="comm-search"
+          placeholder="Search prompts, platforms, languages..."
+          autocomplete="off">
+      </div>
+      <select id="comm-sort" class="comm-sort">
+        <option value="popular">🔥 Most Popular</option>
+        <option value="score">⭐ Highest Score</option>
+        <option value="newest">🆕 Newest</option>
+      </select>
+      <div class="comm-count" id="comm-count">35 prompts</div>
+    </div>
+
+    <!-- Grid -->
+    <div class="comm-grid" id="comm-grid">
+      <!-- Rendered by JS -->
+    </div>
+
+  </div>
+
+  <!-- SUBMIT YOUR PROMPT CTA -->
+  <section style="text-align:center;padding:60px 24px;background:rgba(255,112,67,0.04);border-top:1px solid rgba(255,255,255,0.06)">
+    <div class="ai-badge" style="margin-bottom:16px;justify-content:center">
+      <span class="badge-star">✦</span> Contribute
+    </div>
+    <h2 style="font-family:var(--font-head);font-size:clamp(22px,3vw,36px);margin-bottom:12px">
+      Have an awesome prompt?
+    </h2>
+    <p style="color:#888;font-size:15px;margin-bottom:24px;max-width:400px;margin-left:auto;margin-right:auto">
+      Share your best prompts with the Clarix community. Top-rated prompts get featured and reach thousands of creators.
+    </p>
+    <a href="write.html" class="btn btn-primary btn-lg">✦ Create & Share a Prompt</a>
+  </section>
+
+  <!-- MOBILE NAV -->
+  <nav class="mobile-nav">
+    <div class="mnav-items">
+      <a href="index.html" class="mnav-item"><span class="mnav-icon">🏠</span>Home</a>
+      <a href="write.html" class="mnav-item"><span class="mnav-icon">✍️</span>Write</a>
+      <a href="inspire.html" class="mnav-item"><span class="mnav-icon">🎨</span>Inspire</a>
+      <a href="community.html" class="mnav-item"><span class="mnav-icon">🤝</span>Community</a>
+      <a href="profile.html" class="mnav-item"><span class="mnav-icon">👤</span>Profile</a>
+    </div>
+  </nav>
+
+  <script src="config.js"></script>
+  <script src="js/core.js"></script>
+  <script src="js/share.js"></script>
+  <script src="js/pages/community.js"></script>
+  <script>
+    // Register Service Worker
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js').catch(() => {});
+    }
+  </script>
+</body>
+</html>

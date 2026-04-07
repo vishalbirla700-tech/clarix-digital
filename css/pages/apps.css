@@ -1,0 +1,131 @@
+/* ═══════════════════════════════════════════
+   CLARIX — APPS PAGE CSS
+═══════════════════════════════════════════ */
+
+.apps-page { padding: 40px 0 80px; }
+
+.apps-header { text-align: center; padding: 20px 0 48px; }
+
+/* Intent Grid */
+.intent-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px; margin-bottom: 56px;
+}
+@media (max-width: 900px) { .intent-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 480px) { .intent-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; } }
+
+.intent-card {
+  background: #111; border: 1px solid rgba(255,255,255,0.07);
+  border-radius: var(--r-lg); overflow: hidden;
+  cursor: pointer; transition: all var(--t-mid) var(--ease);
+  display: flex; flex-direction: column;
+}
+.intent-card:hover {
+  border-color: rgba(255,112,67,0.35);
+  transform: translateY(-5px);
+  box-shadow: 0 16px 48px rgba(0,0,0,0.5);
+}
+.intent-thumb {
+  height: 140px; position: relative; overflow: hidden;
+  background-size: cover; background-position: center;
+  transition: transform 0.4s;
+}
+.intent-card:hover .intent-thumb { transform: scale(1.06); }
+.intent-thumb-overlay { position: absolute; inset: 0; }
+.intent-icon-big {
+  position: absolute; bottom: 12px; left: 14px;
+  font-size: 28px; line-height: 1; filter: drop-shadow(0 2px 8px rgba(0,0,0,0.8));
+}
+.intent-info { padding: 14px 14px 16px; }
+.intent-name { font-family: var(--font-head); font-size: 14px; font-weight: 700; color: #fff; margin-bottom: 4px; }
+.intent-sub { font-size: 11px; color: #555; }
+
+/* Divider */
+.apps-divider {
+  display: flex; align-items: center; gap: 16px;
+  margin-bottom: 32px;
+}
+.divider-label {
+  font-size: 11px; font-weight: 700; letter-spacing: 0.1em;
+  text-transform: uppercase; color: #444; white-space: nowrap;
+}
+
+/* Hub Tabs */
+.hub-tabs {
+  display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 28px;
+}
+.hub-tab {
+  padding: 10px 22px; border-radius: var(--r-full);
+  border: 1px solid rgba(255,255,255,0.08);
+  background: rgba(255,255,255,0.03); color: #666;
+  font-size: 14px; font-weight: 600; cursor: pointer;
+  font-family: var(--font-body);
+  transition: all var(--t-fast);
+}
+.hub-tab:hover { color: #aaa; background: rgba(255,255,255,0.06); }
+.hub-tab.active {
+  background: rgba(255,112,67,0.12);
+  border-color: rgba(255,112,67,0.35);
+  color: var(--accent);
+}
+
+/* Hub Content */
+.hub-content { margin-bottom: 60px; }
+.hub-panel { display: none; animation: fadeUp 0.3s var(--ease) both; }
+.hub-panel.active { display: block; }
+
+/* Hub cards grid */
+.hub-cards {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 14px;
+}
+.hub-card {
+  background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.07);
+  border-radius: var(--r-lg); padding: 22px; cursor: pointer;
+  transition: all var(--t-mid); display: flex; flex-direction: column; gap: 10px;
+}
+.hub-card:hover {
+  border-color: rgba(255,112,67,0.3); background: rgba(255,112,67,0.05);
+  transform: translateY(-3px);
+}
+.hub-card-icon { font-size: 28px; }
+.hub-card-name {
+  font-family: var(--font-head); font-size: 16px; font-weight: 700; color: #fff;
+}
+.hub-card-desc { font-size: 13px; color: #555; line-height: 1.5; }
+.hub-card-action {
+  margin-top: auto; font-size: 12px; color: var(--accent); font-weight: 600;
+}
+
+/* AI Tools grid */
+.ai-tools-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 12px;
+}
+.ai-tool-btn {
+  display: flex; flex-direction: column; align-items: center; gap: 10px;
+  padding: 22px 16px; border-radius: var(--r-lg);
+  background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.07);
+  cursor: pointer; transition: all var(--t-mid); text-decoration: none;
+}
+.ai-tool-btn:hover {
+  background: rgba(255,112,67,0.08); border-color: rgba(255,112,67,0.3);
+  transform: translateY(-3px);
+}
+.ai-tool-icon { font-size: 32px; }
+.ai-tool-name { font-size: 13px; font-weight: 600; color: rgba(255,255,255,0.7); }
+.ai-tool-tag { font-size: 10px; color: var(--accent); font-weight: 600; }
+
+/* YouTube embed */
+.yt-embed-wrap {
+  border-radius: var(--r-lg); overflow: hidden;
+  background: #000; aspect-ratio: 16/9; margin-top: 20px;
+  border: 1px solid rgba(255,255,255,0.07);
+}
+.yt-embed-wrap iframe { width: 100%; height: 100%; border: none; }
+
+.hub-section-title {
+  font-family: var(--font-head); font-size: 18px; font-weight: 700;
+  color: #fff; margin-bottom: 16px; padding-top: 8px;
+}

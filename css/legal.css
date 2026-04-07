@@ -1,0 +1,82 @@
+/* ═══════════════════════════════════════════
+   CLARIX — LEGAL PAGES CSS
+   Shared styles for Terms, Privacy, Refund
+═══════════════════════════════════════════ */
+
+.legal-page { padding: 40px 0 80px; max-width: 760px; }
+
+.legal-hero {
+  padding: 32px 0 40px;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  margin-bottom: 40px;
+}
+
+.legal-body { display: flex; flex-direction: column; gap: 0; }
+
+.legal-highlight {
+  background: rgba(255,112,67,0.06);
+  border: 1px solid rgba(255,112,67,0.2);
+  border-radius: var(--r-lg); padding: 18px 20px;
+  font-size: 14px; color: rgba(255,255,255,0.75); line-height: 1.6;
+  margin-bottom: 8px;
+}
+
+.legal-section {
+  padding: 28px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+.legal-section:last-child { border-bottom: none; }
+
+.legal-section h2 {
+  font-family: var(--font-head); font-size: 18px; font-weight: 700;
+  color: #fff; margin-bottom: 14px;
+}
+
+.legal-section p {
+  font-size: 14px; color: #666; line-height: 1.75; margin-bottom: 12px;
+}
+.legal-section p:last-child { margin-bottom: 0; }
+
+.legal-section ul {
+  list-style: none; display: flex; flex-direction: column; gap: 8px; margin: 12px 0;
+}
+.legal-section ul li {
+  font-size: 14px; color: #666; line-height: 1.6; padding-left: 16px; position: relative;
+}
+.legal-section ul li::before {
+  content: '·'; position: absolute; left: 0; color: var(--accent); font-weight: 700;
+}
+
+.legal-section strong { color: rgba(255,255,255,0.8); }
+
+.legal-link {
+  color: var(--accent); text-decoration: none; font-weight: 500;
+  border-bottom: 1px solid rgba(255,112,67,0.3);
+  transition: border-color 0.15s;
+}
+.legal-link:hover { border-color: var(--accent); }
+
+.legal-footer-links {
+  margin-top: 48px; padding-top: 24px;
+  border-top: 1px solid rgba(255,255,255,0.06);
+  display: flex; gap: 24px; flex-wrap: wrap;
+}
+.legal-footer-links a {
+  font-size: 13px; color: #555; text-decoration: none; transition: color 0.15s;
+}
+.legal-footer-links a:hover { color: var(--accent); }
+
+/* Table (for refund policy) */
+.legal-table {
+  width: 100%; border-collapse: collapse; margin: 16px 0;
+  font-size: 13px;
+}
+.legal-table th {
+  background: rgba(255,112,67,0.08); color: var(--accent);
+  padding: 10px 14px; text-align: left; font-weight: 700; font-size: 12px;
+  border-bottom: 1px solid rgba(255,112,67,0.2);
+}
+.legal-table td {
+  padding: 10px 14px; color: #666; border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+.legal-table tr:hover td { background: rgba(255,255,255,0.02); }

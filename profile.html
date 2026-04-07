@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Profile & Analytics — Clarix AI</title>
+  <meta name="description" content="Your Clarix profile — usage analytics, prompt stats, Pro upgrade, and personalised settings. Track your AI prompt journey.">
+  <meta name="keywords" content="Clarix profile, AI usage analytics, prompt stats, pro upgrade">
+  <meta name="robots" content="noindex">
+  <link rel="canonical" href="https://clarix.in/profile.html">
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://clarix.in/profile.html">
+  <meta property="og:title" content="Your Clarix Profile & Analytics">
+  <meta property="og:description" content="Track your AI prompt usage, see your top platforms, and upgrade to Pro for unlimited access.">
+  <meta property="og:image" content="https://clarix.in/icons/og-image.png">
+  <meta property="og:site_name" content="Clarix AI">
+
+  <!-- PWA -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#ff7043">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Clarix">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%23ff7043'/><text x='50%' y='55%' font-size='18' text-anchor='middle' dominant-baseline='middle' fill='white'>✦</text></svg>">
+  <link rel="stylesheet" href="css/design.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/pages/profile.css">
+  <link rel="stylesheet" href="css/auth.css">
+</head>
+<body class="theme-dark">
+
+  <nav class="topnav dark" id="topnav">
+    <div class="nav-logo" onclick="location.href='index.html'"><span class="nav-star">✦</span> clarix</div>
+    <div class="nav-links">
+      <a href="index.html" class="nav-link">Home</a>
+      <a href="write.html" class="nav-link">Write</a>
+      <a href="inspire.html" class="nav-link">Inspire</a>
+      <a href="library.html" class="nav-link">Library</a>
+      <a href="community.html" class="nav-link">Community</a>
+      <a href="apps.html" class="nav-link">Apps</a>
+    </div>
+    <div class="nav-right">
+      <div class="usage-counter" id="usage-counter" onclick="UpgradeModal.show()">10/10 free</div>
+      <button class="btn btn-ghost btn-sm" id="authNavBtn" onclick="AuthModal.show()">Login</button>
+      <a href="profile.html" class="btn btn-primary btn-sm">Profile</a>
+    </div>
+  </nav>
+
+  <div class="profile-page container-sm">
+
+    <!-- Avatar + Greeting -->
+    <div class="profile-hero">
+      <div class="profile-avatar" id="profileAvatar">C</div>
+      <div class="profile-info">
+        <div class="profile-greeting" id="profileGreeting">Good morning</div>
+        <div class="profile-name" id="profileName">Creator</div>
+        <div class="profile-name-edit">
+          <input type="text" id="usernameInput" class="username-input" placeholder="Set your name..." maxlength="24">
+          <button class="btn btn-ghost btn-sm" onclick="saveName()">Save</button>
+        </div>
+      </div>
+      <div id="profileBadge"></div>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-card-num" id="statTotal">0</div>
+        <div class="stat-card-label">Total Prompts</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-num" id="statStreak">0</div>
+        <div class="stat-card-label">Day Streak 🔥</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-num" id="statToday">0</div>
+        <div class="stat-card-label">Used Today</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-num" id="statRemaining">10</div>
+        <div class="stat-card-label">Remaining Today</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-num" id="statSaved">0</div>
+        <div class="stat-card-label">Saved Prompts</div>
+      </div>
+    </div>
+
+    <!-- Usage bar -->
+    <div class="usage-bar-section" id="usageBarSection">
+      <div class="usage-bar-header">
+        <span class="usage-bar-label">Daily Usage</span>
+        <span class="usage-bar-count" id="usageBarCount">0 / 10 used</span>
+      </div>
+      <div class="usage-bar-track">
+        <div class="usage-bar-fill" id="usageBarFill" style="width:0%"></div>
+      </div>
+      <div class="usage-bar-sub">Resets at midnight</div>
+    </div>
+
+    <!-- Pro upgrade card -->
+    <div class="pro-upgrade-card" id="proUpgradeCard">
+      <div class="pro-card-left">
+        <div class="pro-card-title">Upgrade to <span class="gradient-text">Clarix Pro</span></div>
+        <div class="pro-card-sub">Unlimited enhancements · Expert Breakdown · Priority AI</div>
+        <div class="pro-card-price">₹199<span>/month</span> · 7-day free trial</div>
+      </div>
+      <button class="btn btn-primary" onclick="UpgradeModal.activate()">Try Pro Free →</button>
+    </div>
+
+    <!-- Active Pro card (hidden unless pro) -->
+    <div class="pro-active-card hidden" id="proActiveCard">
+      <div class="pro-active-icon">✦</div>
+      <div class="pro-active-title">Clarix Pro Active</div>
+      <div class="pro-active-sub">Unlimited enhancements. Priority AI. All features unlocked.</div>
+      <button class="btn btn-secondary" style="margin-top:16px;color:#fff;border-color:rgba(255,255,255,0.2)" onclick="deactivatePro()">Downgrade to Free</button>
+    </div>
+
+    <!-- ═══ ANALYTICS SECTION ═══ -->
+    <div class="analytics-section">
+      <div class="analytics-header">
+        <div class="section-label">📊 Your Analytics</div>
+        <div class="analytics-sub">Last 7 days</div>
+      </div>
+
+      <!-- 7-Day Bar Chart -->
+      <div class="chart-card">
+        <div class="chart-title">Prompts Per Day</div>
+        <div class="chart-wrap">
+          <canvas id="chart-daily" class="chart-canvas"></canvas>
+        </div>
+      </div>
+
+      <div class="charts-row">
+        <!-- Top Platforms -->
+        <div class="chart-card">
+          <div class="chart-title">Top Platforms Used</div>
+          <div class="chart-wrap" style="height:160px">
+            <canvas id="chart-platforms" class="chart-canvas" style="display:none"></canvas>
+            <div id="no-platforms" class="chart-empty">Start writing prompts to<br>see your top platforms</div>
+          </div>
+        </div>
+
+        <!-- Language Split -->
+        <div class="chart-card">
+          <div class="chart-title">Language Split</div>
+          <div class="chart-wrap" style="height:160px">
+            <canvas id="chart-languages" class="chart-canvas" style="display:none"></canvas>
+            <div id="no-languages" class="chart-empty">No language data yet</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recent saved prompts -->
+    <div class="saved-section">
+      <div class="section-label">Recently Saved Prompts</div>
+      <div id="savedList"></div>
+    </div>
+
+    <!-- Quick links -->
+    <div class="quick-links">
+      <a href="write.html" class="quick-link-btn">✍️ Write</a>
+      <a href="inspire.html" class="quick-link-btn">🎨 Inspire</a>
+      <a href="library.html" class="quick-link-btn">📚 Library</a>
+      <a href="apps.html" class="quick-link-btn">🚀 Apps</a>
+    </div>
+
+  </div>
+
+  <nav class="mobile-nav">
+    <div class="mnav-items">
+      <a href="index.html" class="mnav-item"><span class="mnav-icon">🏠</span>Home</a>
+      <a href="write.html" class="mnav-item"><span class="mnav-icon">✍️</span>Write</a>
+      <a href="community.html" class="mnav-item"><span class="mnav-icon">🤝</span>Community</a>
+      <a href="apps.html" class="mnav-item"><span class="mnav-icon">🚀</span>Apps</a>
+      <a href="profile.html" class="mnav-item"><span class="mnav-icon">👤</span>Profile</a>
+    </div>
+  </nav>
+
+  <script src="config.js"></script>
+  <script src="js/core.js"></script>
+  <script src="js/charts.js"></script>
+  <script src="js/share.js"></script>
+  <script src="js/firebase.js"></script>
+  <script src="js/pages/profile.js"></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js').catch(() => {});
+    }
+  </script>
+</body>
+</html>

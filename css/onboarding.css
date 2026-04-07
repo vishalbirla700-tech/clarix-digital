@@ -1,0 +1,197 @@
+/* ═══════════════════════════════════════════════
+   CLARIX — ONBOARDING MODAL CSS
+═══════════════════════════════════════════════ */
+
+.onboard-overlay {
+  position: fixed; inset: 0; z-index: 9999;
+  background: #000;
+  display: flex; align-items: center; justify-content: center;
+  padding: 20px;
+  transition: opacity 0.5s ease;
+}
+.onboard-overlay.hiding {
+  opacity: 0; pointer-events: none;
+}
+
+.onboard-box {
+  width: 100%; max-width: 520px;
+  background: #0a0a0a;
+  border: 1px solid rgba(255,112,67,0.2);
+  border-radius: 24px;
+  overflow: hidden;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 30px 80px rgba(255,112,67,0.15);
+  animation: bounceIn 0.5s var(--ease-spring) both;
+}
+
+/* Progress bar */
+.onboard-progress {
+  height: 3px; background: rgba(255,255,255,0.05);
+  position: relative;
+}
+.onboard-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent), #ff9800);
+  border-radius: 0 3px 3px 0;
+  transition: width 0.4s var(--ease);
+}
+
+/* Steps */
+.onboard-step {
+  display: none; padding: 40px;
+  animation: fadeIn 0.3s ease both;
+  overflow-y: auto;
+  flex: 1;
+}
+.onboard-step.active { display: flex; flex-direction: column; }
+
+/* Make lang container scrollable, pin btn row to bottom */
+#ob-step-2 .onboard-btn-row,
+#ob-step-3 .onboard-btn-row {
+  margin-top: auto;
+  padding-top: 16px;
+  flex-shrink: 0;
+}
+
+.onboard-logo {
+  font-family: var(--font-head); font-size: 28px; font-weight: 900;
+  color: var(--accent); margin-bottom: 28px; display: flex; align-items: center; gap: 8px;
+}
+.onboard-logo-star { font-size: 18px; }
+
+.onboard-title {
+  font-family: var(--font-head); font-size: 26px; font-weight: 800;
+  color: #fff; margin-bottom: 10px; line-height: 1.2;
+}
+.onboard-sub {
+  font-size: 14px; color: #555; margin-bottom: 32px; line-height: 1.6;
+}
+
+/* Name input */
+.onboard-input {
+  width: 100%; padding: 16px 20px;
+  background: rgba(255,255,255,0.05);
+  border: 1.5px solid rgba(255,255,255,0.1);
+  border-radius: 14px;
+  color: #fff; font-size: 16px; font-family: var(--font-body);
+  transition: border-color 0.2s;
+  margin-bottom: 24px;
+}
+.onboard-input:focus {
+  border-color: rgba(255,112,67,0.5);
+  outline: none;
+  background: rgba(255,112,67,0.04);
+}
+.onboard-input::placeholder { color: #333; }
+
+/* Language grid */
+.lang-search {
+  width: 100%; padding: 12px 16px;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 10px; color: #fff;
+  font-size: 14px; font-family: var(--font-body);
+  margin-bottom: 16px;
+}
+.lang-search:focus { border-color: rgba(255,112,67,0.4); outline: none; }
+.lang-search::placeholder { color: #444; }
+
+.lang-section-title {
+  font-size: 10px; font-weight: 700; letter-spacing: 0.1em;
+  text-transform: uppercase; color: #444; margin-bottom: 10px;
+  display: flex; align-items: center; gap: 8px;
+}
+.lang-section-title::after {
+  content: ''; flex: 1; height: 1px; background: rgba(255,255,255,0.05);
+}
+
+.lang-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 8px; max-height: 200px; overflow-y: auto;
+  padding-right: 4px; margin-bottom: 16px;
+  flex-shrink: 0;
+}
+.lang-grid::-webkit-scrollbar { width: 3px; }
+
+.lang-chip {
+  padding: 8px 10px; border-radius: 10px; text-align: center;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.07);
+  font-size: 12px; font-weight: 500; color: #666;
+  cursor: pointer; transition: all 0.15s;
+  display: flex; align-items: center; gap: 6px;
+}
+.lang-chip:hover { border-color: rgba(255,112,67,0.35); color: #aaa; }
+.lang-chip.selected {
+  background: rgba(255,112,67,0.12);
+  border-color: rgba(255,112,67,0.5);
+  color: var(--accent); font-weight: 600;
+}
+.lang-chip .lang-flag { font-size: 14px; flex-shrink: 0; }
+.lang-chip .lang-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* Platform selection */
+.platform-grid-onboard {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 24px;
+}
+.platform-item-onboard {
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+  padding: 14px 8px; border-radius: 12px;
+  background: rgba(255,255,255,0.03);
+  border: 1.5px solid rgba(255,255,255,0.07);
+  cursor: pointer; transition: all 0.15s; text-align: center;
+}
+.platform-item-onboard:hover { border-color: rgba(255,112,67,0.3); }
+.platform-item-onboard.selected {
+  background: rgba(255,112,67,0.1);
+  border-color: rgba(255,112,67,0.5);
+}
+.platform-item-onboard .p-icon { font-size: 22px; }
+.platform-item-onboard .p-name { font-size: 11px; font-weight: 600; color: #888; }
+.platform-item-onboard.selected .p-name { color: var(--accent); }
+
+/* Buttons */
+.onboard-btn-row { display: flex; gap: 10px; }
+.onboard-btn {
+  flex: 1; padding: 14px; border-radius: var(--r-full);
+  font-size: 15px; font-weight: 700; cursor: pointer;
+  font-family: var(--font-body); transition: all 0.2s;
+}
+.onboard-btn-primary {
+  background: var(--accent); color: #fff;
+  border: none; box-shadow: 0 4px 20px rgba(255,112,67,0.35);
+}
+.onboard-btn-primary:hover {
+  background: var(--accent-hover);
+  box-shadow: 0 8px 30px rgba(255,112,67,0.5);
+  transform: translateY(-1px);
+}
+.onboard-btn-skip {
+  background: transparent; color: #444;
+  border: 1px solid rgba(255,255,255,0.07); flex: 0; padding: 14px 20px;
+  font-size: 13px;
+}
+.onboard-btn-skip:hover { color: #777; }
+
+/* Step indicator dots */
+.onboard-dots {
+  display: flex; gap: 8px; justify-content: center; margin-bottom: 28px;
+}
+.onboard-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: rgba(255,255,255,0.1); transition: all 0.3s;
+}
+.onboard-dot.active { background: var(--accent); width: 18px; border-radius: 3px; }
+
+/* Welcome animation */
+.onboard-welcome-icon {
+  font-size: 56px; text-align: center; margin-bottom: 20px;
+  animation: bounceIn 0.6s var(--ease-spring) both 0.2s;
+}
+
+/* Done state */
+.onboard-done-name {
+  color: var(--accent); font-family: var(--font-head); font-weight: 800;
+}
