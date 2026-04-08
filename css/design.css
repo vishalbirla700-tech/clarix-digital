@@ -246,6 +246,38 @@ body.theme-light {
   }
 }
 
-/* Global: all body text on dark pages = white */
-body.theme-dark p { color: #fff; }
-body.theme-dark li { color: #fff; }
+/* ═══════════════════════════════════════════════
+   NUCLEAR WHITE TEXT — catches EVERYTHING missed
+   All text on dark theme = white, bold, readable
+═══════════════════════════════════════════════ */
+body.theme-dark p,
+body.theme-dark a,
+body.theme-dark span,
+body.theme-dark li,
+body.theme-dark label,
+body.theme-dark small,
+body.theme-dark strong,
+body.theme-dark em { color: #fff; font-weight: 500; }
+
+/* Entire footer: white + readable */
+.footer, .footer * {
+  color: #fff !important;
+  font-weight: 500;
+}
+.footer a:hover { color: var(--accent) !important; }
+.footer .footer-links-title { font-weight: 800 !important; }
+
+/* Sidebar: all white */
+.sidebar *:not(.sidebar-upgrade-btn):not(.sidebar-logout-btn):not(.sidebar-user-badge):not(.sidebar-nav-link.active):not(.sidebar-logo) {
+  color: #fff;
+}
+
+/* Keep accent + special colours intact */
+body.theme-dark .text-accent,
+body.theme-dark [class*="accent"],
+body.theme-dark .nav-link.active { color: var(--accent) !important; font-weight: inherit; }
+body.theme-dark .score-badge,
+body.theme-dark [class*="score"] { color: #4ade80 !important; }
+body.theme-dark .ba-badge.br    { color: #f87171 !important; }
+body.theme-dark .pro-active-title { color: #ffc843 !important; }
+body.theme-dark .pro-badge      { color: #ffc843 !important; }
