@@ -69,6 +69,13 @@ const Sidebar = {
             </a>`).join('')}
         </nav>
 
+        <div class="sidebar-recent">
+          <div class="sidebar-recent-title">Recent Prompts</div>
+          <div id="sb-recent-list"><div class="sb-recent-empty">No recent prompts yet</div></div>
+        </div>
+      </div>
+
+      <div class="sidebar-footer">
         <div class="sidebar-usage" id="sb-usage">
           <div class="sidebar-usage-label" id="sb-usage-label">Your Usage</div>
           <div class="sidebar-usage-bar-track">
@@ -78,14 +85,6 @@ const Sidebar = {
             <span>25</span> / 25 trial left
           </div>
         </div>
-
-        <div class="sidebar-recent">
-          <div class="sidebar-recent-title">Recent Prompts</div>
-          <div id="sb-recent-list"></div>
-        </div>
-      </div>
-
-      <div class="sidebar-footer">
         <button class="sidebar-upgrade-btn" onclick="UpgradeModal.show();Sidebar.close()">
           ⚡ Upgrade to Pro — ₹299/mo
         </button>

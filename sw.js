@@ -1,11 +1,11 @@
 /* ═══════════════════════════════════════════════
-   CLARIX — SERVICE WORKER v2.0
-   Cache-first for static, Network-first for API
+   CLARIX — SERVICE WORKER v3.0
+   Network-first for HTML, Cache-first for assets
 ═══════════════════════════════════════════════ */
 
-const CACHE_NAME = 'clarix-v2';
-const STATIC_CACHE = 'clarix-static-v2';
-const DYNAMIC_CACHE = 'clarix-dynamic-v2';
+const CACHE_NAME = 'clarix-v3';
+const STATIC_CACHE = 'clarix-static-v3';
+const DYNAMIC_CACHE = 'clarix-dynamic-v3';
 
 // Static assets to pre-cache on install
 const STATIC_ASSETS = [
@@ -95,7 +95,13 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Cache-first for local static assets
+  // Network-first for local HTML pages (always get fresh content)
+  if (url.origin === location.origin && request.headers.get('accept')?.includes('text/html')) {
+    event.respondWith(networkFirst(request));
+    return;
+  }
+
+  // Cache-first for local static assets (CSS, JS, images)
   if (url.origin === location.origin) {
     event.respondWith(cacheFirst(request, STATIC_CACHE));
     return;

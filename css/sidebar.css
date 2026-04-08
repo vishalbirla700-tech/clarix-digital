@@ -4,7 +4,7 @@
 
 /* Backdrop */
 .sidebar-backdrop {
-  position: fixed; inset: 0; z-index: 190;
+  position: fixed; inset: 0; z-index: 250;
   background: rgba(0,0,0,0.7); -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px);
   opacity: 0; visibility: hidden;
   transition: all 0.3s var(--ease);
@@ -14,7 +14,7 @@
 /* Sidebar panel */
 .sidebar {
   position: fixed; top: 0; left: 0; bottom: 0;
-  width: 300px; z-index: 195;
+  width: 300px; z-index: 260;
   background: #0a0a0a;
   border-right: 1px solid rgba(255,255,255,0.07);
   display: flex; flex-direction: column;
@@ -23,6 +23,10 @@
   will-change: transform;
 }
 .sidebar.open { transform: translateX(0); }
+/* On mobile: account for bottom nav bar height */
+@media (max-width: 768px) {
+  .sidebar { padding-bottom: 74px; }
+}
 
 /* Sidebar header */
 .sidebar-header {
@@ -100,11 +104,11 @@
   padding: 2px 6px; border-radius: 20px;
 }
 
-/* Usage */
+/* Usage — now in footer */
 .sidebar-usage {
-  padding: 10px 16px;
+  padding: 8px 0;
   border-bottom: 1px solid rgba(255,255,255,0.05);
-  flex-shrink: 0;
+  margin-bottom: 8px;
 }
 .sidebar-usage-label { font-size: 11px; color: #444; margin-bottom: 8px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; }
 .sidebar-usage-bar-track { height: 5px; background: rgba(255,255,255,0.06); border-radius: 3px; margin-bottom: 6px; }
@@ -117,13 +121,10 @@
 .sidebar-usage-text span { color: var(--accent); font-weight: 700; }
 
 /* Recent prompts */
-.sidebar-recent {
-  flex: 1; overflow-y: auto; padding: 12px;
-}
-.sidebar-recent-title {
-  font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
-  color: #666; padding: 4px 8px 10px;
-}
+.sidebar-recent { flex: 1; overflow-y: auto; padding: 10px 12px; min-height: 60px; }
+.sidebar-recent-title { font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+  color: #333; margin-bottom: 6px; padding: 0 2px; }
+.sb-recent-empty { font-size: 11px; color: #333; padding: 8px 4px; text-align: center; border: 1px dashed rgba(255,255,255,0.06); border-radius: 8px; }
 .sidebar-recent-item {
   padding: 10px 10px; border-radius: 8px;
   cursor: pointer; transition: all 0.15s; margin-bottom: 2px;

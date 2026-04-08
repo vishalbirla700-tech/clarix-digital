@@ -10,6 +10,7 @@
   <link rel="stylesheet" href="css/components.css">
   <link rel="stylesheet" href="css/sidebar.css">
   <link rel="stylesheet" href="css/pages/history.css">
+  <link rel="stylesheet" href="css/auth.css">
   <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 </head>
 <body class="theme-dark">
@@ -27,11 +28,14 @@
       <a href="write.html" class="nav-link">Write</a>
       <a href="inspire.html" class="nav-link">Inspire</a>
       <a href="library.html" class="nav-link">Library</a>
+      <a href="community.html" class="nav-link">Community</a>
       <a href="apps.html" class="nav-link">Apps</a>
       <a href="history.html" class="nav-link">History</a>
     </div>
     <div class="nav-right">
       <div class="usage-counter" id="usage-counter" onclick="UpgradeModal.show()">5/5 free</div>
+      <button class="btn btn-ghost btn-sm" id="authNavBtn" onclick="AuthModal.show()">Login</button>
+      <a href="profile.html" class="btn btn-primary btn-sm">Profile</a>
     </div>
   </nav>
 
@@ -111,6 +115,7 @@
   <script src="js/ai.js"></script>
   <script src="js/voice.js"></script>
   <script src="js/sidebar.js"></script>
+  <script src="js/firebase.js"></script>
   <script src="js/pages/history.js"></script>
 </body>
 </html>

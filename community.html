@@ -40,6 +40,7 @@
   <link rel="stylesheet" href="css/design.css">
   <link rel="stylesheet" href="css/components.css">
   <link rel="stylesheet" href="css/pages/community.css">
+  <link rel="stylesheet" href="css/auth.css">
   <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 </head>
 <body class="theme-dark">
@@ -59,7 +60,8 @@
     </div>
     <div class="nav-right">
       <div class="usage-counter" id="usage-counter" onclick="UpgradeModal.show()">10/10 free</div>
-      <a href="profile.html" class="btn btn-ghost btn-sm">Profile</a>
+      <button class="btn btn-ghost btn-sm" id="authNavBtn" onclick="AuthModal.show()">Login</button>
+      <a href="profile.html" class="btn btn-primary btn-sm">Profile</a>
     </div>
   </nav>
 
@@ -156,6 +158,7 @@
   <script src="config.js"></script>
   <script src="js/core.js"></script>
   <script src="js/share.js"></script>
+  <script src="js/firebase.js"></script>
   <script src="js/pages/community.js"></script>
   <script>
     // Register Service Worker

@@ -155,7 +155,7 @@ const AuthModal = (() => {
 
   function _html() {
     return `
-    <div class="modal-overlay active" id="authModalOverlay" onclick="AuthModal._backdropClick(event)">
+    <div class="modal-overlay" id="authModalOverlay" onclick="AuthModal._backdropClick(event)">
       <div class="modal-box auth-modal-box">
         <div class="auth-tabs">
           <button class="auth-tab active" id="authTabLogin" onclick="AuthModal._tab('login')">Sign In</button>
@@ -226,7 +226,7 @@ const AuthModal = (() => {
     const email = user.email || '';
     const isPro = typeof ClarixState !== 'undefined' && ClarixState.isPro;
     _inject(`
-    <div class="modal-overlay active" id="authModalOverlay" onclick="AuthModal._backdropClick(event)">
+    <div class="modal-overlay" id="authModalOverlay" onclick="AuthModal._backdropClick(event)">
       <div class="modal-box auth-modal-box">
         <div class="auth-profile-view">
           <div class="auth-profile-avatar">${name.charAt(0).toUpperCase()}</div>
@@ -249,8 +249,11 @@ const AuthModal = (() => {
     wrap.id = 'authModalRoot';
     wrap.innerHTML = html;
     document.body.appendChild(wrap);
-    // animate in
-    requestAnimationFrame(() => wrap.querySelector('.modal-box')?.classList.add('open'));
+    // Animate in — trigger open class on the overlay
+    requestAnimationFrame(() => {
+      const overlay = wrap.querySelector('.modal-overlay');
+      if (overlay) overlay.classList.add('open');
+    });
     document.addEventListener('keydown', _esc);
   }
 
