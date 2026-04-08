@@ -121,17 +121,31 @@ const UpgradeModal = {
     if (el) { el.classList.remove('open'); setTimeout(() => el.remove(), 300); }
   },
   activate() {
-    if (CLARIX_CONFIG.instamojoUrl) {
-      window.open(CLARIX_CONFIG.instamojoUrl, '_blank');
-      Toast.show('🔗 Redirecting to payment... Complete payment to unlock Pro!', 'info', 4000);
-    } else {
-      // Dev mode: activate directly (remove when Instamojo is live)
-      ClarixState.isPro = true;
-      this.hide();
-      updateUsageCounter();
-      if (typeof Sidebar !== 'undefined') Sidebar.refresh();
-      Toast.show('🎉 Clarix Pro activated! Enjoy unlimited access.', 'success', 4000);
+    if (typeof Razorpay === 'undefined') {
+      Toast.show('⏳ Loading payment gateway...', 'info', 2000);
+      return;
     }
+    const options = {
+      key: CLARIX_CONFIG.razorpayKeyId,
+      amount: CLARIX_CONFIG.proPriceAmount,
+      currency: 'INR',
+      name: 'Clarix',
+      description: 'Clarix Pro — Unlimited AI Prompts',
+      image: 'https://clarix.digital/icons/icon-192.png',
+      handler: function(response) {
+        // Payment successful — activate Pro
+        ClarixState.isPro = true;
+        UpgradeModal.hide();
+        updateUsageCounter();
+        if (typeof Sidebar !== 'undefined') Sidebar.refresh();
+        Toast.show('🎉 Welcome to Clarix Pro! Enjoy unlimited access.', 'success', 5000);
+      },
+      prefill: { email: '', contact: '' },
+      theme: { color: '#ff7043' },
+      modal: { ondismiss: () => Toast.show('Payment cancelled.', 'error', 2000) }
+    };
+    const rzp = new Razorpay(options);
+    rzp.open();
   }
 };
 
