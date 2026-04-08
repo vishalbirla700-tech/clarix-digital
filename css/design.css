@@ -32,10 +32,10 @@
   /* Text */
   --text-white:       #ffffff;
   --text-off-white:   #f0f0f0;
-  --text-muted-dark:  #888888;
-  --text-subtle-dark: #555555;
+  --text-muted-dark:  #ffffff;   /* was #888 - now white for readability */
+  --text-subtle-dark: #e0e0e0;   /* was #555 - now near-white */
   --text-dark:        #111111;
-  --text-muted-light: #666666;
+  --text-muted-light: #444444;
 
   /* Fonts */
   --font-head:  'Syne', sans-serif;
@@ -232,21 +232,20 @@ body.theme-light {
 }
 
 /* ─── MOBILE TEXT CONTRAST BOOST ─────────────── */
-/* On mobile, #555–#888 is unreadable on dark bg. */
-/* Boost all muted text to visible levels.         */
+/* All text on dark backgrounds = white           */
 @media (max-width: 768px) {
-  :root {
-    --text-muted-dark:  #c0c0c0;  /* was #888 */
-    --text-subtle-dark: #999999;  /* was #555 */
-  }
-
-  /* Catch hard-coded dark greys used on dark pages */
-  body.theme-dark .text-muted,
   body.theme-dark p,
+  body.theme-dark span,
+  body.theme-dark li,
+  body.theme-dark label,
+  body.theme-dark .text-muted,
   body.theme-dark .body-md,
   body.theme-dark .body-lg,
   body.theme-dark .body-sm {
-    color: rgba(255, 255, 255, 0.82);
+    color: #ffffff;
   }
 }
 
+/* Global: all body text on dark pages = white */
+body.theme-dark p { color: #fff; }
+body.theme-dark li { color: #fff; }

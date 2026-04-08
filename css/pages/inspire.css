@@ -22,7 +22,7 @@
   background: rgba(255,112,67,0.07);
 }
 .upload-icon { font-size: 24px; flex-shrink: 0; }
-.upload-text { font-size: 14px; color: #666; line-height: 1.5; }
+.upload-text { font-size: 14px; color: rgba(255,255,255,0.7); line-height: 1.5; }
 .upload-text strong { color: var(--accent); }
 
 /* Gallery Grid */
@@ -222,7 +222,7 @@
 }
 @media (max-width: 800px) { .editor-img { max-height: 100%; } }
 .editor-img-meta {
-  padding: 12px 16px; font-size: 12px; color: #444;
+  padding: 12px 16px; font-size: 12px; color: rgba(255,255,255,0.75);
   border-top: 1px solid rgba(255,255,255,0.05);
 }
 
@@ -233,7 +233,7 @@
 
 .editor-section-label {
   font-size: 10px; font-weight: 700; letter-spacing: 0.12em;
-  text-transform: uppercase; color: #444; margin-bottom: 8px;
+  text-transform: uppercase; color: rgba(255,255,255,0.6); margin-bottom: 8px;
 }
 .editor-textarea {
   width: 100%; background: rgba(255,255,255,0.04);

@@ -17,7 +17,7 @@
 @media (max-width: 900px) { .write-input-panel { height: auto; position: static; } }
 
 .write-section-block { background: #fafafa; border: 1px solid #eee; border-radius: var(--r-lg); padding: 16px; }
-.write-block-label { font-size: 11px; font-weight: 700; color: #999; letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 10px; }
+.write-block-label { font-size: 11px; font-weight: 700; color: #666; letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 10px; }
 .write-block-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
 
 .write-lang-row { display: flex; align-items: center; gap: 10px; }
@@ -46,7 +46,7 @@
 .voice-btn.recording { background: rgba(255,80,80,0.12); border-color: rgba(255,80,80,0.3); animation: pulsate 1s infinite; }
 
 .autosuggest-strip { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
-.autosuggest-chip { padding: 5px 12px; border-radius: var(--r-full); background: rgba(255,112,67,0.06); border: 1px solid rgba(255,112,67,0.2); color: #888; font-size: 12px; cursor: pointer; transition: all 0.15s; }
+.autosuggest-chip { padding: 5px 12px; border-radius: var(--r-full); background: rgba(255,112,67,0.06); border: 1px solid rgba(255,112,67,0.2); color: var(--accent-dim); font-size: 12px; cursor: pointer; transition: all 0.15s; }
 .autosuggest-chip:hover { background: rgba(255,112,67,0.12); color: var(--accent); }
 
 .templates-wrap { position: relative; }
@@ -54,7 +54,7 @@
 .templates-dropdown.open { display: block; }
 .templates-title { font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #bbb; padding: 4px 8px 8px; border-bottom: 1px solid #f0f0f0; margin-bottom: 6px; }
 .templates-list { display: flex; flex-direction: column; gap: 2px; }
-.template-item { display: flex; align-items: center; gap: 10px; padding: 9px 10px; border-radius: var(--r-sm); cursor: pointer; transition: all 0.15s; font-size: 13px; color: #555; }
+.template-item { display: flex; align-items: center; gap: 10px; padding: 9px 10px; border-radius: var(--r-sm); cursor: pointer; transition: all 0.15s; font-size: 13px; color: #333; }
 .template-item:hover { background: rgba(255,112,67,0.07); color: var(--accent); }
 .template-icon { font-size: 16px; width: 22px; flex-shrink: 0; }
 
@@ -78,8 +78,8 @@
 .result-section { background: #fff; border: 1px solid #eee; border-radius: var(--r-xl); padding: 20px; margin-bottom: 14px; box-shadow: 0 2px 12px rgba(0,0,0,0.04); animation: fadeUp 0.3s var(--ease) both; }
 .result-section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
 .result-section-title { font-size: 14px; font-weight: 700; color: #222; }
-.result-sub { font-size: 12px; color: #aaa; margin-bottom: 14px; }
-.result-text { font-size: 14px; line-height: 1.8; color: #555; }
+.result-sub { font-size: 12px; color: #888; margin-bottom: 14px; }
+.result-text { font-size: 14px; line-height: 1.8; color: #333; }
 
 .variation-card { padding: 16px; border-radius: var(--r-lg); margin-bottom: 10px; border: 2px solid #eee; background: #fafafa; cursor: pointer; transition: all 0.2s; position: relative; }
 .variation-card:hover { border-color: rgba(255,112,67,0.3); background: rgba(255,112,67,0.02); }
@@ -89,7 +89,7 @@
 .variation-card.selected .variation-num-badge { background: var(--accent); color: #fff; }
 .variation-card-label { font-size: 11px; font-weight: 600; color: #bbb; }
 .variation-card.selected .variation-card-label { color: var(--accent); }
-.variation-card-text { font-size: 13px; line-height: 1.7; color: #555; }
+.variation-card-text { font-size: 13px; line-height: 1.7; color: #333; }
 .variation-selected-tick { position: absolute; top: 12px; right: 12px; font-size: 16px; opacity: 0; transition: opacity 0.2s; }
 .variation-card.selected .variation-selected-tick { opacity: 1; }
 
@@ -102,7 +102,7 @@
 
 .tip-section { background: rgba(255,112,67,0.04) !important; border-color: rgba(255,112,67,0.15) !important; }
 .tip-label { font-size: 11px; font-weight: 700; color: var(--accent); margin-bottom: 6px; }
-.tip-text { font-size: 13px; color: #888; }
+.tip-text { font-size: 13px; color: #555; }
 
 .breakdown-cta { display: flex; align-items: center; justify-content: space-between; gap: 16px; background: linear-gradient(135deg,#1a1a2e,#16213e); border-radius: var(--r-xl); padding: 20px 24px; margin-bottom: 14px; flex-wrap: wrap; animation: fadeUp 0.3s var(--ease) both; }
 .breakdown-cta-title { font-family: var(--font-head); font-size: 17px; font-weight: 700; color: #fff; margin-bottom: 4px; }

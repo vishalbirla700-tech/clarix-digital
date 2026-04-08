@@ -22,7 +22,7 @@
   animation: glowPulse 3s ease-in-out infinite;
 }
 .profile-info { flex: 1; min-width: 200px; }
-.profile-greeting { font-size: 13px; color: #555; font-weight: 500; margin-bottom: 4px; }
+.profile-greeting { font-size: 13px; color: rgba(255,255,255,0.75); font-weight: 500; margin-bottom: 4px; }
 .profile-name {
   font-family: var(--font-head); font-size: 26px; font-weight: 800; color: #fff;
   margin-bottom: 12px;
@@ -35,7 +35,7 @@
   transition: border-color var(--t-fast);
 }
 .username-input:focus { border-color: rgba(255,112,67,0.5); outline: none; }
-.username-input::placeholder { color: #444; }
+.username-input::placeholder { color: rgba(255,255,255,0.35); }
 
 /* Stats Grid */
 .stats-grid {
@@ -54,7 +54,7 @@
   font-family: var(--font-head); font-size: 36px; font-weight: 900;
   color: var(--accent); line-height: 1; margin-bottom: 6px;
 }
-.stat-card-label { font-size: 12px; color: #555; font-weight: 500; }
+.stat-card-label { font-size: 12px; color: rgba(255,255,255,0.75); font-weight: 500; }
 
 /* Usage Bar */
 .usage-bar-section {
@@ -62,7 +62,7 @@
   border-radius: var(--r-lg); padding: 22px; margin-bottom: 24px;
 }
 .usage-bar-header { display: flex; justify-content: space-between; margin-bottom: 12px; }
-.usage-bar-label { font-size: 13px; font-weight: 600; color: #888; }
+.usage-bar-label { font-size: 13px; font-weight: 600; color: #fff; }
 .usage-bar-count { font-size: 13px; color: var(--accent); font-weight: 700; }
 .usage-bar-track {
   width: 100%; height: 8px; background: rgba(255,255,255,0.06);
@@ -73,7 +73,7 @@
   background: linear-gradient(90deg, var(--accent), #ff9800);
   transition: width 0.8s var(--ease);
 }
-.usage-bar-sub { font-size: 11px; color: #444; margin-top: 8px; }
+.usage-bar-sub { font-size: 11px; color: rgba(255,255,255,0.7); margin-top: 8px; }
 
 /* Pro Upgrade Card */
 .pro-upgrade-card {
@@ -85,9 +85,9 @@
   box-shadow: 0 0 40px rgba(255,112,67,0.08);
 }
 .pro-card-title { font-family: var(--font-head); font-size: 22px; font-weight: 800; color: #fff; margin-bottom: 6px; }
-.pro-card-sub { font-size: 13px; color: #777; margin-bottom: 10px; }
+.pro-card-sub { font-size: 13px; color: rgba(255,255,255,0.75); margin-bottom: 10px; }
 .pro-card-price { font-size: 14px; color: var(--accent); font-weight: 700; }
-.pro-card-price span { color: #555; font-weight: 400; }
+.pro-card-price span { color: rgba(255,255,255,0.6); font-weight: 400; }
 
 /* Pro Active Card */
 .pro-active-card {
@@ -103,7 +103,7 @@
   font-family: var(--font-head); font-size: 24px; font-weight: 800;
   color: #ffc843; margin-bottom: 8px;
 }
-.pro-active-sub { font-size: 14px; color: #888; }
+.pro-active-sub { font-size: 14px; color: rgba(255,255,255,0.75); }
 
 /* Saved prompts */
 .saved-section { margin-bottom: 32px; }
@@ -115,19 +115,19 @@
 }
 .saved-item:hover { border-color: rgba(255,112,67,0.2); background: rgba(255,112,67,0.03); }
 .saved-item-text {
-  font-size: 13px; color: #555; line-height: 1.5; flex: 1;
+  font-size: 13px; color: #fff; line-height: 1.5; flex: 1;
   overflow: hidden; display: -webkit-box;
   -webkit-line-clamp: 2; -webkit-box-orient: vertical;
 }
-.saved-item-time { font-size: 11px; color: #333; flex-shrink: 0; margin-top: 2px; }
-.saved-empty { text-align: center; padding: 32px; color: #333; font-size: 13px; }
+.saved-item-time { font-size: 11px; color: rgba(255,255,255,0.6); flex-shrink: 0; margin-top: 2px; }
+.saved-empty { text-align: center; padding: 32px; color: rgba(255,255,255,0.6); font-size: 13px; }
 
 /* Quick links */
 .quick-links { display: flex; gap: 10px; flex-wrap: wrap; }
 .quick-link-btn {
   padding: 10px 20px; border-radius: var(--r-full);
   background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
-  color: #777; font-size: 14px; font-weight: 500; cursor: pointer;
+  color: #fff; font-size: 14px; font-weight: 500; cursor: pointer;
   transition: all var(--t-fast); text-decoration: none;
 }
 .quick-link-btn:hover { color: var(--accent); border-color: rgba(255,112,67,0.3); background: rgba(255,112,67,0.06); }
@@ -138,7 +138,7 @@
   display: flex; align-items: center; justify-content: space-between;
   margin-bottom: 16px;
 }
-.analytics-sub { font-size: 12px; color: #444; }
+.analytics-sub { font-size: 12px; color: rgba(255,255,255,0.7); }
 
 .chart-card {
   background: rgba(255,255,255,0.02);
@@ -148,7 +148,7 @@
   margin-bottom: 12px;
 }
 .chart-title {
-  font-size: 13px; font-weight: 600; color: #777;
+  font-size: 13px; font-weight: 600; color: rgba(255,255,255,0.8);
   text-transform: uppercase; letter-spacing: 0.06em;
   margin-bottom: 14px;
 }
@@ -162,7 +162,7 @@
 .chart-empty {
   position: absolute; inset: 0;
   display: flex; align-items: center; justify-content: center;
-  text-align: center; color: #333; font-size: 13px; line-height: 1.5;
+  text-align: center; color: rgba(255,255,255,0.6); font-size: 13px; line-height: 1.5;
 }
 
 .charts-row {
