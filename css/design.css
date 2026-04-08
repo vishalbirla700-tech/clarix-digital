@@ -222,7 +222,6 @@ h1, h2, h3, h4, h5, h6 { font-family: var(--font-head); font-weight: 700; line-h
 @media (max-width: 768px) { .desktop-only { display: none !important; } }
 @media (min-width: 769px) { .mobile-only  { display: none !important; } }
 
-/* ─── PAGE BODY THEMES ────────────────────────── */
 body.theme-dark {
   background: var(--bg-dark);
   color: var(--text-white);
@@ -231,3 +230,23 @@ body.theme-light {
   background: var(--bg-light);
   color: var(--text-dark);
 }
+
+/* ─── MOBILE TEXT CONTRAST BOOST ─────────────── */
+/* On mobile, #555–#888 is unreadable on dark bg. */
+/* Boost all muted text to visible levels.         */
+@media (max-width: 768px) {
+  :root {
+    --text-muted-dark:  #c0c0c0;  /* was #888 */
+    --text-subtle-dark: #999999;  /* was #555 */
+  }
+
+  /* Catch hard-coded dark greys used on dark pages */
+  body.theme-dark .text-muted,
+  body.theme-dark p,
+  body.theme-dark .body-md,
+  body.theme-dark .body-lg,
+  body.theme-dark .body-sm {
+    color: rgba(255, 255, 255, 0.82);
+  }
+}
+
