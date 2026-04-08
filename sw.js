@@ -1,79 +1,40 @@
 /* ═══════════════════════════════════════════════
-   CLARIX — SERVICE WORKER v3.0
-   Network-first for HTML, Cache-first for assets
+   CLARIX — SERVICE WORKER v4.0
+   Network-first for HTML + CSS, Cache-first for images/fonts
+   v4: Forces full cache bust + update notification
 ═══════════════════════════════════════════════ */
 
-const CACHE_NAME = 'clarix-v3';
-const STATIC_CACHE = 'clarix-static-v3';
-const DYNAMIC_CACHE = 'clarix-dynamic-v3';
+const CACHE_VERSION = 'v4';
+const CACHE_NAME    = `clarix-${CACHE_VERSION}`;
+const STATIC_CACHE  = `clarix-static-${CACHE_VERSION}`;
+const DYNAMIC_CACHE = `clarix-dynamic-${CACHE_VERSION}`;
 
-// Static assets to pre-cache on install
-const STATIC_ASSETS = [
-  '/',
-  '/index.html',
-  '/write.html',
-  '/inspire.html',
-  '/library.html',
-  '/apps.html',
-  '/profile.html',
-  '/history.html',
-  '/community.html',
-  '/config.js',
-  '/css/design.css',
-  '/css/components.css',
-  '/css/sidebar.css',
-  '/css/pages/home.css',
-  '/css/pages/write.css',
-  '/css/pages/inspire.css',
-  '/css/pages/library.css',
-  '/css/pages/apps.css',
-  '/css/pages/profile.css',
-  '/css/pages/history.css',
-  '/css/pages/community.css',
-  '/js/core.js',
-  '/js/ai.js',
-  '/js/voice.js',
-  '/js/charts.js',
-  '/js/share.js',
-  '/js/languages.js',
-  '/js/pages/home.js',
-  '/js/pages/write.js',
-  '/js/pages/inspire.js',
-  '/js/pages/library.js',
-  '/js/pages/apps.js',
-  '/js/pages/profile.js',
-  '/js/pages/history.js',
-  '/js/pages/community.js',
-  '/icons/icon-192.png',
-  '/icons/icon-512.png',
-];
-
-/* ─── INSTALL: pre-cache static assets ──────── */
+/* ─── INSTALL: skip waiting immediately ─────── */
 self.addEventListener('install', (event) => {
-  event.waitUntil(
-    caches.open(STATIC_CACHE).then((cache) => {
-      // Cache what's available, ignore failures (some files may not exist yet)
-      return Promise.allSettled(
-        STATIC_ASSETS.map(url => cache.add(url).catch(() => {}))
-      );
-    }).then(() => self.skipWaiting())
-  );
+  // Skip waiting so new SW activates immediately
+  self.skipWaiting();
 });
 
-/* ─── ACTIVATE: clean old caches ────────────── */
+/* ─── ACTIVATE: delete ALL old caches ───────── */
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((keys) => {
       return Promise.all(
         keys
-          .filter(k => k !== STATIC_CACHE && k !== DYNAMIC_CACHE)
-          .map(k => caches.delete(k))
+          .filter(k => !k.includes(CACHE_VERSION)) // delete anything not v4
+          .map(k => {
+            console.log('[SW] Deleting old cache:', k);
+            return caches.delete(k);
+          })
       );
-    }).then(() => self.clients.claim())
+    }).then(() => {
+      console.log('[SW] v4 activated, old caches cleared');
+      return self.clients.claim(); // take control of all open pages
+    })
   );
 });
 
-/* ─── FETCH: smart caching strategy ─────────── */
+/* ─── FETCH: smart strategy per request type ── */
 self.addEventListener('fetch', (event) => {
   const { request } = event;
   const url = new URL(request.url);
@@ -82,34 +43,58 @@ self.addEventListener('fetch', (event) => {
   if (request.method !== 'GET') return;
   if (url.protocol === 'chrome-extension:') return;
 
-  // Network-first for AI API calls
+  // Network-only for AI API calls
   if (url.hostname.includes('anthropic') || url.hostname.includes('openai') ||
       url.hostname.includes('googleapis') || url.hostname.includes('google')) {
-    event.respondWith(networkFirst(request));
+    event.respondWith(fetch(request));
     return;
   }
 
-  // Network-first for external fonts/CDN
+  // Cache-first for Google Fonts (rarely changes)
   if (url.hostname.includes('fonts.googleapis') || url.hostname.includes('fonts.gstatic')) {
     event.respondWith(cacheFirst(request, DYNAMIC_CACHE));
     return;
   }
 
-  // Network-first for local HTML pages (always get fresh content)
-  if (url.origin === location.origin && request.headers.get('accept')?.includes('text/html')) {
+  // Network-first for ALL local HTML pages
+  if (url.origin === location.origin &&
+      (request.headers.get('accept')?.includes('text/html') || url.pathname.endsWith('.html'))) {
     event.respondWith(networkFirst(request));
     return;
   }
 
-  // Cache-first for local static assets (CSS, JS, images)
-  if (url.origin === location.origin) {
+  // Network-first for ALL local CSS and JS (ensures style/logic updates reach users)
+  if (url.origin === location.origin &&
+      (url.pathname.endsWith('.css') || url.pathname.endsWith('.js'))) {
+    event.respondWith(networkFirst(request));
+    return;
+  }
+
+  // Cache-first for images and icons (stable assets)
+  if (url.origin === location.origin &&
+      (url.pathname.match(/\.(png|jpg|jpeg|svg|ico|webp|gif)$/))) {
     event.respondWith(cacheFirst(request, STATIC_CACHE));
     return;
   }
 
-  // Default: network only
-  event.respondWith(fetch(request).catch(() => offlineFallback(request)));
+  // Default: network first, fall back to cache
+  event.respondWith(networkFirst(request));
 });
+
+/* ─── STRATEGY: Network-First ───────────────── */
+async function networkFirst(request) {
+  try {
+    const response = await fetch(request);
+    if (response.ok) {
+      const cache = await caches.open(DYNAMIC_CACHE);
+      cache.put(request, response.clone());
+    }
+    return response;
+  } catch {
+    const cached = await caches.match(request);
+    return cached || offlineFallback(request);
+  }
+}
 
 /* ─── STRATEGY: Cache-First ─────────────────── */
 async function cacheFirst(request, cacheName) {
@@ -128,21 +113,6 @@ async function cacheFirst(request, cacheName) {
   }
 }
 
-/* ─── STRATEGY: Network-First ───────────────── */
-async function networkFirst(request) {
-  try {
-    const response = await fetch(request);
-    if (response.ok) {
-      const cache = await caches.open(DYNAMIC_CACHE);
-      cache.put(request, response.clone());
-    }
-    return response;
-  } catch {
-    const cached = await caches.match(request);
-    return cached || offlineFallback(request);
-  }
-}
-
 /* ─── OFFLINE FALLBACK ───────────────────────── */
 function offlineFallback(request) {
   if (request.headers.get('accept')?.includes('text/html')) {
@@ -151,22 +121,10 @@ function offlineFallback(request) {
   return new Response('Offline — Clarix', { status: 503, statusText: 'Service Unavailable' });
 }
 
-/* ─── PUSH NOTIFICATIONS (future) ───────────── */
-self.addEventListener('push', (event) => {
-  if (!event.data) return;
-  const data = event.data.json();
-  event.waitUntil(
-    self.registration.showNotification(data.title || 'Clarix', {
-      body: data.body || 'New update from Clarix!',
-      icon: '/icons/icon-192.png',
-      badge: '/icons/icon-72.png',
-      tag: 'clarix-notification',
-      data: { url: data.url || '/' }
-    })
-  );
-});
-
-self.addEventListener('notificationclick', (event) => {
-  event.notification.close();
-  event.waitUntil(clients.openWindow(event.notification.data?.url || '/'));
+/* ─── NOTIFY CLIENTS OF UPDATE ───────────────── */
+// When a new SW is installed, tell all open pages to show the update banner
+self.addEventListener('message', (event) => {
+  if (event.data === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
 });

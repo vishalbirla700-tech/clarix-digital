@@ -489,7 +489,45 @@
   <script src="js/email-capture.js"></script>
   <script>
     if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('/sw.js').catch(() => {});
+      navigator.serviceWorker.register('/sw.js').then(reg => {
+        reg.addEventListener('updatefound', () => {
+          const newWorker = reg.installing;
+          newWorker.addEventListener('statechange', () => {
+            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+              // New version available — show update banner
+              showUpdateBanner();
+            }
+          });
+        });
+      }).catch(() => {});
+
+      // Also handle case where SW was already updated and page just loaded
+      navigator.serviceWorker.addEventListener('controllerchange', () => {
+        window.location.reload();
+      });
+    }
+
+    function showUpdateBanner() {
+      const existing = document.getElementById('clarix-update-banner');
+      if (existing) return;
+      const banner = document.createElement('div');
+      banner.id = 'clarix-update-banner';
+      banner.style.cssText = `
+        position: fixed; top: 0; left: 0; right: 0; z-index: 99999;
+        background: #ff7043; color: #fff; text-align: center;
+        padding: 14px 20px; font-size: 14px; font-weight: 700;
+        font-family: 'DM Sans', sans-serif; cursor: pointer;
+        box-shadow: 0 4px 20px rgba(255,112,67,0.5);
+        animation: slideDown 0.4s ease;
+      `;
+      banner.innerHTML = '🔄 New version available! <u>Tap here to update</u>';
+      banner.onclick = () => {
+        if (navigator.serviceWorker.controller) {
+          navigator.serviceWorker.controller.postMessage('SKIP_WAITING');
+        }
+        window.location.reload(true);
+      };
+      document.body.prepend(banner);
     }
   </script>
 </body>
