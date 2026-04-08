@@ -17,22 +17,39 @@ const ClarixState = {
   getUsage() {
     const today = new Date().toDateString();
     const stored = JSON.parse(localStorage.getItem('clarix_usage') || '{"date":"","count":0}');
-    if (stored.date !== today) return { date: today, count: 0 };
-    return stored;
+    const trialUsed = parseInt(localStorage.getItem('clarix_trial_used') || '0');
+    const dailyCount = stored.date !== today ? 0 : stored.count;
+    return { date: today, count: dailyCount, lifetime: trialUsed };
   },
   incUsage() {
     const u = this.getUsage();
-    u.count += 1; u.date = new Date().toDateString();
-    localStorage.setItem('clarix_usage', JSON.stringify(u));
+    // Track lifetime trial prompts
+    if (u.lifetime < CLARIX_CONFIG.freeTrialLimit) {
+      localStorage.setItem('clarix_trial_used', u.lifetime + 1);
+    }
+    // Track daily count
+    u.count += 1;
+    u.date = new Date().toDateString();
+    localStorage.setItem('clarix_usage', JSON.stringify({ date: u.date, count: u.count }));
     return u.count;
   },
   canEnhance() {
     if (this.isPro) return true;
-    return this.getUsage().count < CLARIX_CONFIG.freeLimit;
+    const u = this.getUsage();
+    if (u.lifetime < CLARIX_CONFIG.freeTrialLimit) return true; // Still in trial
+    return u.count < CLARIX_CONFIG.freeDailyLimit; // Post-trial daily limit
   },
   remainingToday() {
     if (this.isPro) return Infinity;
-    return Math.max(0, CLARIX_CONFIG.freeLimit - this.getUsage().count);
+    const u = this.getUsage();
+    if (u.lifetime < CLARIX_CONFIG.freeTrialLimit) {
+      return CLARIX_CONFIG.freeTrialLimit - u.lifetime; // Remaining trial
+    }
+    return Math.max(0, CLARIX_CONFIG.freeDailyLimit - u.count);
+  },
+  isInTrial() {
+    if (this.isPro) return false;
+    return this.getUsage().lifetime < CLARIX_CONFIG.freeTrialLimit;
   }
 };
 
@@ -104,10 +121,17 @@ const UpgradeModal = {
     if (el) { el.classList.remove('open'); setTimeout(() => el.remove(), 300); }
   },
   activate() {
-    ClarixState.isPro = true;
-    this.hide();
-    updateUsageCounter();
-    Toast.show('🎉 Clarix Pro activated! Enjoy unlimited access.', 'success', 4000);
+    if (CLARIX_CONFIG.instamojoUrl) {
+      window.open(CLARIX_CONFIG.instamojoUrl, '_blank');
+      Toast.show('🔗 Redirecting to payment... Complete payment to unlock Pro!', 'info', 4000);
+    } else {
+      // Dev mode: activate directly (remove when Instamojo is live)
+      ClarixState.isPro = true;
+      this.hide();
+      updateUsageCounter();
+      if (typeof Sidebar !== 'undefined') Sidebar.refresh();
+      Toast.show('🎉 Clarix Pro activated! Enjoy unlimited access.', 'success', 4000);
+    }
   }
 };
 
@@ -121,9 +145,13 @@ function updateUsageCounter() {
     el.title = 'Clarix Pro — Unlimited';
   } else {
     const rem = ClarixState.remainingToday();
+    const isInTrial = ClarixState.isInTrial();
     el.classList.remove('pro');
-    el.innerHTML = `${rem}/${CLARIX_CONFIG.freeLimit} free`;
-    el.title = `${rem} enhancements remaining today`;
+    const limit = isInTrial ? CLARIX_CONFIG.freeTrialLimit : CLARIX_CONFIG.freeDailyLimit;
+    el.innerHTML = `${rem}/${limit} ${isInTrial ? 'trial' : 'free'}`;
+    el.title = isInTrial
+      ? `${rem} trial prompts remaining (${limit} total gift)`
+      : `${rem} free prompts remaining today`;
   }
 }
 

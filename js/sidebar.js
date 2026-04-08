@@ -69,12 +69,12 @@ const Sidebar = {
       </nav>
 
       <div class="sidebar-usage" id="sb-usage">
-        <div class="sidebar-usage-label">Today's Usage</div>
+        <div class="sidebar-usage-label" id="sb-usage-label">Your Usage</div>
         <div class="sidebar-usage-bar-track">
           <div class="sidebar-usage-bar-fill" id="sb-usage-fill" style="width:0%"></div>
         </div>
         <div class="sidebar-usage-text" id="sb-usage-text">
-          <span>0</span> / 5 free used
+          <span>25</span> / 25 trial left
         </div>
       </div>
 
@@ -124,11 +124,13 @@ const Sidebar = {
   },
 
   refresh() {
-    const name    = ClarixState.username;
-    const isPro   = ClarixState.isPro;
-    const usage   = ClarixState.getUsage();
-    const limit   = CLARIX_CONFIG.freeLimit;
-    const pct     = isPro ? 0 : Math.min(100, (usage.count / limit) * 100);
+    const name      = ClarixState.username;
+    const isPro     = ClarixState.isPro;
+    const usage     = ClarixState.getUsage();
+    const isInTrial = ClarixState.isInTrial ? ClarixState.isInTrial() : false;
+    const limit     = isPro ? 1 : (isInTrial ? CLARIX_CONFIG.freeTrialLimit : CLARIX_CONFIG.freeDailyLimit);
+    const current   = isPro ? 0 : (isInTrial ? usage.lifetime : usage.count);
+    const pct       = isPro ? 0 : Math.min(100, (current / limit) * 100);
 
     // User block
     const avatarEl = document.getElementById('sb-avatar');
@@ -143,14 +145,24 @@ const Sidebar = {
       badgeEl.style.color = isPro ? '#ffc843' : '';
     }
 
+    // Usage label
+    const labelEl = document.getElementById('sb-usage-label');
+    if (labelEl) {
+      labelEl.textContent = isPro ? 'Usage' : (isInTrial ? '🎁 Trial Prompts' : '📅 Daily Prompts');
+    }
+
     // Usage bar
     const fillEl = document.getElementById('sb-usage-fill');
     if (fillEl) fillEl.style.width = pct + '%';
     const textEl = document.getElementById('sb-usage-text');
     if (textEl) {
-      textEl.innerHTML = isPro
-        ? '<span>∞</span> Unlimited (Pro)'
-        : `<span>${usage.count}</span> / ${limit} used today`;
+      if (isPro) {
+        textEl.innerHTML = '<span>∞</span> Unlimited (Pro)';
+      } else if (isInTrial) {
+        textEl.innerHTML = `<span>${limit - current}</span> / ${limit} trial remaining`;
+      } else {
+        textEl.innerHTML = `<span>${current}</span> / ${limit} used today`;
+      }
     }
 
     // Recent prompts
