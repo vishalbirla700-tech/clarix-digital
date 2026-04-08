@@ -72,9 +72,17 @@
 }
 
 /* Nav links */
+.sidebar-body {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
 .sidebar-nav {
-  padding: 12px 12px; flex-shrink: 0;
+  padding: 12px 12px;
   border-bottom: 1px solid rgba(255,255,255,0.05);
+  flex-shrink: 0;
 }
 .sidebar-nav-link {
   display: flex; align-items: center; gap: 12px;
@@ -146,9 +154,18 @@
   margin-bottom: 10px;
 }
 .sidebar-upgrade-btn:hover { background: linear-gradient(135deg, rgba(255,112,67,0.25), rgba(255,152,0,0.18)); }
-.sidebar-footer-links { display: flex; gap: 16px; justify-content: center; }
+.sidebar-footer-links { display: flex; gap: 16px; justify-content: center; margin-top: 8px; }
 .sidebar-footer-link { font-size: 11px; color: #333; cursor: pointer; transition: color 0.15s; text-decoration: none; }
 .sidebar-footer-link:hover { color: #666; }
+.sidebar-logout-btn {
+  width: 100%; padding: 9px;
+  background: none;
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 10px; color: #555; font-size: 12px; font-weight: 600;
+  cursor: pointer; transition: all 0.2s; font-family: var(--font-body);
+  margin-top: 8px;
+}
+.sidebar-logout-btn:hover { background: rgba(255,255,255,0.05); color: #888; border-color: rgba(255,255,255,0.15); }
 
 /* Sidebar toggle button (hamburger) */
 .sidebar-toggle-btn {

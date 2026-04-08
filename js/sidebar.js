@@ -59,33 +59,38 @@ const Sidebar = {
         <div class="sidebar-user-badge" id="sb-badge">Free</div>
       </div>
 
-      <nav class="sidebar-nav">
-        ${navLinks.map(l => `
-          <a href="${l.href}" class="sidebar-nav-link${l.href === page ? ' active' : ''}" onclick="Sidebar.close()">
-            <span class="snl-icon">${l.icon}</span>
-            <span>${l.label}</span>
-            ${l.badge ? `<span class="snl-badge">${l.badge}</span>` : ''}
-          </a>`).join('')}
-      </nav>
+      <div class="sidebar-body">
+        <nav class="sidebar-nav">
+          ${navLinks.map(l => `
+            <a href="${l.href}" class="sidebar-nav-link${l.href === page ? ' active' : ''}" onclick="Sidebar.close()">
+              <span class="snl-icon">${l.icon}</span>
+              <span>${l.label}</span>
+              ${l.badge ? `<span class="snl-badge">${l.badge}</span>` : ''}
+            </a>`).join('')}
+        </nav>
 
-      <div class="sidebar-usage" id="sb-usage">
-        <div class="sidebar-usage-label" id="sb-usage-label">Your Usage</div>
-        <div class="sidebar-usage-bar-track">
-          <div class="sidebar-usage-bar-fill" id="sb-usage-fill" style="width:0%"></div>
+        <div class="sidebar-usage" id="sb-usage">
+          <div class="sidebar-usage-label" id="sb-usage-label">Your Usage</div>
+          <div class="sidebar-usage-bar-track">
+            <div class="sidebar-usage-bar-fill" id="sb-usage-fill" style="width:0%"></div>
+          </div>
+          <div class="sidebar-usage-text" id="sb-usage-text">
+            <span>25</span> / 25 trial left
+          </div>
         </div>
-        <div class="sidebar-usage-text" id="sb-usage-text">
-          <span>25</span> / 25 trial left
-        </div>
-      </div>
 
-      <div class="sidebar-recent">
-        <div class="sidebar-recent-title">Recent Prompts</div>
-        <div id="sb-recent-list"></div>
+        <div class="sidebar-recent">
+          <div class="sidebar-recent-title">Recent Prompts</div>
+          <div id="sb-recent-list"></div>
+        </div>
       </div>
 
       <div class="sidebar-footer">
         <button class="sidebar-upgrade-btn" onclick="UpgradeModal.show();Sidebar.close()">
           ⚡ Upgrade to Pro — ₹299/mo
+        </button>
+        <button class="sidebar-logout-btn" onclick="if(typeof AuthModal!=='undefined')AuthModal._logout();Sidebar.close();" id="sb-logout-btn">
+          🚪 Logout
         </button>
         <div class="sidebar-footer-links">
           <a href="terms.html" class="sidebar-footer-link">Terms</a>
