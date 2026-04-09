@@ -9,6 +9,7 @@
     { "source": "/breakdown", "destination": "/breakdown.html" },
     { "source": "/community", "destination": "/community.html" },
     { "source": "/about",     "destination": "/about.html" },
+    { "source": "/indias-first-ai-prompt-engine", "destination": "/clarix-onepager.html" },
     { "source": "/onepager",  "destination": "/clarix-onepager.html" },
     { "source": "/terms",     "destination": "/terms.html" },
     { "source": "/privacy",   "destination": "/privacy.html" },
