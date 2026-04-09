@@ -1,12 +1,14 @@
 /* ═══════════════════════════════════════════════
-   CLARIX — SERVICE WORKER v5.0
+   CLARIX — SERVICE WORKER v6.0
    Network-first for HTML + CSS + JS
-   v5: Force update banner on all devices
+   v6: Creative Studios v2 — visual heroes, canvas cards, voice
 ═══════════════════════════════════════════════ */
 
-const CACHE_VERSION = 'v5';
+
+const CACHE_VERSION = 'v6';
 const CACHE_NAME    = `clarix-${CACHE_VERSION}`;
 const STATIC_CACHE  = `clarix-static-${CACHE_VERSION}`;
+
 const DYNAMIC_CACHE = `clarix-dynamic-${CACHE_VERSION}`;
 
 /* ─── INSTALL: skip waiting immediately ─────── */
