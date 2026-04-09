@@ -434,6 +434,12 @@ async function runStudio() {
   context = context.trim();
   stopStudioVoice();
 
+  /* ── TRIAL / USAGE GATE ── */
+  if (!ClarixState.canEnhance()) {
+    UpgradeModal.show('You\'ve used all your free Creative Studio prompts!');
+    return;
+  }
+
   if (s.hasFestivals && !selectedFestival) {
     Toast.show('Please select a festival first 🎉', 'error'); return;
   }
@@ -450,13 +456,26 @@ async function runStudio() {
     }
 
     var result;
-    if (s.promptFn === 'kids')         result = await promptKids(base64, mime, context);
-    else if (s.promptFn === 'corporate') result = await promptCorporate(base64, mime, context);
-    else if (s.promptFn === 'cultural')  result = await promptCultural(context);
-    else if (s.promptFn === 'multilingual') result = await promptMultilingual(base64, mime, context);
+    if (s.promptFn === 'kids')             result = await promptKids(base64, mime, context);
+    else if (s.promptFn === 'corporate')   result = await promptCorporate(base64, mime, context);
+    else if (s.promptFn === 'cultural')    result = await promptCultural(context);
+    else if (s.promptFn === 'multilingual')result = await promptMultilingual(base64, mime, context);
+
+    /* ── DEDUCT USAGE after success (not before - so failed calls don't waste credits) ── */
+    ClarixState.incUsage();
+    if (typeof updateUsageCounter === 'function') updateUsageCounter();
+    if (typeof Sidebar !== 'undefined' && Sidebar.refresh) Sidebar.refresh();
+
+    /* Show remaining trial count */
+    var rem = ClarixState.remainingToday();
+    var inTrial = ClarixState.isInTrial();
+    if (!ClarixState.isPro) {
+      Toast.show('✅ Done! ' + rem + (inTrial ? ' trial' : ' free') + ' prompts remaining.', 'success', 3500);
+    } else {
+      Toast.show('✅ Done! Pick a variation below.', 'success', 3000);
+    }
 
     renderStudioOutput(result);
-    Toast.show('✅ Done! Pick a variation below.', 'success', 3000);
   } catch(err) {
     console.error('[Studio]', err);
     Toast.show('❌ ' + (err.message || 'Something went wrong. Try again.'), 'error');
@@ -465,6 +484,7 @@ async function runStudio() {
     btn.textContent = s.analyzeLabel;
   }
 }
+
 
 /* ── Render Output ── */
 function renderStudioOutput(result) {
