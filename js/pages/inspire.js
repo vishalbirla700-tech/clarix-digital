@@ -413,8 +413,10 @@ async function runVisionAnalysis(file, platform) {
   Toast.show('🔍 Compressing & analyzing your photo...', 'info', 10000);
 
   try {
-    // STEP 1: Compress image (mobile photos = 10-20MB, Gemini needs < 4MB)
-    const compressed = await compressImage(file, 1024, 0.85);
+    // STEP 1: Compress image (mobile photos = 10-20MB, APIs need < 4MB)
+    // 512px keeps payload small (~30-60KB) while being detectable by Vision AI
+    const compressed = await compressImage(file, 512, 0.80);
+
     const origMB  = (compressed.originalSize   / 1024 / 1024).toFixed(1);
     const compKB  = (compressed.compressedSize / 1024).toFixed(0);
     console.info(`[Vision] Compressed: ${origMB}MB → ${compKB}KB`);

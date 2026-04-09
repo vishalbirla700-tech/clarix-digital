@@ -338,29 +338,82 @@ function generateBreakdown(prompt, platform, intent) {
 
 /**
  * analyzeImage()
- * Analyzes a real photo using Gemini Vision → Claude Vision → local fallback.
- * Image must be pre-compressed before calling (max 1024px, JPEG).
+ * Analyzes a real photo using Vision AI.
+ * Priority: Groq Llama 4 Vision → Gemini 1.5 Flash → Claude → Local
+ * Image must be pre-compressed before calling.
  */
 async function analyzeImage(base64Image, mimeType, platform) {
   mimeType = mimeType || 'image/jpeg';
   platform = platform || 'Midjourney';
 
-  // Concise prompt = more reliable JSON from vision models
-  const PROMPT = `Analyze this photo carefully. Return ONLY raw JSON (no markdown, no explanation):
+  const PROMPT = `You are an expert photo analyst and AI prompt engineer.
+Look at this photo carefully and return ONLY a JSON object describing it.
+No explanation, no markdown, just raw JSON:
 {
-  "subject": "who/what is in the photo (person description, objects, animals)",
-  "setting": "location and background (restaurant, park, beach, bedroom, etc.)",
-  "lighting": "lighting type and quality",
-  "mood": "emotional atmosphere of the photo",
-  "colors": "dominant color palette",
-  "style": "photography style (portrait, candid, landscape, editorial, etc.)",
-  "prompt": "One sentence describing this photo accurately",
-  "enhanced": "40-60 word ${platform} prompt that recreates this photo: describe the subject, setting, lighting, mood, colors, and add quality terms like 'hyperdetailed, cinematic, bokeh, 8K'",
-  "instagram": "Instagram caption for this photo with 5 hashtags",
-  "midjourney": "${platform === 'Midjourney' ? 'Full Midjourney prompt with --ar ratio and --style raw' : 'Midjourney version of the prompt'}"
+  "subject": "describe who or what is the main subject (person's appearance, clothing, age, expression; or object/scene)",
+  "setting": "where is this photo taken (café, restaurant, beach, bedroom, outdoors, etc.)",
+  "lighting": "describe the lighting (warm indoor, golden hour, studio, neon, etc.)",
+  "mood": "the emotional feel of this photo",
+  "colors": "main colors in the photo",
+  "style": "photography style (portrait, candid, editorial, landscape, street, etc.)",
+  "prompt": "one accurate sentence describing this exact photo",
+  "enhanced": "a ${platform} prompt to recreate this image (40-60 words): mention subject appearance, setting, lighting, mood, colors, style, and quality terms",
+  "instagram": "an instagram caption for this photo with 5 relevant hashtags",
+  "midjourney": "the full Midjourney prompt with --ar and --style raw"
 }`;
 
-  // ── 1. Gemini 1.5 Flash Vision (best for real photos) ──────────────────
+  // ── 1. Groq Llama 4 Vision (uses existing Groq key — reliable) ────────
+  const groqKey = CLARIX_CONFIG.groqApiKey;
+  if (groqKey && groqKey !== 'YOUR_GROQ_API_KEY') {
+    try {
+      const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${groqKey}`,
+          'content-type': 'application/json'
+        },
+        body: JSON.stringify({
+          model: 'meta-llama/llama-4-scout-17b-16e-instruct',
+          messages: [{
+            role: 'user',
+            content: [
+              { type: 'image_url', image_url: { url: `data:${mimeType};base64,${base64Image}` } },
+              { type: 'text', text: PROMPT }
+            ]
+          }],
+          max_tokens: 800,
+          temperature: 0.3
+        })
+      });
+
+      if (!res.ok) {
+        const errBody = await res.json().catch(() => ({}));
+        const errMsg  = errBody?.error?.message || res.statusText;
+        console.error('[Vision] Groq error', res.status, errMsg);
+        if (typeof Toast !== 'undefined') Toast.show(`⚠️ Groq Vision ${res.status}: ${errMsg.substring(0,50)}`, 'error', 6000);
+      } else {
+        const data = await res.json();
+        const raw  = data?.choices?.[0]?.message?.content || '';
+        if (raw) {
+          const clean   = raw.trim().replace(/^```[a-z]*\n?/,'').replace(/```$/,'').trim();
+          const jsonStr = clean.startsWith('{') ? clean : (clean.match(/\{[\s\S]*\}/) || [])[0];
+          if (jsonStr) {
+            const parsed = JSON.parse(jsonStr);
+            parsed._engine = 'Groq Vision';
+            console.info('[Vision] Groq ✅ subject:', parsed.subject);
+            return parsed;
+          } else {
+            console.warn('[Vision] Groq non-JSON:', raw.substring(0, 200));
+          }
+        }
+      }
+    } catch (err) {
+      console.error('[Vision] Groq exception:', err.message);
+      if (typeof Toast !== 'undefined') Toast.show(`⚠️ Groq Vision error: ${err.message.substring(0,50)}`, 'error', 6000);
+    }
+  }
+
+  // ── 2. Gemini 1.5 Flash Vision (free, backup) ─────────────────────────
   const geminiKey = CLARIX_CONFIG.geminiApiKey;
   if (geminiKey && geminiKey !== 'YOUR_GEMINI_API_KEY') {
     try {
@@ -370,12 +423,10 @@ async function analyzeImage(base64Image, mimeType, platform) {
           method: 'POST',
           headers: { 'content-type': 'application/json' },
           body: JSON.stringify({
-            contents: [{
-              parts: [
-                { inline_data: { mime_type: mimeType, data: base64Image } },
-                { text: PROMPT }
-              ]
-            }],
+            contents: [{ role: 'user', parts: [
+              { inline_data: { mime_type: mimeType, data: base64Image } },
+              { text: PROMPT }
+            ]}],
             generationConfig: { maxOutputTokens: 800, temperature: 0.3 }
           })
         }
@@ -385,30 +436,26 @@ async function analyzeImage(base64Image, mimeType, platform) {
         const errBody = await res.json().catch(() => ({}));
         const errMsg  = errBody?.error?.message || res.statusText;
         console.error('[Vision] Gemini error', res.status, errMsg);
-        // Show visible error so we can debug
-        if (typeof Toast !== 'undefined') Toast.show(`⚠️ Vision API: ${res.status} — ${errMsg.substring(0,60)}`, 'error', 6000);
+        if (typeof Toast !== 'undefined') Toast.show(`⚠️ Gemini ${res.status}: ${errMsg.substring(0,50)}`, 'error', 6000);
       } else {
-        const data = await res.json();
-        const raw  = data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
-        if (raw) {
-          const clean   = raw.trim().replace(/^```[a-z]*\n?/, '').replace(/```$/, '').trim();
-          const jsonStr = clean.startsWith('{') ? clean : (clean.match(/\{[\s\S]*\}/) || [])[0];
-          if (jsonStr) {
-            const parsed = JSON.parse(jsonStr);
-            parsed._engine = 'Gemini Vision';
-            console.info('[Vision] Gemini ✅ subject:', parsed.subject);
-            return parsed;
-          } else {
-            console.warn('[Vision] Gemini returned non-JSON:', raw.substring(0, 200));
-          }
+        const data    = await res.json();
+        const raw     = data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+        const clean   = raw.trim().replace(/^```[a-z]*\n?/,'').replace(/```$/,'').trim();
+        const jsonStr = clean.startsWith('{') ? clean : (clean.match(/\{[\s\S]*\}/) || [])[0];
+        if (jsonStr) {
+          const parsed = JSON.parse(jsonStr);
+          parsed._engine = 'Gemini Vision';
+          console.info('[Vision] Gemini ✅ subject:', parsed.subject);
+          return parsed;
         }
       }
     } catch (err) {
       console.error('[Vision] Gemini exception:', err.message);
+      if (typeof Toast !== 'undefined') Toast.show(`⚠️ Gemini error: ${err.message.substring(0,50)}`, 'error', 6000);
     }
   }
 
-  // ── 2. Claude Vision (fallback) ─────────────────────────────────────────
+  // ── 3. Claude Vision (second fallback) ────────────────────────────────
   const claudeKey = CLARIX_CONFIG.claudeApiKey;
   if (claudeKey && claudeKey !== 'YOUR_CLAUDE_API_KEY_HERE') {
     try {
@@ -421,8 +468,7 @@ async function analyzeImage(base64Image, mimeType, platform) {
           'anthropic-dangerous-direct-browser-access': 'true'
         },
         body: JSON.stringify({
-          model: 'claude-3-5-sonnet-20241022',
-          max_tokens: 800,
+          model: 'claude-3-5-sonnet-20241022', max_tokens: 800,
           messages: [{ role: 'user', content: [
             { type: 'image', source: { type: 'base64', media_type: mimeType, data: base64Image } },
             { type: 'text', text: PROMPT }
@@ -433,10 +479,11 @@ async function analyzeImage(base64Image, mimeType, platform) {
       if (!res.ok) {
         const errBody = await res.json().catch(() => ({}));
         console.error('[Vision] Claude error', res.status, errBody?.error?.message);
+        if (typeof Toast !== 'undefined') Toast.show(`⚠️ Claude ${res.status}: ${(errBody?.error?.message||'').substring(0,50)}`, 'error', 5000);
       } else {
         const data    = await res.json();
         const raw     = data.content?.[0]?.text?.trim() || '';
-        const clean   = raw.replace(/^```[a-z]*\n?/, '').replace(/```$/, '').trim();
+        const clean   = raw.replace(/^```[a-z]*\n?/,'').replace(/```$/,'').trim();
         const jsonStr = clean.startsWith('{') ? clean : (clean.match(/\{[\s\S]*\}/) || [])[0];
         if (jsonStr) {
           const parsed = JSON.parse(jsonStr);
@@ -447,12 +494,13 @@ async function analyzeImage(base64Image, mimeType, platform) {
       }
     } catch (err) {
       console.error('[Vision] Claude exception:', err.message);
+      if (typeof Toast !== 'undefined') Toast.show(`⚠️ Claude error: ${err.message.substring(0,50)}`, 'error', 5000);
     }
   }
 
-  // ── 3. Local fallback ────────────────────────────────────────────────────
+  // ── 4. Local fallback ─────────────────────────────────────────────────
   console.warn('[Vision] All APIs failed — local fallback');
-  if (typeof Toast !== 'undefined') Toast.show('⚠️ Vision AI unavailable — using basic prompt. Check console for errors.', 'error', 5000);
+  if (typeof Toast !== 'undefined') Toast.show('⚠️ Vision AI unavailable — check orange error above for reason', 'error', 6000);
   return {
     subject: 'uploaded photo',
     prompt: 'Scene from uploaded photo',
@@ -462,7 +510,6 @@ async function analyzeImage(base64Image, mimeType, platform) {
     _engine: 'Local Fallback'
   };
 }
-
 
 /* ─── Legacy alias (keep for any other callers) ──── */
 async function claudeVision(base64Image, mimeType) {
