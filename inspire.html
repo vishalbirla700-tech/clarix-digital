@@ -4,19 +4,19 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>InspireMe Gallery — Clarix AI</title>
-  <meta name="description" content="Browse 22+ curated cinematic images. Upload your own for Claude Vision analysis. Creative prompt gallery for filmmakers, designers, and AI artists.">
-  <meta name="keywords" content="AI image prompts, Midjourney gallery, cinematic prompts, Claude Vision, prompt inspiration">
+  <meta name="description" content="Browse 22+ curated cinematic images. Upload your own for Gemini Vision analysis. Creative prompt gallery for filmmakers, designers, and AI artists.">
+  <meta name="keywords" content="AI image prompts, Midjourney gallery, cinematic prompts, Gemini Vision, prompt inspiration">
   <meta name="robots" content="index, follow">
-  <link rel="canonical" href="https://clarix.in/inspire.html">
+  <link rel="canonical" href="https://clarix.digital/inspire.html">
   <meta property="og:type" content="website">
-  <meta property="og:url" content="https://clarix.in/inspire.html">
+  <meta property="og:url" content="https://clarix.digital/inspire.html">
   <meta property="og:title" content="InspireMe Gallery — Clarix AI">
   <meta property="og:description" content="22+ curated cinematic images to spark your AI creativity. Click any to get a powerful prompt instantly.">
-  <meta property="og:image" content="https://clarix.in/icons/og-image.png">
+  <meta property="og:image" content="https://clarix.digital/icons/og-image.png">
   <meta property="og:site_name" content="Clarix AI">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="InspireMe Gallery — Clarix AI">
-  <meta name="twitter:image" content="https://clarix.in/icons/og-image.png">
+  <meta name="twitter:image" content="https://clarix.digital/icons/og-image.png">
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#ff7043">
   <meta name="mobile-web-app-capable" content="yes">
@@ -62,21 +62,7 @@
     <div class="container">
       <div class="ai-badge" style="margin-bottom:12px"><span class="badge-star">✦</span> Creative Gallery</div>
       <h1 class="display-md" style="margin-bottom:8px">InspireMe</h1>
-      <p class="body-md text-muted">Click any image to open the prompt editor. Upload your own for Claude Vision analysis.</p>
-    </div>
-  </div>
-
-  <!-- UPLOAD ZONE -->
-  <div class="container" style="margin-bottom:24px">
-    <div class="upload-zone" id="uploadZone"
-  </nav>
-
-  <!-- INSPIRE HEADER -->
-  <div class="inspire-page-header">
-    <div class="container">
-      <div class="ai-badge" style="margin-bottom:12px"><span class="badge-star">✦</span> Creative Gallery</div>
-      <h1 class="display-md" style="margin-bottom:8px">InspireMe</h1>
-      <p class="body-md text-muted">Click any image to open the prompt editor. Upload your own for Claude Vision analysis.</p>
+      <p class="body-md" style="color:rgba(255,255,255,0.8)">Click any image to open the prompt editor. Upload your own photo for AI Vision analysis.</p>
     </div>
   </div>
 
@@ -89,8 +75,10 @@
       onclick="document.getElementById('imgFileInput').click()">
       <input type="file" id="imgFileInput" accept="image/*" style="display:none" onchange="handleFileSelect(event)">
       <span class="upload-icon">📤</span>
-      <span class="upload-text"><strong>Tap to upload from gallery</strong> · or Drag &amp; drop<br>
-      <span style="font-size:11px;color:rgba(255,255,255,0.6)">Gemini Vision will analyze your photo and generate an accurate prompt</span></span>
+      <span class="upload-text">
+        <strong>Tap to upload from gallery</strong> · or Drag &amp; drop<br>
+        <span style="font-size:11px;color:rgba(255,255,255,0.65)">Gemini Vision analyzes your photo and generates an accurate prompt</span>
+      </span>
     </div>
   </div>
 
@@ -112,7 +100,7 @@
     <div class="gallery-grid" id="galleryGrid"></div>
   </div>
 
-  <!-- LIGHTBOX (image preview before editor) -->
+  <!-- LIGHTBOX -->
   <div class="lightbox-overlay" id="lightboxOverlay" onclick="closeLightboxOnBackdrop(event)">
     <div class="lightbox-img-wrap" id="lightboxWrap">
       <img id="lightboxImg" src="" alt="">
@@ -125,8 +113,7 @@
     </div>
   </div>
 
-  <!-- EDITOR PANEL (full screen overlay) -->
-
+  <!-- EDITOR PANEL -->
   <div class="editor-overlay" id="editorOverlay">
     <div class="editor-panel">
       <div class="editor-left">
@@ -139,29 +126,24 @@
           <div class="editor-section-label">Base Prompt</div>
           <textarea class="editor-textarea" id="editorPrompt" rows="5" placeholder="Generated prompt will appear here..."></textarea>
 
-          <!-- Enhancement chips -->
           <div class="editor-section-label" style="margin-top:16px">Quick Enhancements</div>
           <div class="chip-group" id="editorChips"></div>
 
-          <!-- Action buttons -->
           <div class="editor-actions">
             <button class="btn btn-secondary" style="color:#fff;border-color:rgba(255,255,255,0.2)" onclick="rewriteEditorPrompt()">🔄 AI Rewrite</button>
             <button class="btn btn-primary" id="editorEnhanceBtn" onclick="enhanceEditorPrompt()">⚡ Enhance</button>
           </div>
 
-          <!-- Result -->
           <div class="editor-result" id="editorResult" style="display:none">
             <div class="editor-result-label">✦ Enhanced Prompt</div>
             <div class="editor-result-text" id="editorResultText"></div>
           </div>
 
-          <!-- Creative Direction -->
           <div class="editor-direction" id="editorDirection" style="display:none">
             <div class="editor-result-label" style="color:#f59e0b">🎭 Creative Direction</div>
             <div class="editor-result-text" id="editorDirectionText"></div>
           </div>
 
-          <!-- Export actions -->
           <div class="editor-export" id="editorExport" style="display:none">
             <button class="btn btn-ghost btn-sm" onclick="copyEditorPrompt()">📋 Copy Prompt</button>
             <button class="btn btn-ghost btn-sm" onclick="sendEditorToWrite()">✍️ Send to Write</button>

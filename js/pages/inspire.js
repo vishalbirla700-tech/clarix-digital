@@ -302,6 +302,51 @@ function processVisionImage(file) {
   showPlatformPicker(file);
 }
 
+/* ─── IMAGE COMPRESSION ─────────────────────── */
+/* Mobile phone photos are 10-20MB+ — Gemini fails on large base64.
+   We compress to max 1024px wide/tall and quality 0.85 before sending. */
+function compressImage(file, maxPx, quality) {
+  maxPx   = maxPx   || 1024;
+  quality = quality || 0.85;
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const img = new Image();
+      img.onload = () => {
+        let w = img.width, h = img.height;
+        // Scale down if either dimension exceeds maxPx
+        if (w > maxPx || h > maxPx) {
+          if (w > h) { h = Math.round(h * maxPx / w); w = maxPx; }
+          else       { w = Math.round(w * maxPx / h); h = maxPx; }
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width  = w;
+        canvas.height = h;
+        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+        // Always export as JPEG for smaller file size
+        canvas.toBlob(
+          (blob) => {
+            const fr = new FileReader();
+            fr.onload = (e) => resolve({
+              base64: e.target.result.split(',')[1],
+              mime:   'image/jpeg',
+              dataUrl: e.target.result,
+              originalSize: file.size,
+              compressedSize: blob.size
+            });
+            fr.readAsDataURL(blob);
+          },
+          'image/jpeg', quality
+        );
+      };
+      img.src = ev.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+
+
 
 /* ─── PLATFORM PICKER (shown before analysis) ─── */
 function showPlatformPicker(pendingFile) {
@@ -365,78 +410,74 @@ function _visionPick(platform) {
 
 
 async function runVisionAnalysis(file, platform) {
-  // Show analyzing toast with spinner
-  Toast.show(`🔍 Analyzing your photo with Gemini Vision...`, 'info', 8000);
+  Toast.show('🔍 Compressing & analyzing your photo...', 'info', 10000);
 
-  const reader = new FileReader();
-  reader.onload = async (ev) => {
-    const base64 = ev.target.result.split(',')[1];
-    const mime   = file.type;
-    const imgUrl = ev.target.result;
+  try {
+    // STEP 1: Compress image (mobile photos = 10-20MB, Gemini needs < 4MB)
+    const compressed = await compressImage(file, 1024, 0.85);
+    const origMB  = (compressed.originalSize   / 1024 / 1024).toFixed(1);
+    const compKB  = (compressed.compressedSize / 1024).toFixed(0);
+    console.info(`[Vision] Compressed: ${origMB}MB → ${compKB}KB`);
 
-    try {
-      const result = await analyzeImage(base64, mime, platform);
+    // STEP 2: Analyze with Gemini Vision
+    const result  = await analyzeImage(compressed.base64, compressed.mime, platform);
+    const imgUrl  = compressed.dataUrl;
+    console.info('[Vision] Engine:', result._engine);
 
-      // Build the best prompt for the chosen platform
-      const promptText = platform === 'Midjourney'
-        ? (result.midjourney || result.enhanced || result.prompt)
-        : platform === 'Instagram'
-        ? (result.instagram || result.enhanced || result.prompt)
-        : (result.enhanced || result.prompt);
+    // STEP 3: Build platform-appropriate prompt
+    const promptText = platform === 'Midjourney'
+      ? (result.midjourney || result.enhanced || result.prompt)
+      : platform === 'Instagram'
+      ? (result.instagram  || result.enhanced || result.prompt)
+      : (result.enhanced   || result.prompt);
 
-      // Build analysis tag summary (subject/setting/mood/lighting)
-      const analysisTags = [
-        result.subject  ? `👤 ${result.subject}` : null,
-        result.setting  ? `📍 ${result.setting}` : null,
-        result.lighting ? `💡 ${result.lighting}` : null,
-        result.mood     ? `🎭 ${result.mood}` : null,
-        result.colors   ? `🎨 ${result.colors}` : null,
-      ].filter(Boolean);
+    // STEP 4: Build analysis tag summary
+    const analysisTags = [
+      result.subject  ? `👤 ${result.subject}` : null,
+      result.setting  ? `📍 ${result.setting}` : null,
+      result.lighting ? `💡 ${result.lighting}` : null,
+      result.mood     ? `🎭 ${result.mood}` : null,
+      result.colors   ? `🎨 ${result.colors}` : null,
+    ].filter(Boolean);
 
-      // Create a custom gallery item with the real image
-      // Clean up any previous uploaded item
-      const prevIdx = GALLERY.findIndex(g => g.id === 99);
-      if (prevIdx !== -1) GALLERY.splice(prevIdx, 1);
+    // STEP 5: Clean up previous upload and create new gallery item
+    const prevIdx = GALLERY.findIndex(g => g.id === 99);
+    if (prevIdx !== -1) GALLERY.splice(prevIdx, 1);
 
-      const customItem = {
-        id: 99, cat: 'uploaded',
-        title: `Your Photo · ${platform}`,
-        prompt: promptText,
-        img: imgUrl,
-        _analysis: result,
-        _analysisTags: analysisTags,
-        _platform: platform,
-        _engine: result._engine || 'Vision AI'
-      };
-      GALLERY.unshift(customItem);
+    const customItem = {
+      id: 99, cat: 'uploaded',
+      title: `Your Photo · ${platform}`,
+      prompt: promptText,
+      img: imgUrl,
+      _analysis: result,
+      _analysisTags: analysisTags,
+      _platform: platform,
+      _engine: result._engine || 'Vision AI'
+    };
+    GALLERY.unshift(customItem);
 
-      // Open editor with the real image
-      openEditor(99);
+    // STEP 6: Open editor with real photo
+    openEditor(99);
+    document.getElementById('editorPrompt').value = promptText;
+    showVisionAnalysisPanel(customItem);
 
-      // Populate editor with the accurate prompt
-      document.getElementById('editorPrompt').value = promptText;
-
-      // Show analysis breakdown in editor if elements exist
-      showVisionAnalysisPanel(customItem);
-
-      // Also populate result panel with the enhanced prompt immediately
-      if (result.enhanced) {
-        editorResult = result.enhanced;
-        document.getElementById('editorResultText').textContent = result.enhanced;
-        document.getElementById('editorResult').style.display = 'block';
-        document.getElementById('editorExport').style.display = 'flex';
-      }
-
-      const engine = result._engine || 'Vision AI';
-      Toast.show(`✅ Photo analyzed with ${engine}! Prompt ready.`, 'success', 4000);
-
-    } catch (err) {
-      console.error('[InspireMe Vision]', err);
-      Toast.show('❌ Analysis failed. Please try again.', 'error');
+    // STEP 7: Pre-fill enhanced result panel
+    if (result.enhanced) {
+      editorResult = result.enhanced;
+      document.getElementById('editorResultText').textContent = result.enhanced;
+      document.getElementById('editorResult').style.display  = 'block';
+      document.getElementById('editorExport').style.display  = 'flex';
     }
-  };
-  reader.readAsDataURL(file);
+
+    const engine = result._engine || 'Vision AI';
+    Toast.show(`✅ Analyzed with ${engine}! Prompt ready.`, 'success', 4000);
+
+  } catch (err) {
+    console.error('[InspireMe Vision]', err);
+    Toast.show('❌ Analysis failed. Please try again.', 'error');
+  }
 }
+
 
 /* ─── VISION ANALYSIS PANEL ──────────────────── */
 function showVisionAnalysisPanel(item) {
