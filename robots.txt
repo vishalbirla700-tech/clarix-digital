@@ -1,0 +1,24 @@
+User-agent: *
+Allow: /
+
+# Allow all major search engines full access
+User-agent: Googlebot
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+User-agent: DuckDuckBot
+Allow: /
+
+# Disallow internal/private pages
+Disallow: /config.js
+Disallow: /.git/
+Disallow: /.agents/
+Disallow: /.vercel/
+
+# Sitemap location
+Sitemap: https://clarix.digital/sitemap.xml
+
+# Crawl delay (be kind to servers)
+Crawl-delay: 1
