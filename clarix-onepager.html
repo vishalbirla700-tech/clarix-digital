@@ -56,28 +56,33 @@
       * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
     }
 
-    /* ── Print Button ── */
-    .print-bar {
-      position: fixed; top: 0; left: 0; right: 0; z-index: 9999;
-      background: rgba(7,7,15,0.95);
-      backdrop-filter: blur(20px);
-      border-bottom: 1px solid rgba(255,112,67,0.2);
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 12px 32px;
+    /* ── Hero Action Buttons ── */
+    .hero-actions {
+      display: flex; gap: 12px; flex-wrap: wrap; margin-top: 20px;
     }
-    .print-bar-logo { font-family: 'Outfit', sans-serif; font-weight: 900; font-size: 20px; color: var(--orange); letter-spacing: -0.5px; }
-    .print-bar-actions { display: flex; gap: 12px; }
-    .btn-print {
-      padding: 8px 20px; border-radius: 8px; font-size: 13px; font-weight: 700;
-      cursor: pointer; border: none; font-family: 'Inter', sans-serif;
+    .btn-hero-primary {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: var(--orange); color: #fff;
+      padding: 12px 22px; border-radius: 10px;
+      font-size: 14px; font-weight: 700;
+      text-decoration: none; border: none; cursor: pointer;
+      font-family: 'Inter', sans-serif;
+      transition: background 0.2s, transform 0.15s;
     }
-    .btn-print-primary { background: var(--orange); color: #fff; }
-    .btn-print-secondary { background: transparent; border: 1px solid var(--border); color: var(--muted); }
-    .btn-print-primary:hover { background: var(--orange-light); }
-    .btn-print-secondary:hover { color: var(--text); border-color: rgba(255,255,255,0.2); }
+    .btn-hero-primary:hover { background: var(--orange-light); transform: translateY(-1px); }
+    .btn-hero-secondary {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: rgba(255,255,255,0.06); color: var(--text);
+      padding: 12px 22px; border-radius: 10px;
+      font-size: 14px; font-weight: 600;
+      text-decoration: none; border: 1px solid rgba(255,255,255,0.1); cursor: pointer;
+      font-family: 'Inter', sans-serif;
+      transition: background 0.2s;
+    }
+    .btn-hero-secondary:hover { background: rgba(255,255,255,0.1); }
 
     /* ── Main Container ── */
-    .doc { max-width: 900px; margin: 0 auto; padding-top: 60px; }
+    .doc { max-width: 900px; margin: 0 auto; padding-top: 16px; }
 
     /* ── Hero Header ── */
     .hero {
@@ -338,19 +343,16 @@
       .audience-grid { grid-template-columns: 1fr 1fr; }
       .hero-stats { grid-template-columns: 1fr 1fr; }
       .hero-title { font-size: 46px; }
+      .hero { padding: 32px 20px; margin: 12px 10px; }
+      .hero-tagline { font-size: 15px; }
+      .section { margin: 0 10px; }
+      .cta-bar { margin: 0 10px 24px; }
     }
   </style>
 </head>
 <body>
 
-  <!-- Print Bar (hidden on print) -->
-  <div class="print-bar no-print">
-    <div class="print-bar-logo">✦ clarix — Product One-Pager</div>
-    <div class="print-bar-actions">
-      <button class="btn-print btn-print-secondary" onclick="window.open('https://clarix.digital','_blank')">🌐 Visit clarix.digital</button>
-      <button class="btn-print btn-print-primary" onclick="window.print()">🖨️ Download / Print PDF</button>
-    </div>
-  </div>
+
 
   <div class="doc">
 
@@ -361,7 +363,10 @@
         <div class="hero-left">
           <div class="hero-title">clarix</div>
           <div class="hero-tagline">Turn rough ideas into powerful AI prompts — in Hindi, Hinglish, English &amp; 20+ languages.</div>
-          <a class="hero-url" href="https://clarix.digital">🔗 clarix.digital</a>
+          <div class="hero-actions">
+            <a class="btn-hero-primary" href="https://clarix.digital" target="_blank" rel="noopener noreferrer">🌐 Visit clarix.digital</a>
+            <button class="btn-hero-secondary no-print" onclick="window.print()">🖨️ Save as PDF</button>
+          </div>
         </div>
         <div class="hero-right">
           <div class="qr-label">Live Product</div>

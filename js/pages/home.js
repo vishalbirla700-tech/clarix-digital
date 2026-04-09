@@ -3,25 +3,64 @@
    Neural Network Canvas + Ticker + Typewriter + Marquee
 ═══════════════════════════════════════════════ */
 
-/* ─── DUAL TICKER CARDS — Left and Right sides */
+/* ─── LEFT TICKER — Creative Studios Showcase */
 var LEFT_CARDS = [
-  { tag:'Midjourney Prompt', text:'Colossal dragon engulfed in emerald fire, obsidian spire, cinematic 8K, hyperdetailed scales...', meta:'Score: 96/100' },
-  { tag:'LinkedIn Post',     text:'3 things no one tells you about building in public (and why I wish I knew them earlier)...', meta:'4.2K impressions' },
-  { tag:'Sick Leave Email',  text:'Dear Manager, I am unable to attend today due to a sudden illness. Request leave approval...', meta:'Sent — Professional' },
-  { tag:'Startup Pitch',     text:'ClimaTech solves India water crisis using AI-predicted monsoon data for 50 million farmers...', meta:'Funded 2Cr' },
-  { tag:'Blog Intro',        text:'In 2025, AI tools are helping Indian creators in Pune, Kochi, and Jaipur compete globally...', meta:'1.2K reads' },
+  {
+    tag: '👶 Kids Creator',
+    text: 'Turn any child\'s photo into Pixar cartoon, Storybook magic or Superhero comic — perfect for birthday cards & WhatsApp stickers.',
+    meta: '🎨 5 art styles · Instant prompt',
+    badge: 'CREATIVE STUDIO',
+    color: 'rgba(251,146,60,0.15)',
+    border: 'rgba(251,146,60,0.3)',
+  },
+  {
+    tag: '💼 Corporate Creator',
+    text: 'Professional AI prompts for LinkedIn posts, pitch decks & brand ads. Upload team photos for branded corporate visuals.',
+    meta: '📊 LinkedIn · Pitch · Ads',
+    badge: 'CREATIVE STUDIO',
+    color: 'rgba(99,102,241,0.15)',
+    border: 'rgba(99,102,241,0.3)',
+  },
+  {
+    tag: '🎉 Cultural Creator',
+    text: 'Generate Diwali, Eid, Navratri & 9 more festival cards with AI messages in Hindi, Gujarati, Urdu, Marathi — ready to share on WhatsApp.',
+    meta: '🇮🇳 12 festivals · 6 languages',
+    badge: 'ONLY IN INDIA',
+    color: 'rgba(236,72,153,0.15)',
+    border: 'rgba(236,72,153,0.3)',
+  },
+  {
+    tag: '🔤 Multilingual Analyzer',
+    text: 'Upload any image with Hindi, Gujarati, Tamil, Arabic or Urdu text. AI reads it, translates & generates 2 creative prompts instantly.',
+    meta: '🌐 20+ languages · Vision AI',
+    badge: 'CREATIVE STUDIO',
+    color: 'rgba(20,184,166,0.15)',
+    border: 'rgba(20,184,166,0.3)',
+  },
 ];
+
 var RIGHT_CARDS = [
   { tag:'Instagram Caption',  text:'Golden hour hits different when you stop chasing and start living. Tag someone who needs this today...', meta:'12.4K likes' },
   { tag:'YouTube Script',     text:'HOOK: What if I told you the one habit that doubled my income took only 10 minutes a day?...', meta:'847K views' },
   { tag:'WhatsApp Message',   text:'Bhai party kal raat 8 baje mere ghar pe. Khana sab set hai. Bas aa jaana, maza aayega!', meta:'Delivered' },
-  { tag:'Code Fix',           text:'TypeError on line 34: you are calling .map() on undefined. Fixed version with null-check guard...', meta:'Bug resolved' },
-  { tag:'Travel Itinerary',   text:'Day 1: Goa Airport to Baga Beach. Sunset dinner at Thalassa. North Goa nightlife exploration...', meta:'5 days, 25K budget' },
+  { tag:'Midjourney Prompt',  text:'Colossal dragon engulfed in emerald fire, obsidian spire, cinematic 8K, hyperdetailed scales...', meta:'Score: 96/100' },
+  { tag:'LinkedIn Post',      text:'3 things no one tells you about building in public (and why I wish I knew them earlier)...', meta:'4.2K impressions' },
 ];
 
 function makeTickerHTML(cards) {
   var all = cards.concat(cards); // duplicate for seamless loop
   return all.map(function(c) {
+    // Studio card (has .badge and .color)
+    if (c.badge) {
+      return '<div class="ticker-card ticker-studio" style="background:' + c.color + ';border-color:' + c.border + '">' +
+        '<div class="ticker-studio-badge">' + c.badge + '</div>' +
+        '<div class="ticker-tag">' + c.tag + '</div>' +
+        '<div class="ticker-text">' + c.text + '</div>' +
+        '<div class="ticker-meta">' + c.meta + '</div>' +
+        '<div class="ticker-cta">Try in Creative Studios \u2192</div>' +
+      '</div>';
+    }
+    // Simple prompt card
     return '<div class="ticker-card">' +
       '<div class="ticker-tag">\u2756 ' + c.tag + '</div>' +
       '<div class="ticker-text">' + c.text + '</div>' +
