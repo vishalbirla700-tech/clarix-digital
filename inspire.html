@@ -69,14 +69,28 @@
   <!-- UPLOAD ZONE -->
   <div class="container" style="margin-bottom:24px">
     <div class="upload-zone" id="uploadZone"
+  </nav>
+
+  <!-- INSPIRE HEADER -->
+  <div class="inspire-page-header">
+    <div class="container">
+      <div class="ai-badge" style="margin-bottom:12px"><span class="badge-star">✦</span> Creative Gallery</div>
+      <h1 class="display-md" style="margin-bottom:8px">InspireMe</h1>
+      <p class="body-md text-muted">Click any image to open the prompt editor. Upload your own for Claude Vision analysis.</p>
+    </div>
+  </div>
+
+  <!-- UPLOAD ZONE -->
+  <div class="container" style="margin-bottom:24px">
+    <div class="upload-zone" id="uploadZone"
       ondragover="handleDragOver(event)"
       ondragleave="handleDragLeave(event)"
       ondrop="handleDrop(event)"
       onclick="document.getElementById('imgFileInput').click()">
       <input type="file" id="imgFileInput" accept="image/*" style="display:none" onchange="handleFileSelect(event)">
       <span class="upload-icon">📤</span>
-      <span class="upload-text"><strong>Upload image</strong> · Drag & drop · <kbd>Ctrl+V</kbd> to paste<br>
-      <span style="font-size:11px;color:#444">Claude Vision will analyze and auto-generate a prompt</span></span>
+      <span class="upload-text"><strong>Tap to upload from gallery</strong> · or Drag &amp; drop<br>
+      <span style="font-size:11px;color:rgba(255,255,255,0.6)">Gemini Vision will analyze your photo and generate an accurate prompt</span></span>
     </div>
   </div>
 
@@ -186,7 +200,25 @@
       Onboarding.init();
     });
     if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('/sw.js').catch(() => {});
+      navigator.serviceWorker.register('/sw.js').then(reg => {
+        reg.addEventListener('updatefound', () => {
+          const nw = reg.installing;
+          nw.addEventListener('statechange', () => {
+            if (nw.state === 'installed' && navigator.serviceWorker.controller) {
+              showUpdateBanner();
+            }
+          });
+        });
+      }).catch(() => {});
+    }
+    function showUpdateBanner() {
+      if (document.getElementById('clarix-update-banner')) return;
+      const b = document.createElement('div');
+      b.id = 'clarix-update-banner';
+      b.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:99999;background:#ff7043;color:#fff;text-align:center;padding:14px 20px;font-size:14px;font-weight:700;font-family:DM Sans,sans-serif;cursor:pointer;box-shadow:0 4px 20px rgba(255,112,67,.5)';
+      b.innerHTML = '🔄 New version available! <u>Tap here to update</u>';
+      b.onclick = () => { navigator.serviceWorker.controller?.postMessage('SKIP_WAITING'); window.location.reload(true); };
+      document.body.prepend(b);
     }
   </script>
 </body>

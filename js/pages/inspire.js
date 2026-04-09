@@ -284,6 +284,8 @@ function handleDrop(e) {
 function handleFileSelect(e) {
   const file = e.target.files[0];
   if (file) processVisionImage(file);
+  // Reset input so same file can be re-selected
+  e.target.value = '';
 }
 function setupPaste() {
   document.addEventListener('paste', e => {
@@ -291,9 +293,21 @@ function setupPaste() {
     if (item) { e.preventDefault(); processVisionImage(item.getAsFile()); }
   });
 }
+/* Entry point — shows platform picker then runs analysis */
+function processVisionImage(file) {
+  if (!file || !file.type.startsWith('image/')) {
+    Toast.show('Please select an image file.', 'error');
+    return;
+  }
+  showPlatformPicker(file);
+}
+
 
 /* ─── PLATFORM PICKER (shown before analysis) ─── */
-function showPlatformPicker(onSelect) {
+function showPlatformPicker(pendingFile) {
+  // Store pending file on window so the button onclick can access it
+  window._visionPendingFile = pendingFile;
+
   // Remove existing picker
   const old = document.getElementById('visionPlatformPicker');
   if (old) old.remove();
@@ -302,47 +316,53 @@ function showPlatformPicker(onSelect) {
   picker.id = 'visionPlatformPicker';
   picker.style.cssText = `
     position: fixed; inset: 0; z-index: 9999;
-    background: rgba(0,0,0,0.85); backdrop-filter: blur(8px);
+    background: rgba(0,0,0,0.88); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
     display: flex; align-items: center; justify-content: center;
+    padding: 20px;
   `;
   picker.innerHTML = `
-    <div style="background:#111; border:1px solid rgba(255,112,67,0.3); border-radius:20px; padding:32px 28px; max-width:420px; width:92%; text-align:center;">
-      <div style="font-size:32px; margin-bottom:8px;">🔍</div>
-      <div style="font-family:var(--font-head); font-size:22px; font-weight:800; color:#fff; margin-bottom:8px;">Analyze This Photo</div>
-      <div style="font-size:14px; color:rgba(255,255,255,0.7); margin-bottom:24px; line-height:1.5;">I'll generate a prompt that matches exactly what's in your photo. Choose your target platform:</div>
-      <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:12px;">
-        ${[
-          { id:'Midjourney',  icon:'🎨', desc:'AI image generation prompt' },
-          { id:'Instagram',   icon:'📸', desc:'Ready-to-post caption + hashtags' },
-          { id:'DALL-E',      icon:'🖼️', desc:'OpenAI DALL-E prompt' },
-          { id:'General',     icon:'✨', desc:'General creative prompt' },
-        ].map(p => `
-          <button onclick="document.getElementById('visionPlatformPicker').remove(); (${onSelect.toString()})('${p.id}')"
-            style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.1); border-radius:14px;
-                   padding:16px 10px; cursor:pointer; transition:all 0.2s; color:#fff; text-align:center;
-                   font-family:var(--font-body);"
-            onmouseover="this.style.borderColor='rgba(255,112,67,0.5)'; this.style.background='rgba(255,112,67,0.08)'"
-            onmouseout="this.style.borderColor='rgba(255,255,255,0.1)'; this.style.background='rgba(255,255,255,0.04)'">
-            <div style="font-size:24px; margin-bottom:6px;">${p.icon}</div>
-            <div style="font-weight:700; font-size:14px;">${p.id}</div>
-            <div style="font-size:11px; color:rgba(255,255,255,0.55); margin-top:4px;">${p.desc}</div>
-          </button>`).join('')}
+    <div style="background:#111; border:1px solid rgba(255,112,67,0.3); border-radius:20px; padding:28px 24px; max-width:400px; width:100%; text-align:center;">
+      <div style="font-size:30px; margin-bottom:8px;">🔍</div>
+      <div style="font-family:var(--font-head); font-size:20px; font-weight:800; color:#fff; margin-bottom:8px;">Analyze This Photo</div>
+      <div style="font-size:13px; color:rgba(255,255,255,0.75); margin-bottom:20px; line-height:1.5;">Gemini Vision will read your photo and generate an accurate prompt. Choose your platform:</div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:16px;">
+        <button onclick="_visionPick('Midjourney')" style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.12); border-radius:14px; padding:16px 10px; cursor:pointer; color:#fff; text-align:center; font-family:var(--font-body); transition:all 0.2s;" onmouseover="this.style.borderColor='rgba(255,112,67,0.5)'" onmouseout="this.style.borderColor='rgba(255,255,255,0.12)'">
+          <div style="font-size:22px; margin-bottom:5px;">🎨</div>
+          <div style="font-weight:700; font-size:14px; color:#fff;">Midjourney</div>
+          <div style="font-size:11px; color:rgba(255,255,255,0.6); margin-top:3px;">AI image prompt</div>
+        </button>
+        <button onclick="_visionPick('Instagram')" style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.12); border-radius:14px; padding:16px 10px; cursor:pointer; color:#fff; text-align:center; font-family:var(--font-body); transition:all 0.2s;" onmouseover="this.style.borderColor='rgba(255,112,67,0.5)'" onmouseout="this.style.borderColor='rgba(255,255,255,0.12)'">
+          <div style="font-size:22px; margin-bottom:5px;">📸</div>
+          <div style="font-weight:700; font-size:14px; color:#fff;">Instagram</div>
+          <div style="font-size:11px; color:rgba(255,255,255,0.6); margin-top:3px;">Caption + hashtags</div>
+        </button>
+        <button onclick="_visionPick('DALL-E')" style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.12); border-radius:14px; padding:16px 10px; cursor:pointer; color:#fff; text-align:center; font-family:var(--font-body); transition:all 0.2s;" onmouseover="this.style.borderColor='rgba(255,112,67,0.5)'" onmouseout="this.style.borderColor='rgba(255,255,255,0.12)'">
+          <div style="font-size:22px; margin-bottom:5px;">🖼️</div>
+          <div style="font-weight:700; font-size:14px; color:#fff;">DALL-E</div>
+          <div style="font-size:11px; color:rgba(255,255,255,0.6); margin-top:3px;">OpenAI prompt</div>
+        </button>
+        <button onclick="_visionPick('General')" style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.12); border-radius:14px; padding:16px 10px; cursor:pointer; color:#fff; text-align:center; font-family:var(--font-body); transition:all 0.2s;" onmouseover="this.style.borderColor='rgba(255,112,67,0.5)'" onmouseout="this.style.borderColor='rgba(255,255,255,0.12)'">
+          <div style="font-size:22px; margin-bottom:5px;">✨</div>
+          <div style="font-weight:700; font-size:14px; color:#fff;">General</div>
+          <div style="font-size:11px; color:rgba(255,255,255,0.6); margin-top:3px;">Creative prompt</div>
+        </button>
       </div>
-      <button onclick="document.getElementById('visionPlatformPicker').remove()"
-        style="background:none; border:none; color:rgba(255,255,255,0.4); cursor:pointer; font-size:13px; margin-top:4px;">
-        Cancel
-      </button>
+      <button onclick="document.getElementById('visionPlatformPicker').remove(); window._visionPendingFile=null;" style="background:none; border:none; color:rgba(255,255,255,0.45); cursor:pointer; font-size:13px; padding:8px;">Cancel</button>
     </div>
   `;
   document.body.appendChild(picker);
 }
 
-async function processVisionImage(file) {
-  // Show platform picker first, then analyze
-  showPlatformPicker(async function(platform) {
-    await runVisionAnalysis(file, platform);
-  });
+/* Global function called by picker buttons — mobile-safe */
+function _visionPick(platform) {
+  const file = window._visionPendingFile;
+  window._visionPendingFile = null;
+  const picker = document.getElementById('visionPlatformPicker');
+  if (picker) picker.remove();
+  if (file) runVisionAnalysis(file, platform);
 }
+
+
 
 async function runVisionAnalysis(file, platform) {
   // Show analyzing toast with spinner

@@ -1,10 +1,10 @@
 /* ═══════════════════════════════════════════════
-   CLARIX — SERVICE WORKER v4.0
-   Network-first for HTML + CSS, Cache-first for images/fonts
-   v4: Forces full cache bust + update notification
+   CLARIX — SERVICE WORKER v5.0
+   Network-first for HTML + CSS + JS
+   v5: Force update banner on all devices
 ═══════════════════════════════════════════════ */
 
-const CACHE_VERSION = 'v4';
+const CACHE_VERSION = 'v5';
 const CACHE_NAME    = `clarix-${CACHE_VERSION}`;
 const STATIC_CACHE  = `clarix-static-${CACHE_VERSION}`;
 const DYNAMIC_CACHE = `clarix-dynamic-${CACHE_VERSION}`;
