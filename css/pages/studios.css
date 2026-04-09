@@ -115,6 +115,19 @@
   padding:7px 14px; font-size:12px; font-weight:600; color:rgba(255,255,255,.7);
   white-space:nowrap;
 }
+/* Clickable tip chips (Cultural Creator WhatsApp/Instagram) */
+.studio-tip-btn {
+  cursor:pointer;
+  background:rgba(255,112,67,.08);
+  border-color:rgba(255,112,67,.25);
+  color:#ff7043;
+  transition:background .2s, border-color .2s, transform .15s;
+}
+.studio-tip-btn:hover {
+  background:rgba(255,112,67,.18);
+  border-color:rgba(255,112,67,.5);
+  transform:translateY(-1px);
+}
 
 .studio-modal-body { padding:20px 20px 80px; }
 

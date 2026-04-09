@@ -186,9 +186,17 @@ function buildStudioModal() {
     + '<div class="studio-hero-sub">' + s.desc + '</div>'
     + '</div></div>';
 
-  /* Tips */
+  /* Tips — functional for Cultural Creator, decorative for others */
   var tips = '<div class="studio-tips-strip">';
-  for (var t = 0; t < s.tips.length; t++) tips += '<div class="studio-tip">' + s.tips[t] + '</div>';
+  for (var t = 0; t < s.tips.length; t++) {
+    var tip = s.tips[t];
+    var tipAction = '';
+    if (s.id === 'cultural') {
+      if (tip.indexOf('WhatsApp') !== -1) tipAction = ' onclick="studioTipAction(\'whatsapp\')"';
+      else if (tip.indexOf('Instagram') !== -1) tipAction = ' onclick="studioTipAction(\'instagram\')"';
+    }
+    tips += '<div class="studio-tip' + (tipAction ? ' studio-tip-btn' : '') + '"' + tipAction + '>' + tip + '</div>';
+  }
   tips += '</div>';
 
   /* Kids gallery */
@@ -551,62 +559,128 @@ function generateFestivalCard(text) {
   ctx.lineWidth = 2;
   ctx.strokeRect(48, 48, 984, 984);
 
-  /* Festival emoji (large) */
-  ctx.font = '130px serif';
+  /* Festival emoji — top */
+  ctx.font = '120px serif';
   ctx.textAlign = 'center';
   ctx.fillStyle = '#ffffff';
-  ctx.fillText(festival.emoji, 540, 240);
+  ctx.fillText(festival.emoji, 540, 190);
 
   /* Festival name */
-  ctx.font = 'bold 76px Arial, sans-serif';
+  ctx.font = 'bold 72px Arial, sans-serif';
   ctx.shadowColor = 'rgba(0,0,0,0.5)';
   ctx.shadowBlur = 18;
   ctx.fillStyle = '#ffffff';
-  ctx.fillText(festival.name, 540, 360);
+  ctx.fillText(festival.name, 540, 300);
 
-  /* AI message text (wrapped) */
-  ctx.font = '36px Arial, sans-serif';
-  ctx.shadowBlur = 10;
-  ctx.fillStyle = 'rgba(255,255,255,0.92)';
-  wrapCanvasText(ctx, text.substring(0, 250), 540, 480, 880, 56);
-
-  /* Bottom emoji strip */
+  /* Decorative emoji strip — middle divider */
   ctx.shadowBlur = 0;
-  ctx.font = '56px serif';
-  ctx.fillText(festival.emoji2, 540, 958);
+  ctx.font = '44px serif';
+  ctx.fillText(festival.emoji2, 540, 400);
 
-  /* Watermark */
+  /* Divider line */
+  ctx.beginPath();
+  ctx.strokeStyle = 'rgba(255,255,255,0.25)';
+  ctx.lineWidth = 1;
+  ctx.moveTo(100, 440); ctx.lineTo(980, 440);
+  ctx.stroke();
+
+  /* AI message text — BOTTOM section of card */
+  ctx.font = '38px Arial, sans-serif';
+  ctx.shadowBlur = 14;
+  ctx.shadowColor = 'rgba(0,0,0,0.7)';
+  ctx.fillStyle = 'rgba(255,255,255,0.96)';
+  wrapCanvasText(ctx, text.substring(0, 300), 540, 510, 900, 60);
+
+  /* Watermark — very bottom */
+  ctx.shadowBlur = 0;
   ctx.font = '22px Arial, sans-serif';
-  ctx.fillStyle = 'rgba(255,255,255,0.38)';
-  ctx.fillText('Made with Clarix AI  ·  clarix.digital', 540, 1030);
+  ctx.fillStyle = 'rgba(255,255,255,0.35)';
+  ctx.fillText('Made with Clarix AI  ·  clarix.digital', 540, 1048);
+
+  /* Store canvas globally for share actions */
+  window._festivalCanvas = canvas;
+  window._festivalText   = text;
+  window._festivalName   = festival.name;
+  window._festivalGrad   = festival.grad;
 
   /* Show canvas */
   canvas.style.cssText = 'width:100%;border-radius:16px;display:block;box-shadow:0 20px 60px rgba(0,0,0,0.6);margin-top:16px;';
   wrap.appendChild(canvas);
 
-  /* Download button */
+  /* ── 3-button action row ── */
+  var btnRow = document.createElement('div');
+  btnRow.style.cssText = 'display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;';
+
   var dlBtn = document.createElement('button');
-  dlBtn.textContent = '⬇️ Download Festival Card';
-  dlBtn.style.cssText = 'width:100%;margin-top:12px;padding:14px;border-radius:12px;background:linear-gradient(135deg,'
-    + festival.grad[0] + ',' + festival.grad[1] + ');border:none;color:#fff;font-size:15px;font-weight:800;cursor:pointer;font-family:var(--font-body);';
-  dlBtn.onclick = function() {
+  dlBtn.textContent = '⬇️ Download';
+  dlBtn.style.cssText = 'flex:1;min-width:120px;padding:13px 10px;border-radius:12px;background:linear-gradient(135deg,'
+    + festival.grad[0] + ',' + festival.grad[1] + ');border:none;color:#fff;font-size:14px;font-weight:800;cursor:pointer;font-family:var(--font-body);';
+  dlBtn.onclick = function() { studioTipAction('download'); };
+  btnRow.appendChild(dlBtn);
+
+  var wpBtn = document.createElement('button');
+  wpBtn.textContent = '💬 WhatsApp';
+  wpBtn.style.cssText = 'flex:1;min-width:120px;padding:13px 10px;border-radius:12px;background:rgba(37,211,102,0.13);border:1px solid rgba(37,211,102,0.5);color:#25d366;font-size:14px;font-weight:800;cursor:pointer;font-family:var(--font-body);';
+  wpBtn.onclick = function() { studioTipAction('whatsapp'); };
+  btnRow.appendChild(wpBtn);
+
+  var igBtn = document.createElement('button');
+  igBtn.textContent = '📸 Instagram';
+  igBtn.style.cssText = 'flex:1;min-width:120px;padding:13px 10px;border-radius:12px;background:rgba(225,48,108,0.12);border:1px solid rgba(225,48,108,0.45);color:#e1306c;font-size:14px;font-weight:800;cursor:pointer;font-family:var(--font-body);';
+  igBtn.onclick = function() { studioTipAction('instagram'); };
+  btnRow.appendChild(igBtn);
+
+  wrap.appendChild(btnRow);
+}
+
+/* ── Studio Tip / Share Actions ── */
+function studioTipAction(type) {
+  var canvas = window._festivalCanvas;
+  var text   = window._festivalText || '';
+  var name   = (window._festivalName || 'festival').toLowerCase().replace(/\s+/g, '-');
+
+  if (!canvas) {
+    Toast.show('Generate a festival card first! 🎉', 'error');
+    return;
+  }
+
+  if (type === 'download') {
     var a = document.createElement('a');
-    a.download = 'clarix-' + festival.name.toLowerCase() + '-card.png';
+    a.download = 'clarix-' + name + '-card.png';
     a.href = canvas.toDataURL('image/png');
     a.click();
     Toast.show('📥 Festival card downloaded!', 'success');
-  };
-  wrap.appendChild(dlBtn);
 
-  /* WhatsApp share */
-  var wpBtn = document.createElement('button');
-  wpBtn.textContent = '💬 Share on WhatsApp';
-  wpBtn.style.cssText = 'width:100%;margin-top:8px;padding:14px;border-radius:12px;background:rgba(37,211,102,0.15);border:1px solid rgba(37,211,102,0.4);color:#25d366;font-size:15px;font-weight:800;cursor:pointer;font-family:var(--font-body);';
-  wpBtn.onclick = function() {
-    window.open('https://wa.me/?text=' + encodeURIComponent(text.substring(0, 300)), '_blank');
-  };
-  wrap.appendChild(wpBtn);
+  } else if (type === 'whatsapp') {
+    /* Download image + open WhatsApp with text */
+    var a2 = document.createElement('a');
+    a2.download = 'clarix-' + name + '-card.png';
+    a2.href = canvas.toDataURL('image/png');
+    a2.click();
+    setTimeout(function() {
+      var msg = text.substring(0, 300) + '\n\n✨ Made with Clarix AI · clarix.digital';
+      window.open('https://wa.me/?text=' + encodeURIComponent(msg), '_blank', 'noopener noreferrer');
+      Toast.show('📥 Image saved! Now attach it in the WhatsApp tab that opened.', 'success', 5000);
+    }, 700);
+
+  } else if (type === 'instagram') {
+    /* Download image + copy caption to clipboard */
+    var a3 = document.createElement('a');
+    a3.download = 'clarix-' + name + '-card.png';
+    a3.href = canvas.toDataURL('image/png');
+    a3.click();
+    var caption = text.substring(0, 400) + '\n\n✨ Made with Clarix AI · clarix.digital';
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(caption).then(function() {
+        Toast.show('📸 Image saved + caption copied! Upload to Instagram & paste caption.', 'success', 5000);
+      });
+    } else {
+      Toast.show('📸 Image downloaded! Open Instagram and upload it.', 'success', 4000);
+    }
+    setTimeout(function() { window.open('https://www.instagram.com/', '_blank', 'noopener noreferrer'); }, 900);
+  }
 }
+
 
 function wrapCanvasText(ctx, text, x, y, maxWidth, lineHeight) {
   var words = text.split(' ');
