@@ -334,38 +334,146 @@ function generateBreakdown(prompt, platform, intent) {
   };
 }
 
-/* ─── CLAUDE VISION (unchanged) ──────────────── */
-async function claudeVision(base64Image, mimeType) {
+/* ─── IMAGE ANALYSIS (Gemini Vision → Claude → Fallback) ─── */
+
+/**
+ * analyzeImage()
+ * Takes a base64 image from the user's gallery and returns
+ * a detailed, platform-accurate prompt that matches what's in the photo.
+ *
+ * Priority: Gemini Vision (free) → Claude Vision → Local fallback
+ */
+async function analyzeImage(base64Image, mimeType, platform) {
   mimeType = mimeType || 'image/jpeg';
-  const key = CLARIX_CONFIG.claudeApiKey;
-  if (!key || key === 'YOUR_CLAUDE_API_KEY_HERE') {
-    return {
-      prompt: 'A visually stunning scene with rich composition, dramatic lighting, ultra-detailed textures',
-      enhanced: 'A visually stunning scene with rich composition, dramatic lighting, ultra-detailed textures, cinematic depth of field, 8K resolution, award-winning photography'
-    };
+  platform = platform || 'Midjourney';
+
+  const ANALYSIS_PROMPT = `You are an expert AI art director and prompt engineer.
+Carefully analyze this real photograph uploaded by the user and generate a highly accurate, detailed prompt that recreates this exact image.
+
+Your analysis MUST capture:
+1. SUBJECT: Who/what is in the image (people, objects, animals, scenery)
+2. SETTING: Location, environment, background details
+3. LIGHTING: Type of light (golden hour, studio, natural, neon, etc.), direction, intensity
+4. COLORS: Dominant color palette, tones, saturation
+5. MOOD/ATMOSPHERE: Emotional feel (romantic, dramatic, peaceful, energetic, etc.)
+6. COMPOSITION: Angle, framing, depth of field, perspective
+7. STYLE: Photography style (editorial, candid, portrait, landscape, street, etc.)
+8. QUALITY DESCRIPTORS: Technical terms that match the image quality
+
+Return ONLY this JSON (no markdown, no code fences):
+{
+  "subject": "main subject description",
+  "setting": "location and environment",
+  "mood": "emotional atmosphere",
+  "lighting": "lighting description",
+  "colors": "color palette",
+  "style": "photography/art style",
+  "prompt": "A concise base description matching the photo",
+  "enhanced": "Full detailed ${platform}-ready prompt that could recreate this image. Include: subject + setting + lighting + mood + colors + style + technical quality descriptors like '8K', 'hyperdetailed', 'cinematic', 'bokeh background', etc. Make it 40-80 words.",
+  "instagram": "Instagram-ready caption with 5 relevant hashtags",
+  "midjourney": "Prompt optimised for Midjourney with --ar 16:9 --style raw --q 2 appended if landscape, or --ar 4:5 --style raw if portrait"
+}`;
+
+  // ── 1. Try Gemini Vision (primary — free, excellent for real photos) ──
+  const geminiKey = CLARIX_CONFIG.geminiApiKey;
+  if (geminiKey && geminiKey !== 'YOUR_GEMINI_API_KEY') {
+    try {
+      const res = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${geminiKey}`,
+        {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{
+              role: 'user',
+              parts: [
+                { inline_data: { mime_type: mimeType, data: base64Image } },
+                { text: ANALYSIS_PROMPT }
+              ]
+            }],
+            generationConfig: { maxOutputTokens: 1024, temperature: 0.4 }
+          })
+        }
+      );
+
+      if (res.ok) {
+        const data = await res.json();
+        const raw  = data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+        if (raw) {
+          const str = raw.trim().replace(/^```[a-z]*\n?/, '').replace(/```$/, '').trim();
+          const jsonStr = str.startsWith('{') ? str : (str.match(/\{[\s\S]*\}/) || [])[0];
+          if (jsonStr) {
+            const parsed = JSON.parse(jsonStr);
+            parsed._engine = 'Gemini Vision';
+            console.info('[Clarix Vision] Gemini Vision ✅');
+            return parsed;
+          }
+        }
+      }
+    } catch (err) {
+      console.warn('[Clarix Vision] Gemini failed:', err.message);
+    }
   }
-  try {
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: { 'x-api-key': key, 'anthropic-version': '2023-06-01', 'content-type': 'application/json', 'anthropic-dangerous-direct-browser-access': 'true' },
-      body: JSON.stringify({
-        model: 'claude-3-5-sonnet-20241022', max_tokens: 512,
-        messages: [{ role: 'user', content: [
-          { type: 'image', source: { type: 'base64', media_type: mimeType, data: base64Image } },
-          { type: 'text', text: 'Analyze this image and return JSON: {"prompt":"base description","enhanced":"full detailed prompt with photographic descriptors"}' }
-        ]}]
-      })
-    });
-    if (!res.ok) throw new Error('Vision API error ' + res.status);
-    const data = await res.json();
-    const raw  = data.content[0].text.trim();
-    const jsonStr = raw.startsWith('{') ? raw : (raw.match(/\{[\s\S]*\}/) || [])[0];
-    return jsonStr ? JSON.parse(jsonStr) : { prompt: raw, enhanced: raw };
-  } catch (err) {
-    console.error('[Clarix Vision]', err);
-    return { prompt: 'Scene from uploaded image', enhanced: 'Detailed scene from uploaded image, ultra-detailed, photorealistic, cinematic lighting, 8K' };
+
+  // ── 2. Try Claude Vision (fallback) ──
+  const claudeKey = CLARIX_CONFIG.claudeApiKey;
+  if (claudeKey && claudeKey !== 'YOUR_CLAUDE_API_KEY_HERE') {
+    try {
+      const res = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'x-api-key': claudeKey,
+          'anthropic-version': '2023-06-01',
+          'content-type': 'application/json',
+          'anthropic-dangerous-direct-browser-access': 'true'
+        },
+        body: JSON.stringify({
+          model: 'claude-3-5-sonnet-20241022',
+          max_tokens: 1024,
+          messages: [{
+            role: 'user',
+            content: [
+              { type: 'image', source: { type: 'base64', media_type: mimeType, data: base64Image } },
+              { type: 'text', text: ANALYSIS_PROMPT }
+            ]
+          }]
+        })
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        const raw  = data.content[0].text.trim();
+        const str  = raw.replace(/^```[a-z]*\n?/, '').replace(/```$/, '').trim();
+        const jsonStr = str.startsWith('{') ? str : (str.match(/\{[\s\S]*\}/) || [])[0];
+        if (jsonStr) {
+          const parsed = JSON.parse(jsonStr);
+          parsed._engine = 'Claude Vision';
+          console.info('[Clarix Vision] Claude Vision ✅');
+          return parsed;
+        }
+      }
+    } catch (err) {
+      console.warn('[Clarix Vision] Claude failed:', err.message);
+    }
   }
+
+  // ── 3. Local fallback — better than generic string ──
+  console.warn('[Clarix Vision] All vision APIs failed — using local fallback');
+  return {
+    prompt: 'Uploaded image scene',
+    enhanced: 'A visually compelling scene from an uploaded photograph, ultra-detailed, photorealistic, cinematic lighting, 8K resolution, professional photography',
+    midjourney: 'A visually compelling scene from an uploaded photograph, ultra-detailed, photorealistic, cinematic lighting, 8K resolution --ar 4:5 --style raw',
+    instagram: '✨ Captured this moment 📸 #photography #aesthetic #vibes #photo #instagood',
+    _engine: 'Local Fallback'
+  };
 }
+
+/* ─── Legacy alias (keep for any other callers) ──── */
+async function claudeVision(base64Image, mimeType) {
+  return analyzeImage(base64Image, mimeType, 'Midjourney');
+}
+
+
 
 /* ─── MAIN ENGINE: Gemini → Groq → Claude → Local */
 async function enhancePrompt(text, platform, mode, langCode, langName, socialPlatform) {

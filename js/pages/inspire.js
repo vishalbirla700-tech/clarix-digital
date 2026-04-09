@@ -292,25 +292,172 @@ function setupPaste() {
   });
 }
 
+/* ─── PLATFORM PICKER (shown before analysis) ─── */
+function showPlatformPicker(onSelect) {
+  // Remove existing picker
+  const old = document.getElementById('visionPlatformPicker');
+  if (old) old.remove();
+
+  const picker = document.createElement('div');
+  picker.id = 'visionPlatformPicker';
+  picker.style.cssText = `
+    position: fixed; inset: 0; z-index: 9999;
+    background: rgba(0,0,0,0.85); backdrop-filter: blur(8px);
+    display: flex; align-items: center; justify-content: center;
+  `;
+  picker.innerHTML = `
+    <div style="background:#111; border:1px solid rgba(255,112,67,0.3); border-radius:20px; padding:32px 28px; max-width:420px; width:92%; text-align:center;">
+      <div style="font-size:32px; margin-bottom:8px;">🔍</div>
+      <div style="font-family:var(--font-head); font-size:22px; font-weight:800; color:#fff; margin-bottom:8px;">Analyze This Photo</div>
+      <div style="font-size:14px; color:rgba(255,255,255,0.7); margin-bottom:24px; line-height:1.5;">I'll generate a prompt that matches exactly what's in your photo. Choose your target platform:</div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:12px;">
+        ${[
+          { id:'Midjourney',  icon:'🎨', desc:'AI image generation prompt' },
+          { id:'Instagram',   icon:'📸', desc:'Ready-to-post caption + hashtags' },
+          { id:'DALL-E',      icon:'🖼️', desc:'OpenAI DALL-E prompt' },
+          { id:'General',     icon:'✨', desc:'General creative prompt' },
+        ].map(p => `
+          <button onclick="document.getElementById('visionPlatformPicker').remove(); (${onSelect.toString()})('${p.id}')"
+            style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.1); border-radius:14px;
+                   padding:16px 10px; cursor:pointer; transition:all 0.2s; color:#fff; text-align:center;
+                   font-family:var(--font-body);"
+            onmouseover="this.style.borderColor='rgba(255,112,67,0.5)'; this.style.background='rgba(255,112,67,0.08)'"
+            onmouseout="this.style.borderColor='rgba(255,255,255,0.1)'; this.style.background='rgba(255,255,255,0.04)'">
+            <div style="font-size:24px; margin-bottom:6px;">${p.icon}</div>
+            <div style="font-weight:700; font-size:14px;">${p.id}</div>
+            <div style="font-size:11px; color:rgba(255,255,255,0.55); margin-top:4px;">${p.desc}</div>
+          </button>`).join('')}
+      </div>
+      <button onclick="document.getElementById('visionPlatformPicker').remove()"
+        style="background:none; border:none; color:rgba(255,255,255,0.4); cursor:pointer; font-size:13px; margin-top:4px;">
+        Cancel
+      </button>
+    </div>
+  `;
+  document.body.appendChild(picker);
+}
+
 async function processVisionImage(file) {
-  Toast.show('Analyzing image with Claude Vision...', 'info', 5000);
+  // Show platform picker first, then analyze
+  showPlatformPicker(async function(platform) {
+    await runVisionAnalysis(file, platform);
+  });
+}
+
+async function runVisionAnalysis(file, platform) {
+  // Show analyzing toast with spinner
+  Toast.show(`🔍 Analyzing your photo with Gemini Vision...`, 'info', 8000);
+
   const reader = new FileReader();
   reader.onload = async (ev) => {
     const base64 = ev.target.result.split(',')[1];
-    const mime = file.type;
+    const mime   = file.type;
+    const imgUrl = ev.target.result;
+
     try {
-      const result = await claudeVision(base64, mime);
-      // Open editor with this image and generated prompt
-      const url = ev.target.result;
+      const result = await analyzeImage(base64, mime, platform);
+
+      // Build the best prompt for the chosen platform
+      const promptText = platform === 'Midjourney'
+        ? (result.midjourney || result.enhanced || result.prompt)
+        : platform === 'Instagram'
+        ? (result.instagram || result.enhanced || result.prompt)
+        : (result.enhanced || result.prompt);
+
+      // Build analysis tag summary (subject/setting/mood/lighting)
+      const analysisTags = [
+        result.subject  ? `👤 ${result.subject}` : null,
+        result.setting  ? `📍 ${result.setting}` : null,
+        result.lighting ? `💡 ${result.lighting}` : null,
+        result.mood     ? `🎭 ${result.mood}` : null,
+        result.colors   ? `🎨 ${result.colors}` : null,
+      ].filter(Boolean);
+
+      // Create a custom gallery item with the real image
+      // Clean up any previous uploaded item
+      const prevIdx = GALLERY.findIndex(g => g.id === 99);
+      if (prevIdx !== -1) GALLERY.splice(prevIdx, 1);
+
       const customItem = {
-        id: 99, cat: 'uploaded', title: 'Uploaded Image',
-        prompt: result.prompt || 'Uploaded image', img: url
+        id: 99, cat: 'uploaded',
+        title: `Your Photo · ${platform}`,
+        prompt: promptText,
+        img: imgUrl,
+        _analysis: result,
+        _analysisTags: analysisTags,
+        _platform: platform,
+        _engine: result._engine || 'Vision AI'
       };
       GALLERY.unshift(customItem);
+
+      // Open editor with the real image
       openEditor(99);
-      document.getElementById('editorPrompt').value = result.enhanced || result.prompt;
-      Toast.show('Image analyzed! Prompt generated.', 'success');
-    } catch { Toast.show('Vision analysis failed. Try again.', 'error'); }
+
+      // Populate editor with the accurate prompt
+      document.getElementById('editorPrompt').value = promptText;
+
+      // Show analysis breakdown in editor if elements exist
+      showVisionAnalysisPanel(customItem);
+
+      // Also populate result panel with the enhanced prompt immediately
+      if (result.enhanced) {
+        editorResult = result.enhanced;
+        document.getElementById('editorResultText').textContent = result.enhanced;
+        document.getElementById('editorResult').style.display = 'block';
+        document.getElementById('editorExport').style.display = 'flex';
+      }
+
+      const engine = result._engine || 'Vision AI';
+      Toast.show(`✅ Photo analyzed with ${engine}! Prompt ready.`, 'success', 4000);
+
+    } catch (err) {
+      console.error('[InspireMe Vision]', err);
+      Toast.show('❌ Analysis failed. Please try again.', 'error');
+    }
   };
   reader.readAsDataURL(file);
 }
+
+/* ─── VISION ANALYSIS PANEL ──────────────────── */
+function showVisionAnalysisPanel(item) {
+  // Remove old panel
+  const old = document.getElementById('visionAnalysisPanel');
+  if (old) old.remove();
+
+  if (!item._analysisTags || !item._analysisTags.length) return;
+
+  const panel = document.createElement('div');
+  panel.id = 'visionAnalysisPanel';
+  panel.style.cssText = `
+    background: rgba(255,112,67,0.06); border: 1px solid rgba(255,112,67,0.2);
+    border-radius: 12px; padding: 14px 16px; margin-bottom: 12px;
+  `;
+  panel.innerHTML = `
+    <div style="font-size:11px; font-weight:800; color:var(--accent); letter-spacing:0.08em; text-transform:uppercase; margin-bottom:10px;">
+      🔍 Photo Analysis · ${item._platform} · ${item._engine || 'Vision AI'}
+    </div>
+    <div style="display:flex; flex-wrap:wrap; gap:8px;">
+      ${item._analysisTags.map(tag => `
+        <div style="font-size:12px; color:#fff; background:rgba(255,255,255,0.07);
+                    border:1px solid rgba(255,255,255,0.1); border-radius:8px;
+                    padding:5px 10px; line-height:1.4;">
+          ${tag}
+        </div>`).join('')}
+    </div>
+    ${item._analysis?.midjourney && item._platform !== 'Midjourney' ? `
+    <div style="margin-top:12px; padding-top:10px; border-top:1px solid rgba(255,255,255,0.06);">
+      <div style="font-size:11px; color:rgba(255,255,255,0.5); margin-bottom:6px;">🎨 Midjourney version also available:</div>
+      <div style="font-size:12px; color:rgba(255,255,255,0.8); line-height:1.5; cursor:pointer;"
+           onclick="navigator.clipboard?.writeText('${(item._analysis.midjourney || '').replace(/'/g,"\\'")}'); Toast.show('Midjourney prompt copied!','success')">
+        ${(item._analysis.midjourney || '').substring(0, 120)}... <span style="color:var(--accent);">Tap to copy →</span>
+      </div>
+    </div>` : ''}
+  `;
+
+  // Insert at top of editor panel content, after the image
+  const editorImg = document.getElementById('editorImg');
+  if (editorImg && editorImg.parentNode) {
+    editorImg.parentNode.insertAdjacentElement('afterend', panel);
+  }
+}
+
