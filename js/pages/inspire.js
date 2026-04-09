@@ -517,10 +517,13 @@ function showVisionAnalysisPanel(item) {
     </div>` : ''}
   `;
 
-  // Insert at top of editor panel content, after the image
-  const editorImg = document.getElementById('editorImg');
-  if (editorImg && editorImg.parentNode) {
-    editorImg.parentNode.insertAdjacentElement('afterend', panel);
+  // ── Insert at TOP of scrollable editor-right-scroll area (not the image side)
+  const scrollArea = document.getElementById('editorRightScroll');
+  if (scrollArea) {
+    scrollArea.insertBefore(panel, scrollArea.firstChild);
+    // Scroll to top so user sees the analysis first
+    const rightPanel = document.querySelector('.editor-right');
+    if (rightPanel) rightPanel.scrollTop = 0;
   }
 }
 

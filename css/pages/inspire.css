@@ -200,7 +200,7 @@
   width: 100%; max-width: 1200px; margin: 0 auto;
 }
 @media (max-width: 800px) {
-  .editor-panel { grid-template-columns: 1fr; grid-template-rows: 40vh 1fr; }
+  .editor-panel { grid-template-columns: 1fr; grid-template-rows: 30vh 1fr; }
 }
 
 .editor-left {
@@ -227,7 +227,20 @@
 }
 
 .editor-right {
-  background: #0a0a0a; overflow-y: auto;
+  background: #0a0a0a;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch; /* iOS momentum scroll */
+  height: 100%;
+}
+@media (max-width: 800px) {
+  .editor-right {
+    /* Take the remaining viewport after the image */
+    height: calc(100vh - 30vh);
+    min-height: 0; /* required for grid child to scroll */
+  }
+  .editor-right-scroll {
+    padding-bottom: 80px; /* space for mobile nav bar */
+  }
 }
 .editor-right-scroll { padding: 24px; display: flex; flex-direction: column; gap: 12px; }
 
