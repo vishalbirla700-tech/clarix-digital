@@ -1,132 +1,96 @@
 /* ═══════════════════════════════════════════════
-   CLARIX — SERVICE WORKER v6.0
-   Network-first for HTML + CSS + JS
-   v6: Creative Studios v2 — visual heroes, canvas cards, voice
+   CLARIX SERVICE WORKER v20260410a
+   Handles: offline cache + instant update notifications
 ═══════════════════════════════════════════════ */
 
+const CACHE_VERSION = 'clarix-v20260410a';
+const STATIC_CACHE  = CACHE_VERSION + '-static';
 
-const CACHE_VERSION = 'v6';
-const CACHE_NAME    = `clarix-${CACHE_VERSION}`;
-const STATIC_CACHE  = `clarix-static-${CACHE_VERSION}`;
+/* Assets to pre-cache for offline */
+const PRECACHE = [
+  '/',
+  '/index.html',
+  '/apps.html',
+  '/write.html',
+  '/inspire.html',
+  '/profile.html',
+  '/css/design.css',
+  '/css/components.css',
+  '/js/core.js',
+  '/config.js'
+];
 
-const DYNAMIC_CACHE = `clarix-dynamic-${CACHE_VERSION}`;
-
-/* ─── INSTALL: skip waiting immediately ─────── */
-self.addEventListener('install', (event) => {
-  // Skip waiting so new SW activates immediately
+/* ── Install: cache key assets ── */
+self.addEventListener('install', function(e) {
+  /* Skip waiting immediately — activate new SW right away */
   self.skipWaiting();
-});
-
-/* ─── ACTIVATE: delete ALL old caches ───────── */
-self.addEventListener('activate', (event) => {
-  event.waitUntil(
-    caches.keys().then((keys) => {
-      return Promise.all(
-        keys
-          .filter(k => !k.includes(CACHE_VERSION)) // delete anything not v4
-          .map(k => {
-            console.log('[SW] Deleting old cache:', k);
-            return caches.delete(k);
-          })
-      );
-    }).then(() => {
-      console.log('[SW] v4 activated, old caches cleared');
-      return self.clients.claim(); // take control of all open pages
+  e.waitUntil(
+    caches.open(STATIC_CACHE).then(function(cache) {
+      return cache.addAll(PRECACHE).catch(function() {
+        /* Non-fatal — some assets may not be available offline */
+      });
     })
   );
 });
 
-/* ─── FETCH: smart strategy per request type ── */
-self.addEventListener('fetch', (event) => {
-  const { request } = event;
-  const url = new URL(request.url);
-
-  // Skip non-GET and chrome-extension requests
-  if (request.method !== 'GET') return;
-  if (url.protocol === 'chrome-extension:') return;
-
-  // Network-only for AI API calls
-  if (url.hostname.includes('anthropic') || url.hostname.includes('openai') ||
-      url.hostname.includes('googleapis') || url.hostname.includes('google')) {
-    event.respondWith(fetch(request));
-    return;
-  }
-
-  // Cache-first for Google Fonts (rarely changes)
-  if (url.hostname.includes('fonts.googleapis') || url.hostname.includes('fonts.gstatic')) {
-    event.respondWith(cacheFirst(request, DYNAMIC_CACHE));
-    return;
-  }
-
-  // Network-first for ALL local HTML pages
-  if (url.origin === location.origin &&
-      (request.headers.get('accept')?.includes('text/html') || url.pathname.endsWith('.html'))) {
-    event.respondWith(networkFirst(request));
-    return;
-  }
-
-  // Network-first for ALL local CSS and JS (ensures style/logic updates reach users)
-  if (url.origin === location.origin &&
-      (url.pathname.endsWith('.css') || url.pathname.endsWith('.js'))) {
-    event.respondWith(networkFirst(request));
-    return;
-  }
-
-  // Cache-first for images and icons (stable assets)
-  if (url.origin === location.origin &&
-      (url.pathname.match(/\.(png|jpg|jpeg|svg|ico|webp|gif)$/))) {
-    event.respondWith(cacheFirst(request, STATIC_CACHE));
-    return;
-  }
-
-  // Default: network first, fall back to cache
-  event.respondWith(networkFirst(request));
+/* ── Activate: clear old caches & claim clients ── */
+self.addEventListener('activate', function(e) {
+  e.waitUntil(
+    caches.keys().then(function(keys) {
+      return Promise.all(
+        keys.filter(function(k) { return k !== STATIC_CACHE; })
+            .map(function(k) { return caches.delete(k); })
+      );
+    }).then(function() {
+      /* Take control of all open tabs immediately */
+      return self.clients.claim();
+    })
+  );
+  /* Notify all open tabs that a new version is active */
+  self.clients.matchAll({ type: 'window' }).then(function(clients) {
+    clients.forEach(function(client) {
+      client.postMessage({ type: 'SW_UPDATED', version: CACHE_VERSION });
+    });
+  });
 });
 
-/* ─── STRATEGY: Network-First ───────────────── */
-async function networkFirst(request) {
-  try {
-    const response = await fetch(request);
-    if (response.ok) {
-      const cache = await caches.open(DYNAMIC_CACHE);
-      cache.put(request, response.clone());
-    }
-    return response;
-  } catch {
-    const cached = await caches.match(request);
-    return cached || offlineFallback(request);
-  }
-}
+/* ── Fetch: Network-first for HTML, Cache-first for assets ── */
+self.addEventListener('fetch', function(e) {
+  var url = new URL(e.request.url);
 
-/* ─── STRATEGY: Cache-First ─────────────────── */
-async function cacheFirst(request, cacheName) {
-  const cache = await caches.open(cacheName);
-  const cached = await cache.match(request);
-  if (cached) return cached;
-
-  try {
-    const response = await fetch(request);
-    if (response.ok) {
-      cache.put(request, response.clone());
-    }
-    return response;
-  } catch {
-    return offlineFallback(request);
+  /* Always fetch HTML fresh from network (no-cache) */
+  if (e.request.mode === 'navigate' ||
+      url.pathname.endsWith('.html') ||
+      url.pathname === '/') {
+    e.respondWith(
+      fetch(e.request, { cache: 'no-store' }).catch(function() {
+        /* Offline fallback: serve cached version if available */
+        return caches.match(e.request).then(function(cached) {
+          return cached || caches.match('/index.html');
+        });
+      })
+    );
+    return;
   }
-}
 
-/* ─── OFFLINE FALLBACK ───────────────────────── */
-function offlineFallback(request) {
-  if (request.headers.get('accept')?.includes('text/html')) {
-    return caches.match('/index.html');
+  /* For versioned JS/CSS (?v=...) — cache aggressively */
+  if (url.search.includes('v=')) {
+    e.respondWith(
+      caches.match(e.request).then(function(cached) {
+        return cached || fetch(e.request).then(function(res) {
+          var clone = res.clone();
+          caches.open(STATIC_CACHE).then(function(cache) { cache.put(e.request, clone); });
+          return res;
+        });
+      })
+    );
+    return;
   }
-  return new Response('Offline — Clarix', { status: 503, statusText: 'Service Unavailable' });
-}
 
-/* ─── NOTIFY CLIENTS OF UPDATE ───────────────── */
-// When a new SW is installed, tell all open pages to show the update banner
-self.addEventListener('message', (event) => {
-  if (event.data === 'SKIP_WAITING') {
-    self.skipWaiting();
-  }
+  /* Default: network with cache fallback */
+  e.respondWith(
+    fetch(e.request, { cache: 'no-store' }).catch(function() {
+      return caches.match(e.request);
+    })
+  );
 });

@@ -699,5 +699,34 @@
 
   </div>
 
-</body>
+  <!-- Service Worker + Auto-Update Banner -->
+  <script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/sw.js').then(function(reg) {
+      reg.addEventListener('updatefound', function() {
+        var newSW = reg.installing;
+        newSW.addEventListener('statechange', function() {
+          if (newSW.state === 'installed' && navigator.serviceWorker.controller) {
+            showUpdateBanner();
+          }
+        });
+      });
+    });
+    navigator.serviceWorker.addEventListener('message', function(e) {
+      if (e.data && e.data.type === 'SW_UPDATED') { showUpdateBanner(); }
+    });
+  }
+  function showUpdateBanner() {
+    if (document.getElementById('clarix-update-banner')) return;
+    var b = document.createElement('div');
+    b.id = 'clarix-update-banner';
+    b.innerHTML = '🔄 New update available! <strong>Tap to refresh</strong>';
+    b.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);z-index:99999;'
+      + 'background:#ff7043;color:#fff;padding:14px 24px;border-radius:32px;'
+      + 'font-size:14px;font-weight:700;cursor:pointer;box-shadow:0 8px 30px rgba(255,112,67,0.5);'
+      + 'white-space:nowrap;animation:fadeUp .4s ease;font-family:sans-serif;';
+    b.onclick = function() { window.location.reload(true); };
+    document.body.appendChild(b);
+  }
+  </script></body>
 </html>
