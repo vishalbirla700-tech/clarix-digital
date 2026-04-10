@@ -5,11 +5,33 @@
 
 /* ─── STATE ───────────────────────────────────── */
 const ClarixState = {
-  get isPro() { return localStorage.getItem('clarix_pro') === 'true'; },
+  get isPro() {
+    /* Prefer Firebase profile */
+    if (typeof ClarixAuth !== 'undefined' && ClarixAuth.userProfile) return ClarixAuth.userProfile.isPro === true;
+    return localStorage.getItem('clarix_pro') === 'true';
+  },
   set isPro(v) { localStorage.setItem('clarix_pro', v); },
 
-  get username() { return localStorage.getItem('clarix_username') || 'Creator'; },
+  get username() {
+    if (typeof ClarixAuth !== 'undefined' && ClarixAuth.userProfile) return ClarixAuth.userProfile.name || 'Creator';
+    return localStorage.getItem('clarix_username') || 'Creator';
+  },
   set username(v) { localStorage.setItem('clarix_username', v); },
+
+  get userPhoto() {
+    if (typeof ClarixAuth !== 'undefined' && ClarixAuth.userProfile) return ClarixAuth.userProfile.photo || '';
+    return '';
+  },
+
+  get userCountry() {
+    if (typeof ClarixAuth !== 'undefined' && ClarixAuth.userProfile) return ClarixAuth.userProfile.country || '';
+    return '';
+  },
+
+  get userCountryFlag() {
+    if (typeof ClarixAuth !== 'undefined' && ClarixAuth.userProfile) return ClarixAuth.userProfile.countryFlag || '';
+    return '';
+  },
 
   get totalPrompts() { return parseInt(localStorage.getItem('clarix_total') || '0'); },
   inc() { localStorage.setItem('clarix_total', this.totalPrompts + 1); },
@@ -21,37 +43,57 @@ const ClarixState = {
     const dailyCount = stored.date !== today ? 0 : stored.count;
     return { date: today, count: dailyCount, lifetime: trialUsed };
   },
+
   incUsage() {
+    /* Prefer Firebase cross-device tracking */
+    if (typeof ClarixAuth !== 'undefined' && ClarixAuth.currentUser) {
+      ClarixAuth.incUsage();
+      return;
+    }
+    /* Fallback: localStorage */
     const u = this.getUsage();
-    // Track lifetime trial prompts
     if (u.lifetime < CLARIX_CONFIG.freeTrialLimit) {
       localStorage.setItem('clarix_trial_used', u.lifetime + 1);
     }
-    // Track daily count
     u.count += 1;
     u.date = new Date().toDateString();
     localStorage.setItem('clarix_usage', JSON.stringify({ date: u.date, count: u.count }));
     return u.count;
   },
+
   canEnhance() {
+    /* Prefer Firebase cross-device tracking */
+    if (typeof ClarixAuth !== 'undefined' && ClarixAuth.currentUser) {
+      return ClarixAuth.canEnhance();
+    }
+    /* Fallback: localStorage */
     if (this.isPro) return true;
     const u = this.getUsage();
-    if (u.lifetime < CLARIX_CONFIG.freeTrialLimit) return true; // Still in trial
-    return u.count < CLARIX_CONFIG.freeDailyLimit; // Post-trial daily limit
+    if (u.lifetime < CLARIX_CONFIG.freeTrialLimit) return true;
+    return u.count < CLARIX_CONFIG.freeDailyLimit;
   },
+
   remainingToday() {
+    if (typeof ClarixAuth !== 'undefined' && ClarixAuth.currentUser) {
+      return ClarixAuth.remainingToday();
+    }
     if (this.isPro) return Infinity;
     const u = this.getUsage();
     if (u.lifetime < CLARIX_CONFIG.freeTrialLimit) {
-      return CLARIX_CONFIG.freeTrialLimit - u.lifetime; // Remaining trial
+      return CLARIX_CONFIG.freeTrialLimit - u.lifetime;
     }
     return Math.max(0, CLARIX_CONFIG.freeDailyLimit - u.count);
   },
+
   isInTrial() {
+    if (typeof ClarixAuth !== 'undefined' && ClarixAuth.userProfile) {
+      return (ClarixAuth.userProfile.trialUsed || 0) < CLARIX_CONFIG.freeTrialLimit;
+    }
     if (this.isPro) return false;
     return this.getUsage().lifetime < CLARIX_CONFIG.freeTrialLimit;
   }
 };
+
 
 /* ─── TOAST ───────────────────────────────────── */
 const Toast = {

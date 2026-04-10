@@ -15,7 +15,12 @@
   <link rel="stylesheet" href="css/design.css?v=20260410b">
   <link rel="stylesheet" href="css/components.css?v=20260410b">
   <link rel="stylesheet" href="css/pages/breakdown.css?v=20260410b">
-</head>
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <!-- Clarix Auth CSS -->
+  <link rel="stylesheet" href="/css/auth.css?v=20260410b"></head>
 <body class="theme-dark">
   <nav class="topnav dark" style="position:sticky;top:0;z-index:100">
     <div class="nav-left" style="display:flex;align-items:center;gap:12px">
@@ -229,7 +234,13 @@
     Toast.show('Pro prompt copied! Opening ' + (d.platform||'AI') + '...', 'success');
   }
   </script>
-  <!-- Service Worker + Auto-Update Banner -->
+    <!-- Clarix Firebase Auth -->
+  <script src="/js/firebase-auth.js?v=20260410b"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      ClarixAuth.init();
+    });
+  </script><!-- Service Worker + Auto-Update Banner -->
   <script>
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('/sw.js').then(function(reg) {
