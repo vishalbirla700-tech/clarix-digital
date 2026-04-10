@@ -24,12 +24,18 @@ const ClarixFirebase = (() => {
   let _ready = false;
   let _authCallbacks = [];
 
+  /* ── Mobile detection — popup is blocked on mobile ── */
+  function _isMobile() {
+    return /Android|iPhone|iPad|iPod|webOS|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+  }
+
   /* ── Init ── */
   async function init() {
     try {
       const { initializeApp } = await import(`${FB_CDN}/firebase-app.js`);
       const { getAuth, onAuthStateChanged, signInWithEmailAndPassword,
               createUserWithEmailAndPassword, signInWithPopup,
+              signInWithRedirect, getRedirectResult,
               GoogleAuthProvider, sendPasswordResetEmail,
               signOut, updateProfile }
         = await import(`${FB_CDN}/firebase-auth.js`);
@@ -37,12 +43,31 @@ const ClarixFirebase = (() => {
       // Store on global for modal use
       window._fbAuth = {
         signInWithEmailAndPassword, createUserWithEmailAndPassword,
-        signInWithPopup, GoogleAuthProvider, sendPasswordResetEmail,
+        signInWithPopup, signInWithRedirect, getRedirectResult,
+        GoogleAuthProvider, sendPasswordResetEmail,
         signOut, updateProfile
       };
 
       const app = initializeApp(CLARIX_FIREBASE_CONFIG);
       _auth = getAuth(app);
+
+      /* ── Handle redirect result (mobile Google sign-in flow) ── */
+      try {
+        const result = await getRedirectResult(_auth);
+        if (result && result.user) {
+          console.log('[Clarix Firebase] Redirect sign-in success:', result.user.email);
+          AuthModal.close();
+          if (typeof Toast !== 'undefined') Toast.show('Signed in with Google ✦', 'success');
+        }
+      } catch(redirErr) {
+        console.warn('[Clarix Firebase] Redirect result error:', redirErr.message);
+        /* Reset any stuck Google button */
+        const gBtns = document.querySelectorAll('.btn-google');
+        gBtns.forEach(btn => {
+          btn.disabled = false;
+          btn.innerHTML = '<img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="18" height="18" alt="G"> Continue with Google';
+        });
+      }
 
       onAuthStateChanged(_auth, (user) => {
         _user  = user;
@@ -52,7 +77,7 @@ const ClarixFirebase = (() => {
         _updateNavUI(user);
       });
 
-      console.log('[Clarix Firebase] ✅ Auth ready (localStorage mode)');
+      console.log('[Clarix Firebase] ✅ Auth ready');
     } catch(e) {
       console.warn('[Clarix Firebase] Auth init failed:', e.message);
       _ready = true;
@@ -89,11 +114,24 @@ const ClarixFirebase = (() => {
   }
 
   /* ── Google Sign In ── */
+  /* Mobile: redirect (popup is blocked by Android/iOS browsers)
+     Desktop: popup for instant UX */
   async function signInWithGoogle() {
     const fb       = window._fbAuth;
     const provider = new fb.GoogleAuthProvider();
-    const cred     = await fb.signInWithPopup(_auth, provider);
-    return cred.user;
+    provider.addScope('email');
+    provider.addScope('profile');
+    /* Force account chooser — never show email text input */
+    provider.setCustomParameters({ prompt: 'select_account' });
+
+    if (_isMobile()) {
+      /* Redirect — page reloads after Google auth, result handled in init() */
+      await fb.signInWithRedirect(_auth, provider);
+      return null; /* page will redirect */
+    } else {
+      const cred = await fb.signInWithPopup(_auth, provider);
+      return cred.user;
+    }
   }
 
   /* ── Sign Out ── */
@@ -316,13 +354,28 @@ const AuthModal = (() => {
   }
 
   async function _google() {
+    const btns = document.querySelectorAll('.btn-google');
+    btns.forEach(btn => {
+      btn.disabled = true;
+      btn.innerHTML = '<img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="18" height="18" alt="G" style="opacity:0.5;"> Opening Google…';
+    });
     try {
-      await ClarixFirebase.signInWithGoogle();
-      close();
-      if (typeof Toast !== 'undefined') Toast.show('Signed in with Google ✦', 'success');
-      if (typeof loadProfile === 'function') loadProfile();
+      const user = await ClarixFirebase.signInWithGoogle();
+      /* On mobile: signInWithGoogle triggers a redirect — page navigates away.
+         user will be null. Don't try to close/toast — just wait for redirect. */
+      if (user) {
+        /* Desktop popup success */
+        close();
+        if (typeof Toast !== 'undefined') Toast.show('Signed in with Google ✦', 'success');
+        if (typeof loadProfile === 'function') loadProfile();
+      }
+      /* On mobile: page is already redirecting, nothing more to do */
     } catch(e) {
-      if (typeof Toast !== 'undefined') Toast.show('Google sign-in failed. Try email.', 'error');
+      btns.forEach(btn => {
+        btn.disabled = false;
+        btn.innerHTML = '<img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="18" height="18" alt="G"> Continue with Google';
+      });
+      if (typeof Toast !== 'undefined') Toast.show('Google sign-in failed. Try again.', 'error');
       console.warn('Google sign-in error:', e.message);
     }
   }
