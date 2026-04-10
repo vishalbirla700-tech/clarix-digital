@@ -244,7 +244,36 @@ function generateBlankCardGated() {
   if (!ClarixState.isPro) {
     Toast.show('🎨 Card created! ' + rem + (inTrial ? ' trial' : ' free') + ' prompts remaining.', 'success', 3500);
   }
+  /* Auto-trigger selected social platform */
+  var platform = _blankSocialPlatform || 'whatsapp';
+  setTimeout(function() {
+    if (platform === 'print') {
+      studioTipAction('download');
+    } else if (platform === 'facebook') {
+      studioTipAction('download');
+      setTimeout(function() {
+        window.open('https://www.facebook.com/', '_blank', 'noopener noreferrer');
+        Toast.show('📥 Image saved — upload it to Facebook!', 'success', 4000);
+      }, 700);
+    } else if (platform === 'twitter') {
+      studioTipAction('download');
+      setTimeout(function() {
+        window.open('https://x.com/compose/tweet', '_blank', 'noopener noreferrer');
+        Toast.show('📥 Image saved — attach it in your tweet!', 'success', 4000);
+      }, 700);
+    } else if (platform === 'linkedin') {
+      studioTipAction('download');
+      setTimeout(function() {
+        window.open('https://www.linkedin.com/feed/', '_blank', 'noopener noreferrer');
+        Toast.show('📥 Image saved — upload it to LinkedIn!', 'success', 4000);
+      }, 700);
+    } else {
+      /* whatsapp, instagram, share — handled by studioTipAction */
+      studioTipAction(platform);
+    }
+  }, 600);
 }
+
 
 /* ── Build Modal ── */
 function buildStudioModal() {
@@ -259,8 +288,9 @@ function buildStudioModal() {
     + '<div class="studio-hero-sub">' + s.desc + '</div>'
     + '</div></div>';
 
-  /* Tips — functional for Cultural Creator, decorative for others */
-  var tips = '<div class="studio-tips-strip">';
+  /* Tips — always show with clear label */
+  var tips = '<div class="studio-how-to-label">📌 How to use this studio:</div>'
+    + '<div class="studio-tips-strip">';
   for (var t = 0; t < s.tips.length; t++) {
     var tip = s.tips[t];
     var tipAction = '';
@@ -297,13 +327,55 @@ function buildStudioModal() {
       + '✏️ Create Your Own Card — No Festival Needed'
       + '</button>'
       + '<div class="blank-canvas-section" id="blankCanvasSection">'
-      + '<div class="bcs-label">Card Title</div>'
-      + '<input class="bcs-input" id="blankCardTitle" placeholder="e.g. Happy Diwali or Congratulations!" maxlength="40">'
-      + '<div class="bcs-label">Your Message</div>'
-      + '<textarea class="bcs-input" id="blankCardText" rows="3" placeholder="Type your message here..."></textarea>'
+
+      /* Card type dropdown */
+      + '<div class="bcs-label">🎉 Card Type</div>'
+      + '<select class="bcs-input" id="blankCardTitleSelect" onchange="updateBlankCardTitle()">'
+      + '<option value="">— Select Occasion —</option>'
+      + '<option value="Happy Birthday! 🎂">🎂 Birthday</option>'
+      + '<option value="Happy Anniversary! 💍">💍 Anniversary</option>'
+      + '<option value="Congratulations! 🎉">🎉 Congratulations</option>'
+      + '<option value="Thank You! 🙏">🙏 Thank You</option>'
+      + '<option value="Get Well Soon! 💐">💐 Get Well Soon</option>'
+      + '<option value="Good Luck! 🍀">🍀 Good Luck</option>'
+      + '<option value="Welcome! 🎊">🎊 Welcome</option>'
+      + '<option value="Happy Retirement! 🌟">🌟 Retirement</option>'
+      + '<option value="Farewell! 👋">👋 Farewell</option>'
+      + '<option value="Custom">✏️ Type my own...</option>'
+      + '</select>'
+      + '<input class="bcs-input" id="blankCardTitle" placeholder="Type your custom title..." maxlength="40" style="display:none;margin-top:8px">'
+
+      /* From → To */
+      + '<div class="bcs-label">👤 From → To</div>'
+      + '<div style="display:flex;gap:8px;align-items:center">'
+      + '<input class="bcs-input" id="blankCardFrom" placeholder="From (your name / family)" maxlength="30" style="flex:1">'
+      + '<span style="color:rgba(255,255,255,0.4);font-size:18px;flex-shrink:0">→</span>'
+      + '<input class="bcs-input" id="blankCardTo" placeholder="To (recipient name)" maxlength="30" style="flex:1">'
+      + '</div>'
+
+      /* Message with voice */
+      + '<div class="bcs-label">💬 Your Message</div>'
+      + '<div class="studio-voice-row">'
+      + '<textarea class="bcs-input" id="blankCardText" rows="3" placeholder="Type your heartfelt message (or tap 🎤 to speak)..."></textarea>'
+      + '<button class="studio-mic-btn" id="blankMicBtn" onclick="toggleBlankVoice()" title="Voice input">🎤</button>'
+      + '</div>'
+
+      /* Emoji */
       + '<div class="bcs-label">Emoji</div>'
       + '<div class="bcs-row"><input class="bcs-input bcs-emoji" id="blankCardEmoji" placeholder="✨" maxlength="4" value="✨">'
       + '<span style="font-size:12px;color:rgba(255,255,255,.4);align-self:center">Paste any emoji here</span></div>'
+
+      /* Share To platform */
+      + '<div class="bcs-label">📲 Share To</div>'
+      + '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:4px">'
+      + '<button class="bcs-social-btn active" id="bsp-whatsapp"   onclick="selectBlankSocial(\'whatsapp\',this)"  style="background:rgba(37,211,102,0.15);border:1.5px solid rgba(37,211,102,0.5);color:#25d366;border-radius:10px;padding:10px 4px;font-size:12px;font-weight:700;cursor:pointer;">💬 WhatsApp</button>'
+      + '<button class="bcs-social-btn"        id="bsp-instagram"  onclick="selectBlankSocial(\'instagram\',this)"  style="background:rgba(255,255,255,0.04);border:1.5px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.7);border-radius:10px;padding:10px 4px;font-size:12px;font-weight:700;cursor:pointer;">📸 Instagram</button>'
+      + '<button class="bcs-social-btn"        id="bsp-facebook"   onclick="selectBlankSocial(\'facebook\',this)"   style="background:rgba(255,255,255,0.04);border:1.5px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.7);border-radius:10px;padding:10px 4px;font-size:12px;font-weight:700;cursor:pointer;">📘 Facebook</button>'
+      + '<button class="bcs-social-btn"        id="bsp-twitter"    onclick="selectBlankSocial(\'twitter\',this)"    style="background:rgba(255,255,255,0.04);border:1.5px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.7);border-radius:10px;padding:10px 4px;font-size:12px;font-weight:700;cursor:pointer;">🐦 Twitter / X</button>'
+      + '<button class="bcs-social-btn"        id="bsp-linkedin"   onclick="selectBlankSocial(\'linkedin\',this)"   style="background:rgba(255,255,255,0.04);border:1.5px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.7);border-radius:10px;padding:10px 4px;font-size:12px;font-weight:700;cursor:pointer;">💼 LinkedIn</button>'
+      + '<button class="bcs-social-btn"        id="bsp-print"      onclick="selectBlankSocial(\'print\',this)"      style="background:rgba(255,255,255,0.04);border:1.5px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.7);border-radius:10px;padding:10px 4px;font-size:12px;font-weight:700;cursor:pointer;">🖨️ Print</button>'
+      + '</div>'
+
       + '<button class="studio-analyze-btn" id="blankGenerateBtn" onclick="generateBlankCardGated()" style="margin-top:14px">🎨 Create My Card</button>'
       + '<div id="blankCardCanvas"></div>'
       + '</div>';
@@ -766,14 +838,115 @@ function generateFestivalCard(text) {
   renderCardControls(wrap);
 }
 
-/* ── generateBlankCard — called from blank canvas mode ── */
+/* ── Blank Canvas helpers ── */
+
+function updateBlankCardTitle() {
+  var sel = document.getElementById('blankCardTitleSelect');
+  var inp = document.getElementById('blankCardTitle');
+  if (!sel || !inp) return;
+  if (sel.value === 'Custom') {
+    inp.style.display = 'block';
+    inp.value = '';
+    inp.focus();
+  } else {
+    inp.style.display = 'none';
+  }
+}
+
+var _blankVoiceOn = false;
+var _blankRecognition = null;
+
+function toggleBlankVoice() {
+  if (_blankVoiceOn) { stopBlankVoice(); return; }
+  var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) { Toast.show('Voice not supported on this browser', 'error'); return; }
+  _blankRecognition = new SR();
+  _blankRecognition.continuous = false;
+  _blankRecognition.interimResults = true;
+  _blankRecognition.lang = 'en-IN';
+  _blankRecognition.onresult = function(e) {
+    var t = '';
+    for (var i = 0; i < e.results.length; i++) t += e.results[i][0].transcript;
+    var ta = document.getElementById('blankCardText');
+    if (ta) ta.value = t;
+  };
+  _blankRecognition.onend = function() { stopBlankVoice(); };
+  _blankRecognition.start();
+  _blankVoiceOn = true;
+  var btn = document.getElementById('blankMicBtn');
+  if (btn) { btn.textContent = '🔴'; btn.style.background = 'rgba(255,50,50,0.2)'; }
+  Toast.show('🎤 Listening… speak your message', 'info', 5000);
+}
+
+function stopBlankVoice() {
+  if (_blankRecognition) { try { _blankRecognition.stop(); } catch(e) {} _blankRecognition = null; }
+  _blankVoiceOn = false;
+  var btn = document.getElementById('blankMicBtn');
+  if (btn) { btn.textContent = '🎤'; btn.style.background = ''; }
+}
+
+/* ── Social platform selector ── */
+var _blankSocialPlatform = 'whatsapp'; /* default */
+
+function selectBlankSocial(platform, btn) {
+  _blankSocialPlatform = platform;
+
+  /* Reset all buttons to unselected style */
+  var allBtns = document.querySelectorAll('.bcs-social-btn');
+  allBtns.forEach(function(b) {
+    b.style.background = 'rgba(255,255,255,0.04)';
+    b.style.borderColor = 'rgba(255,255,255,0.12)';
+    b.style.color = 'rgba(255,255,255,0.7)';
+  });
+
+  /* Highlight selected button */
+  var colors = {
+    whatsapp:  ['rgba(37,211,102,0.15)',  'rgba(37,211,102,0.5)',  '#25d366'],
+    instagram: ['rgba(225,48,108,0.15)',  'rgba(225,48,108,0.5)',  '#e1306c'],
+    facebook:  ['rgba(24,119,242,0.15)',  'rgba(24,119,242,0.5)',  '#1877f2'],
+    twitter:   ['rgba(29,161,242,0.15)',  'rgba(29,161,242,0.5)',  '#1da1f2'],
+    linkedin:  ['rgba(10,102,194,0.15)',  'rgba(10,102,194,0.5)',  '#0a66c2'],
+    print:     ['rgba(255,112,67,0.15)',  'rgba(255,112,67,0.5)',  '#ff7043']
+  };
+  var c = colors[platform] || colors.whatsapp;
+  if (btn) {
+    btn.style.background   = c[0];
+    btn.style.borderColor  = c[1];
+    btn.style.color        = c[2];
+  }
+}
+
+/* ── generateBlankCard — reads from/to + dropdown title ── */
 function generateBlankCard() {
-  var textEl  = document.getElementById('blankCardText');
-  var emojiEl = document.getElementById('blankCardEmoji');
-  var titleEl = document.getElementById('blankCardTitle');
-  var text    = (textEl  ? textEl.value.trim()  : '') || 'Happy Celebrations!';
-  var emoji   = (emojiEl ? emojiEl.value.trim() : '') || '✨';
-  var title   = (titleEl ? titleEl.value.trim() : '') || 'My Card';
+  var textEl   = document.getElementById('blankCardText');
+  var emojiEl  = document.getElementById('blankCardEmoji');
+  var titleSel = document.getElementById('blankCardTitleSelect');
+  var titleInp = document.getElementById('blankCardTitle');
+  var fromEl   = document.getElementById('blankCardFrom');
+  var toEl     = document.getElementById('blankCardTo');
+
+  var text  = (textEl  ? textEl.value.trim()  : '') || 'Happy Celebrations!';
+  var emoji = (emojiEl ? emojiEl.value.trim() : '') || '✨';
+
+  /* Title: dropdown value OR custom input */
+  var titleVal = '';
+  if (titleSel) {
+    titleVal = (titleSel.value === 'Custom') ? (titleInp ? titleInp.value.trim() : '') : titleSel.value;
+  }
+  var title = titleVal || 'My Card';
+
+  /* Extract just the text without emoji for canvas title */
+  var cleanTitle = title.replace(/[\u{1F300}-\u{1FAFF}]/gu, '').trim() || title;
+
+  /* Build from/to line */
+  var from = fromEl ? fromEl.value.trim() : '';
+  var to   = toEl   ? toEl.value.trim()   : '';
+  var fromToLine = '';
+  if (to)   fromToLine += 'To: ' + to;
+  if (from) fromToLine += (fromToLine ? '  |  ' : '') + 'From: ' + from;
+
+  /* Full message on card */
+  var fullText = text + (fromToLine ? '\n\n' + fromToLine : '');
 
   var wrap = document.getElementById('blankCardCanvas');
   if (!wrap) return;
@@ -783,7 +956,7 @@ function generateBlankCard() {
   canvas.id = 'blankCanvasEl';
 
   drawFestivalCanvas(canvas, {
-    text: text, emoji: emoji, title: title,
+    text: fullText, emoji: emoji, title: cleanTitle,
     emoji2: emoji + '  ' + emoji,
     design: cardDesign
   });
@@ -797,8 +970,8 @@ function generateBlankCard() {
 
   /* Store globally */
   window._festivalCanvas = canvas;
-  window._festivalText   = text;
-  window._festivalName   = title || 'my-card';
+  window._festivalText   = fullText;
+  window._festivalName   = cleanTitle || 'my-card';
 }
 
 /* ── redrawCard — live re-render when design changes ── */
@@ -1046,40 +1219,36 @@ function wrapCanvasText(ctx, text, x, y, maxWidth, lineHeight) {
 }
 
 /* ════════════════════════════════════════════
-   GROQ PROMPT BUILDERS
+   GROQ PROMPT BUILDERS — via /api/studio proxy
 ════════════════════════════════════════════ */
 async function groqCall(base64, mime, prompt) {
-  var key = CLARIX_CONFIG.groqApiKey;
-  if (!key || key === 'YOUR_GROQ_API_KEY') throw new Error('Groq API key not configured');
+  /* Get Firebase ID token (required by /api/studio) */
+  var user = (typeof ClarixFirebase !== 'undefined') ? ClarixFirebase.getUser() : null;
+  var token = '';
+  if (user && typeof user.getIdToken === 'function') {
+    try { token = await user.getIdToken(); } catch(e) { token = ''; }
+  }
+  if (!token) {
+    throw new Error('Please sign in to use Creative Studios.');
+  }
 
-  var content = base64
-    ? [{ type:'image_url', image_url:{ url:'data:' + mime + ';base64,' + base64 } }, { type:'text', text:prompt }]
-    : prompt;
-
-  var res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-    method:'POST',
-    headers:{ 'Authorization':'Bearer ' + key, 'content-type':'application/json' },
+  var res = await fetch('/api/studio', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
     body: JSON.stringify({
-      model: 'meta-llama/llama-4-scout-17b-16e-instruct',
-      messages:[{ role:'user', content:content }],
-      max_tokens:900, temperature:0.55
+      prompt:      prompt,
+      imageBase64: base64 || null,
+      imageMime:   mime   || null
     })
   });
 
   if (!res.ok) {
-    var errData = {}; try { errData = await res.json(); } catch(e) {}
-    var msg = (errData.error && errData.error.message) ? errData.error.message : 'Groq error ' + res.status;
-    Toast.show('⚠️ ' + msg.substring(0, 60), 'error', 5000);
-    throw new Error(msg);
+    var errData = {};
+    try { errData = await res.json(); } catch(e) {}
+    throw new Error(errData.error || 'Studio error ' + res.status);
   }
 
-  var data = await res.json();
-  var raw  = (data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content) || '';
-  var clean = raw.trim().replace(/^```[a-z]*\n?/, '').replace(/```$/, '').trim();
-  var jsonStr = clean.charAt(0) === '{' ? clean : ((clean.match(/\{[\s\S]*\}/) || [])[0]);
-  if (jsonStr) { try { return JSON.parse(jsonStr); } catch(e) {} }
-  var lines = clean.split('\n').filter(function(l) { return l.trim(); });
-  return { variation1: lines[0] || clean, variation2: lines[1] || '' };
+  return res.json();
 }
 
 async function promptKids(base64, mime, context) {

@@ -1,9 +1,38 @@
 /* ═══════════════════════════════════════════════════════
-   CLARIX — FIREBASE AUTH (No Firestore needed)
-   Email/Password + Google sign-in
-   All data stored in localStorage — works 100% offline
-   Firestore can be added later when billing is enabled
+   CLARIX — FIREBASE AUTH
+   Immediate auth gate + Google sign-in (redirect on mobile)
 ═══════════════════════════════════════════════════════ */
+
+/* ── IMMEDIATE GATE IIFE ──
+   Runs synchronously when this script loads (bottom of body).
+   Shows a blocking overlay instantly if user is not logged in,
+   before Firebase SDK even loads. No delay. */
+;(function clarixImmediateGate() {
+  var PROTECTED = [
+    '/write','/write.html','/inspire','/inspire.html','/library','/library.html',
+    '/apps','/apps.html','/history','/history.html','/profile','/profile.html',
+    '/breakdown','/breakdown.html','/community','/community.html'
+  ];
+  var path = window.location.pathname.replace(/\/$/, '') || '/';
+  var isProtected = PROTECTED.some(function(p) { return path === p || path.endsWith(p); });
+  if (!isProtected) return;
+  if (localStorage.getItem('clarix_uid')) return; /* already logged in */
+
+  /* Show instant loading overlay — replaced by full gate once Firebase loads */
+  var el = document.createElement('div');
+  el.id = 'clarix-early-gate';
+  el.style.cssText = [
+    'position:fixed;top:0;left:0;right:0;bottom:0',
+    'background:linear-gradient(135deg,#0f0f1a 0%,#1a0825 40%,#0a1a0f 100%)',
+    'z-index:99998;display:flex;align-items:center;justify-content:center',
+    'flex-direction:column;gap:16px'
+  ].join(';');
+  el.innerHTML = '<div style="font-size:34px;font-weight:900;color:#fff;letter-spacing:-1px;">'
+    + '<span style="color:#ff7043;">✦</span> clarix</div>'
+    + '<div style="font-size:13px;color:rgba(255,255,255,0.35);letter-spacing:2px;">LOADING...</div>';
+  document.body.appendChild(el);
+  document.body.style.overflow = 'hidden';
+})();
 
 const CLARIX_FIREBASE_CONFIG = {
   apiKey:            "AIzaSyAM4ge2l11JSwtkC4Hzp9PDSjQDw-hAsZU",
@@ -122,6 +151,10 @@ const ClarixFirebase = (() => {
   function _showForcedAuth() {
     if (!_isProtectedPage()) return;
     if (document.getElementById('clarix-force-auth')) return;
+
+    /* Remove the early loading gate (shown by the IIFE) */
+    var early = document.getElementById('clarix-early-gate');
+    if (early) early.remove();
 
     const overlay = document.createElement('div');
     overlay.id = 'clarix-force-auth';
