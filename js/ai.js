@@ -518,63 +518,79 @@ async function claudeVision(base64Image, mimeType) {
 
 
 
-/* ─── MAIN ENGINE: Gemini → Groq → Claude → Local */
+/* ─── MAIN ENGINE: Route through secure /api/ai server proxy ── */
 async function enhancePrompt(text, platform, mode, langCode, langName, socialPlatform) {
-  platform     = platform     || '';
-  mode         = mode         || 'ai';
-  langCode     = langCode     || 'en';
-  langName     = langName     || 'English';
+  platform       = platform       || '';
+  mode           = mode           || 'ai';
+  langCode       = langCode       || 'en';
+  langName       = langName       || 'English';
   socialPlatform = socialPlatform || '';
 
   if (!ClarixState.canEnhance()) { UpgradeModal.show('Daily limit reached'); return null; }
 
   const intent = detectIntent(text);
-  let result   = null;
+
+  /* ── Get Firebase Auth token for secure server call ── */
+  let idToken = null;
+  try {
+    if (typeof ClarixAuth !== 'undefined' && ClarixAuth.currentUser) {
+      idToken = await ClarixAuth.currentUser.getIdToken();
+    }
+  } catch(e) {
+    console.warn('[Clarix] Could not get auth token:', e.message);
+  }
+
+  let result = null;
   let engineUsed = 'Local';
 
-  // ── Try Gemini first ──
-  try {
-    result = await geminiEnhance(text, platform, mode, langCode, langName, intent, socialPlatform);
-    if (result) { engineUsed = 'Gemini ✦'; console.info('[Clarix] Engine: Gemini ✅'); }
-  } catch (e) {
-    console.warn('[Clarix] Gemini failed:', e.message);
-  }
-
-  // ── Try Groq if Gemini failed ──
-  if (!result) {
+  /* ── Try secure server proxy first ── */
+  if (idToken) {
     try {
-      result = await groqEnhance(text, platform, mode, langCode, langName, intent, socialPlatform);
-      if (result) { engineUsed = 'Groq ⚡'; console.info('[Clarix] Engine: Groq ✅'); }
-    } catch (e) {
-      console.warn('[Clarix] Groq failed:', e.message);
+      const resp = await fetch('/api/ai', {
+        method: 'POST',
+        headers: {
+          'Content-Type':  'application/json',
+          'Authorization': 'Bearer ' + idToken
+        },
+        body: JSON.stringify({ text, platform, mode, langCode, langName, socialPlatform })
+      });
+
+      if (resp.ok) {
+        result = await resp.json();
+        engineUsed = result._engine || 'Server';
+        console.info('[Clarix] Server API ✅ engine:', engineUsed);
+      } else if (resp.status === 403) {
+        /* Trial limit enforced server-side */
+        const err = await resp.json().catch(() => ({}));
+        UpgradeModal.show(err.error || 'Trial limit reached. Please upgrade to Pro.');
+        return null;
+      } else if (resp.status === 429) {
+        Toast.show('⏳ Too many requests — please wait a moment.', 'warning', 3000);
+        return null;
+      } else {
+        console.warn('[Clarix] Server returned', resp.status, '— falling back to local');
+      }
+    } catch(e) {
+      console.warn('[Clarix] Server proxy failed — using local fallback:', e.message);
     }
   }
 
-  // ── Try Claude if both failed ──
+  /* ── Local fallback (when server unreachable or not logged in) ── */
   if (!result) {
-    try {
-      result = await claudeEnhance(text, platform, mode, langCode, langName, intent, socialPlatform);
-      if (result) { engineUsed = 'Claude 🧠'; console.info('[Clarix] Engine: Claude ✅'); }
-    } catch (e) {
-      console.warn('[Clarix] Claude failed:', e.message);
-    }
-  }
-
-  // ── Local fallback ──
-  if (!result) {
-    console.warn('[Clarix] All AI APIs failed — using local fallback');
+    console.warn('[Clarix] Using local fallback engine');
     result = localEnhance(text, platform, mode, langCode, langName, intent);
     engineUsed = 'Local';
+    /* Still deduct usage locally */
+    ClarixState.incUsage();
   }
 
-  result.intent    = intent;
-  result._engine   = engineUsed;
+  result.intent  = intent;
+  result._engine = engineUsed;
 
   if (engineUsed !== 'Local') {
-    Toast.show('Enhanced with ' + engineUsed, 'success', 2000);
+    Toast.show('Enhanced with ' + engineUsed + ' ✦', 'success', 2000);
   }
 
-  ClarixState.incUsage();
   ClarixState.inc();
   updateUsageCounter();
   return result;
