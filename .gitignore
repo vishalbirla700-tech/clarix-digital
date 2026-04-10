@@ -2,8 +2,7 @@
 node_modules/
 npm-debug.log*
 
-# API Keys — NEVER commit this!
-config.js
+# config.js is safe to commit — contains no secrets (Firebase web config is public by design)
 
 # Environment / secrets
 .env

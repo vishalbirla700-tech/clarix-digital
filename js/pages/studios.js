@@ -31,6 +31,9 @@ function studioCompressImage(file, maxPx, quality) {
   });
 }
 
+/* ── Blank canvas mode state ── */
+var blankCanvasMode = false;
+
 /* ── Festival Config ── */
 var FESTIVALS = [
   { emoji:'🪔', name:'Diwali',           grad:['#ff6b00','#ffc300','#ff8c00'], emoji2:'✨🪔🎇' },
@@ -885,6 +888,35 @@ function stopBlankVoice() {
   if (btn) { btn.textContent = '🎤'; btn.style.background = ''; }
 }
 
+/* ── Show blank canvas section ── */
+function showBlankCanvas() {
+  blankCanvasMode = true;
+  var section = document.getElementById('blankCanvasSection');
+  var toggle  = document.getElementById('blankCanvasToggle');
+  var festLabel = document.getElementById('festivalLabel');
+  var festGrid  = document.getElementById('festivalGrid');
+  if (section) { section.style.display = 'block'; }
+  if (toggle)   { toggle.style.display = 'none'; }
+  if (festLabel){ festLabel.style.display = 'none'; }
+  if (festGrid) { festGrid.style.display = 'none'; }
+
+  /* Auto-fill FROM with signed-in user name */
+  var fromEl = document.getElementById('blankCardFrom');
+  if (fromEl && !fromEl.value) {
+    var uname = localStorage.getItem('clarix_uname') || '';
+    if (uname) fromEl.value = uname;
+  }
+}
+
+/* ── Generate blank card (pure canvas — no AI required) ── */
+function generateBlankCardGated() {
+  generateBlankCard();
+}
+
+function autoShareBlankCard(platform) {
+  studioTipAction(platform || 'whatsapp');
+}
+
 /* ── Social platform selector ── */
 var _blankSocialPlatform = 'whatsapp'; /* default */
 
@@ -938,8 +970,9 @@ function generateBlankCard() {
   /* Extract just the text without emoji for canvas title */
   var cleanTitle = title.replace(/[\u{1F300}-\u{1FAFF}]/gu, '').trim() || title;
 
-  /* Build from/to line */
+  /* Build from/to line — auto-fill FROM with user name if empty */
   var from = fromEl ? fromEl.value.trim() : '';
+  if (!from) from = localStorage.getItem('clarix_uname') || '';
   var to   = toEl   ? toEl.value.trim()   : '';
   var fromToLine = '';
   if (to)   fromToLine += 'To: ' + to;
@@ -1222,11 +1255,19 @@ function wrapCanvasText(ctx, text, x, y, maxWidth, lineHeight) {
    GROQ PROMPT BUILDERS — via /api/studio proxy
 ════════════════════════════════════════════ */
 async function groqCall(base64, mime, prompt) {
-  /* Get Firebase ID token (required by /api/studio) */
-  var user = (typeof ClarixFirebase !== 'undefined') ? ClarixFirebase.getUser() : null;
+  /* Wait for Firebase auth to be ready (handles race condition on fast taps) */
+  var user = null;
+  if (typeof ClarixFirebase !== 'undefined') {
+    user = await new Promise(function(resolve) {
+      /* onAuthChange fires immediately if auth already resolved */
+      var timer = setTimeout(function() { resolve(ClarixFirebase.getUser()); }, 8000);
+      ClarixFirebase.onAuthChange(function(u) { clearTimeout(timer); resolve(u); });
+    });
+  }
+
   var token = '';
   if (user && typeof user.getIdToken === 'function') {
-    try { token = await user.getIdToken(); } catch(e) { token = ''; }
+    try { token = await user.getIdToken(/* forceRefresh= */true); } catch(e) { token = ''; }
   }
   if (!token) {
     throw new Error('Please sign in to use Creative Studios.');

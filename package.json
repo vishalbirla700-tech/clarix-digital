@@ -1,0 +1,12 @@
+{
+  "name": "clarix",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Clarix AI Prompt Engine",
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "firebase-admin": "^12.0.0"
+  }
+}
