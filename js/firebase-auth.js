@@ -116,6 +116,11 @@ var ClarixAuth = {
   _ready: false,
   _readyCallbacks: [],
 
+  /* Detect mobile browsers — popup is blocked on mobile, use redirect */
+  _isMobile: function() {
+    return /Android|iPhone|iPad|iPod|webOS|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+  },
+
   init: function() {
     /* Load Firebase SDKs dynamically */
     var self = this;
@@ -140,6 +145,23 @@ var ClarixAuth = {
       }
       self._auth = firebase.auth();
       self._db   = firebase.firestore();
+
+      /* ── Handle redirect result first (mobile sign-in flow) ── */
+      self._auth.getRedirectResult().then(function(result) {
+        /* result.user is null if no redirect happened — that's fine */
+        if (result && result.user) {
+          /* Auth state listener below will pick this up automatically */
+          console.log('Clarix: redirect sign-in success', result.user.email);
+        }
+      }).catch(function(e) {
+        console.error('Redirect result error:', e);
+        /* Reset any stuck button state */
+        var btn = document.getElementById('clarixGoogleSignIn');
+        if (btn) {
+          btn.disabled = false;
+          btn.innerHTML = '<img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="G" style="width:20px;height:20px;margin-right:10px;">Continue with Google';
+        }
+      });
 
       self._auth.onAuthStateChanged(function(user) {
         if (user) {
@@ -243,13 +265,38 @@ var ClarixAuth = {
   },
 
   /* ── Google Sign-In ── */
+  /* Mobile: use redirect (popup is blocked by mobile browsers)
+     Desktop: use popup for instant UX */
   signInWithGoogle: function() {
+    var self = this;
     var provider = new firebase.auth.GoogleAuthProvider();
     provider.addScope('email');
     provider.addScope('profile');
-    return this._auth.signInWithPopup(provider).catch(function(e) {
-      Toast.show('Sign-in failed: ' + e.message, 'error');
-    });
+    /* Always add hint so Google shows account chooser, not email input */
+    provider.setCustomParameters({ prompt: 'select_account' });
+
+    if (self._isMobile()) {
+      /* Redirect flow — page will reload after sign-in */
+      return self._auth.signInWithRedirect(provider).catch(function(e) {
+        console.error('Redirect sign-in error:', e);
+        var btn = document.getElementById('clarixGoogleSignIn');
+        if (btn) {
+          btn.disabled = false;
+          btn.innerHTML = '<img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="G" style="width:20px;height:20px;margin-right:10px;">Continue with Google';
+        }
+        if (typeof Toast !== 'undefined') Toast.show('Sign-in failed. Please try again.', 'error');
+      });
+    } else {
+      /* Desktop popup flow */
+      return self._auth.signInWithPopup(provider).catch(function(e) {
+        var btn = document.getElementById('clarixGoogleSignIn');
+        if (btn) {
+          btn.disabled = false;
+          btn.innerHTML = '<img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="G" style="width:20px;height:20px;margin-right:10px;">Continue with Google';
+        }
+        if (typeof Toast !== 'undefined') Toast.show('Sign-in failed. Please try again.', 'error');
+      });
+    }
   },
 
   signOut: function() {
@@ -388,7 +435,8 @@ var ClarixAuth = {
     document.getElementById('clarixGoogleSignIn').onclick = function() {
       var btn = this;
       btn.disabled = true;
-      btn.textContent = 'Signing in...';
+      /* Show Google logo + loading text so it looks professional */
+      btn.innerHTML = '<img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="G" style="width:20px;height:20px;margin-right:10px;opacity:0.6;"><span style="opacity:0.7;">Opening Google…</span>';
       self.signInWithGoogle();
     };
   },
