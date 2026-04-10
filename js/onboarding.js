@@ -14,7 +14,11 @@ const Onboarding = {
   },
 
   init() {
+    /* Onboarding now triggered by firebase.js AFTER Google sign-in.
+       Guard: never auto-run on page load (old behaviour bypassed auth). */
     if (this.hasCompleted()) return;
+    /* Only proceed if Firebase has a signed-in user */
+    if (!localStorage.getItem('clarix_uid')) return;
     this.render();
     this.show();
   },

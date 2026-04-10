@@ -72,7 +72,23 @@ const ClarixFirebase = (() => {
       onAuthStateChanged(_auth, (user) => {
         _user  = user;
         _ready = true;
-        if (user) _applyUserToApp(user);
+        if (user) {
+          _applyUserToApp(user);
+          /* ── Remove forced auth gate if it was showing ── */
+          const gate = document.getElementById('clarix-force-auth');
+          if (gate) {
+            gate.style.transition = 'opacity 0.5s';
+            gate.style.opacity = '0';
+            setTimeout(() => { gate.remove(); document.body.style.overflow = ''; }, 500);
+          }
+          /* ── Trigger onboarding NOW (after auth) if not yet completed ── */
+          if (localStorage.getItem('clarix_onboarded') !== 'true' && typeof Onboarding !== 'undefined') {
+            setTimeout(() => { Onboarding.render(); Onboarding.show(); }, 600);
+          }
+        } else {
+          /* Not signed in — show forced auth gate on protected pages */
+          _showForcedAuth();
+        }
         _authCallbacks.forEach(cb => cb(user));
         _updateNavUI(user);
       });
@@ -83,6 +99,112 @@ const ClarixFirebase = (() => {
       _ready = true;
       _authCallbacks.forEach(cb => cb(null));
     }
+  }
+
+  /* ── Forced Auth Gate ──
+     Shows a full-screen sign-in overlay on all protected pages.
+     Public pages (marketing/legal) are excluded. */
+  const _PUBLIC_PAGES = [
+    '/', '/index.html',
+    '/about', '/about.html',
+    '/terms', '/terms.html',
+    '/privacy', '/privacy.html',
+    '/refund', '/refund.html',
+    '/onepager', '/clarix-onepager.html',
+    '/indias-first-ai-prompt-engine'
+  ];
+
+  function _isProtectedPage() {
+    const path = window.location.pathname.replace(/\/$/, '') || '/';
+    return !_PUBLIC_PAGES.some(p => path === p || path.endsWith(p));
+  }
+
+  function _showForcedAuth() {
+    if (!_isProtectedPage()) return;
+    if (document.getElementById('clarix-force-auth')) return;
+
+    const overlay = document.createElement('div');
+    overlay.id = 'clarix-force-auth';
+    overlay.style.cssText = `
+      position:fixed;top:0;left:0;right:0;bottom:0;
+      background:linear-gradient(135deg,#0f0f1a 0%,#1a0825 40%,#0a1a0f 100%);
+      z-index:99999;display:flex;align-items:center;justify-content:center;
+      padding:20px;box-sizing:border-box;
+      animation:clarix-gate-in 0.4s ease;
+    `;
+    overlay.innerHTML = `
+      <style>
+        @keyframes clarix-gate-in { from{opacity:0;transform:scale(0.97)} to{opacity:1;transform:scale(1)} }
+        @keyframes clarix-gate-pulse { 0%,100%{box-shadow:0 0 60px rgba(255,112,67,0.15)} 50%{box-shadow:0 0 100px rgba(255,112,67,0.3)} }
+        #clarix-gate-box { animation: clarix-gate-pulse 3s ease-in-out infinite; }
+        #clarix-force-google-btn:hover { transform:translateY(-2px)!important; box-shadow:0 8px 40px rgba(0,0,0,0.5)!important; }
+      </style>
+      <div id="clarix-gate-box" style="
+        background:rgba(255,255,255,0.04);
+        border:1px solid rgba(255,255,255,0.1);
+        border-radius:28px;
+        padding:44px 36px;
+        max-width:420px;width:100%;
+        text-align:center;
+        backdrop-filter:blur(24px);
+      ">
+        <div style="font-size:36px;font-weight:900;color:#fff;letter-spacing:-1.5px;margin-bottom:6px;">
+          <span style="color:#ff7043;">✦</span> clarix
+        </div>
+        <div style="font-size:12px;letter-spacing:3px;text-transform:uppercase;color:rgba(255,112,67,0.7);margin-bottom:20px;font-weight:600;">AI Prompt Engine</div>
+        <div style="font-size:16px;color:rgba(255,255,255,0.85);margin-bottom:6px;font-weight:600;">Welcome to India's First AI Prompt Engine</div>
+        <div style="font-size:13px;color:rgba(255,255,255,0.45);margin-bottom:32px;line-height:1.7;">
+          Sign in to unlock <strong style="color:#ff7043;">25 free prompts</strong> — works in Hindi,<br>Gujarati, English &amp; 20+ languages.
+        </div>
+        <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:28px;text-align:left;">
+          <div style="display:flex;align-items:center;gap:12px;padding:11px 16px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);border-radius:10px;font-size:13px;color:rgba(255,255,255,0.6);">
+            <span style="font-size:16px;">📱</span> Works on mobile &amp; desktop
+          </div>
+          <div style="display:flex;align-items:center;gap:12px;padding:11px 16px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);border-radius:10px;font-size:13px;color:rgba(255,255,255,0.6);">
+            <span style="font-size:16px;">🌍</span> Personalised for your country &amp; language
+          </div>
+          <div style="display:flex;align-items:center;gap:12px;padding:11px 16px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);border-radius:10px;font-size:13px;color:rgba(255,255,255,0.6);">
+            <span style="font-size:16px;">🔒</span> Secure &middot; No password needed
+          </div>
+        </div>
+        <button id="clarix-force-google-btn" style="
+          width:100%;padding:15px 20px;
+          background:#fff;color:#333;
+          border:none;border-radius:14px;
+          font-size:15px;font-weight:700;
+          cursor:pointer;
+          display:flex;align-items:center;justify-content:center;gap:12px;
+          transition:all 0.25s ease;
+          box-shadow:0 4px 24px rgba(0,0,0,0.4);
+          margin-bottom:18px;
+        ">
+          <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="20" height="20" alt="G">
+          Continue with Google
+        </button>
+        <div style="font-size:11px;color:rgba(255,255,255,0.25);line-height:1.6;">
+          By signing in you agree to our
+          <a href="/terms" style="color:rgba(255,255,255,0.4);text-decoration:underline;">Terms</a> &amp;
+          <a href="/privacy" style="color:rgba(255,255,255,0.4);text-decoration:underline;">Privacy Policy</a>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(overlay);
+    document.body.style.overflow = 'hidden';
+
+    const btn = document.getElementById('clarix-force-google-btn');
+    btn.onclick = async function() {
+      btn.disabled = true;
+      btn.innerHTML = '<img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="20" height="20" alt="G" style="opacity:0.5;"> <span style="opacity:0.7;">Opening Google…</span>';
+      try {
+        await ClarixFirebase.signInWithGoogle();
+        /* Desktop: popup closes, onAuthStateChanged fires = gate removes itself */
+        /* Mobile:  page redirects to Google — nothing more to do here */
+      } catch(e) {
+        btn.disabled = false;
+        btn.innerHTML = '<img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="20" height="20" alt="G"> Continue with Google';
+        console.warn('Auth gate error:', e.message);
+      }
+    };
   }
 
   /* ── Apply signed-in user to Clarix state ── */
