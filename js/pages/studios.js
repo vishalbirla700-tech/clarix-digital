@@ -131,6 +131,36 @@ var selectedFestival = null;
 var selectedVariation = null;
 var studioVoiceOn = false;
 var studioRecognition = null;
+var blankCanvasMode = false;
+
+/* ── Card Design State ── */
+var cardDesign = {
+  bgPreset: 0,          /* 0 = festival theme, 1-5 = presets */
+  bgCustom: '',         /* custom hex color */
+  fontStyle: 'sans',    /* sans | serif | bold | decorative */
+  textSize: 'medium',   /* small | medium | large */
+  textColor: '#ffffff', /* hex */
+  borderStyle: 'double',/* none | double | glow | gold */
+  showWatermark: true
+};
+
+var BG_PRESETS = [
+  { name: '🎨 Festival', colors: null },
+  { name: '🌅 Sunset',   colors: ['#ff6b35','#f79d65','#ffecd2'] },
+  { name: '🌊 Ocean',    colors: ['#0077b6','#00b4d8','#90e0ef'] },
+  { name: '🌌 Night',    colors: ['#03045e','#023e8a','#7b2d8b'] },
+  { name: '🌹 Rose',     colors: ['#b76e79','#dba098','#f0c8b0'] },
+  { name: '🌿 Forest',   colors: ['#1b4332','#40916c','#95d5b2'] }
+];
+
+var FONT_MAP = {
+  sans:        'Arial, sans-serif',
+  serif:       'Georgia, serif',
+  bold:        '"Arial Black", Impact, sans-serif',
+  decorative:  '"Palatino Linotype", Georgia, serif'
+};
+
+var TEXT_SIZE_MAP = { small: 30, medium: 38, large: 50 };
 
 /* ── Render Studio Cards ── */
 function renderStudios() {
@@ -171,6 +201,49 @@ function closeStudio() {
   document.getElementById('studioOverlay').classList.remove('open');
   document.body.style.overflow = '';
   stopStudioVoice();
+  blankCanvasMode = false;
+}
+
+/* Toggle Blank Canvas mode */
+function showBlankCanvas() {
+  var toggle  = document.getElementById('blankCanvasToggle');
+  var section = document.getElementById('blankCanvasSection');
+  var festLabel = document.getElementById('festivalLabel');
+  var festGrid  = document.getElementById('festivalGrid');
+  if (!toggle || !section) return;
+
+  blankCanvasMode = !blankCanvasMode;
+
+  if (blankCanvasMode) {
+    toggle.classList.add('active');
+    toggle.textContent = '✕ Close Custom Card';
+    section.classList.add('visible');
+    /* Hide festival picker when in blank mode */
+    if (festLabel) festLabel.style.display = 'none';
+    if (festGrid)  festGrid.style.display  = 'none';
+  } else {
+    toggle.classList.remove('active');
+    toggle.textContent = '✏️ Create Your Own Card — No Festival Needed';
+    section.classList.remove('visible');
+    if (festLabel) festLabel.style.display = '';
+    if (festGrid)  festGrid.style.display  = '';
+  }
+}
+
+/* Gated blank card generator — checks trial before drawing */
+function generateBlankCardGated() {
+  if (!ClarixState.canEnhance()) {
+    UpgradeModal.show('You\'ve used all your free prompts!');
+    return;
+  }
+  generateBlankCard();
+  ClarixState.incUsage();
+  if (typeof updateUsageCounter === 'function') updateUsageCounter();
+  var rem = ClarixState.remainingToday();
+  var inTrial = ClarixState.isInTrial();
+  if (!ClarixState.isPro) {
+    Toast.show('🎨 Card created! ' + rem + (inTrial ? ' trial' : ' free') + ' prompts remaining.', 'success', 3500);
+  }
 }
 
 /* ── Build Modal ── */
@@ -216,10 +289,27 @@ function buildStudioModal() {
     kidsGallery += '</div>';
   }
 
-  /* Festival picker */
+  /* Festival picker + Blank Canvas toggle for Cultural Creator */
   var festSection = '';
   if (s.hasFestivals) {
-    festSection = '<div class="studio-options-label">Choose Your Festival</div>'
+    /* Blank canvas toggle */
+    festSection = '<button class="blank-canvas-toggle" id="blankCanvasToggle" onclick="showBlankCanvas()">'
+      + '✏️ Create Your Own Card — No Festival Needed'
+      + '</button>'
+      + '<div class="blank-canvas-section" id="blankCanvasSection">'
+      + '<div class="bcs-label">Card Title</div>'
+      + '<input class="bcs-input" id="blankCardTitle" placeholder="e.g. Happy Diwali or Congratulations!" maxlength="40">'
+      + '<div class="bcs-label">Your Message</div>'
+      + '<textarea class="bcs-input" id="blankCardText" rows="3" placeholder="Type your message here..."></textarea>'
+      + '<div class="bcs-label">Emoji</div>'
+      + '<div class="bcs-row"><input class="bcs-input bcs-emoji" id="blankCardEmoji" placeholder="✨" maxlength="4" value="✨">'
+      + '<span style="font-size:12px;color:rgba(255,255,255,.4);align-self:center">Paste any emoji here</span></div>'
+      + '<button class="studio-analyze-btn" id="blankGenerateBtn" onclick="generateBlankCardGated()" style="margin-top:14px">🎨 Create My Card</button>'
+      + '<div id="blankCardCanvas"></div>'
+      + '</div>';
+
+    /* Festival grid */
+    festSection += '<div class="studio-options-label" id="festivalLabel">Choose Your Festival</div>'
       + '<div class="festival-grid" id="festivalGrid">';
     for (var fi = 0; fi < FESTIVALS.length; fi++) {
       var f = FESTIVALS[fi];
@@ -440,7 +530,8 @@ async function runStudio() {
     return;
   }
 
-  if (s.hasFestivals && !selectedFestival) {
+  /* In blank canvas mode, skip festival requirement */
+  if (s.hasFestivals && !selectedFestival && !blankCanvasMode) {
     Toast.show('Please select a festival first 🎉', 'error'); return;
   }
 
@@ -541,9 +632,109 @@ function sendStudioToWrite() {
 }
 
 /* ════════════════════════════════════════════
-   FESTIVAL CANVAS CARD GENERATOR
-   100% browser Canvas — no image API needed
+   FESTIVAL CANVAS ENGINE — Design-System Aware
 ════════════════════════════════════════════ */
+
+/* Core drawing function — shared by festival card AND blank canvas */
+function drawFestivalCanvas(canvas, opts) {
+  /* opts: { festival, text, emoji, title, design } */
+  var festival = opts.festival || null;
+  var text     = opts.text || '';
+  var emoji    = opts.emoji || (festival ? festival.emoji : '✨');
+  var emoji2   = opts.emoji2 || (festival ? festival.emoji2 : '✨🌟✨');
+  var title    = opts.title || (festival ? festival.name : 'My Card');
+  var d        = opts.design || cardDesign;
+
+  var ctx = canvas.getContext('2d');
+  canvas.width = 1080; canvas.height = 1080;
+
+  /* ── Background ── */
+  var bgColors;
+  if (d.bgPreset === 0 && festival) {
+    bgColors = festival.grad;
+  } else if (d.bgPreset > 0 && BG_PRESETS[d.bgPreset] && BG_PRESETS[d.bgPreset].colors) {
+    bgColors = BG_PRESETS[d.bgPreset].colors;
+  } else if (d.bgCustom) {
+    bgColors = [d.bgCustom, d.bgCustom, d.bgCustom];
+  } else {
+    bgColors = ['#1a1a2e','#16213e','#0f3460'];
+  }
+  var grad = ctx.createLinearGradient(0, 0, 1080, 1080);
+  grad.addColorStop(0,   bgColors[0]);
+  grad.addColorStop(0.5, bgColors[1] || bgColors[0]);
+  grad.addColorStop(1,   bgColors[2] || bgColors[0]);
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, 1080, 1080);
+
+  /* Dark overlay for legibility */
+  ctx.fillStyle = 'rgba(0,0,0,0.28)';
+  ctx.fillRect(0, 0, 1080, 1080);
+
+  /* ── Border / Frame ── */
+  if (d.borderStyle === 'double') {
+    ctx.strokeStyle = 'rgba(255,255,255,0.25)'; ctx.lineWidth = 6;
+    ctx.strokeRect(28, 28, 1024, 1024);
+    ctx.strokeStyle = 'rgba(255,255,255,0.1)';  ctx.lineWidth = 2;
+    ctx.strokeRect(48, 48, 984, 984);
+  } else if (d.borderStyle === 'glow') {
+    ctx.shadowColor = d.textColor || '#fff'; ctx.shadowBlur = 30;
+    ctx.strokeStyle = 'rgba(255,255,255,0.6)'; ctx.lineWidth = 4;
+    ctx.strokeRect(32, 32, 1016, 1016);
+    ctx.shadowBlur = 0;
+  } else if (d.borderStyle === 'gold') {
+    var goldGrad = ctx.createLinearGradient(0,0,1080,1080);
+    goldGrad.addColorStop(0,'#ffd700'); goldGrad.addColorStop(0.5,'#fff5b0'); goldGrad.addColorStop(1,'#ffd700');
+    ctx.strokeStyle = goldGrad; ctx.lineWidth = 8;
+    ctx.strokeRect(24, 24, 1032, 1032);
+    ctx.strokeStyle = 'rgba(255,215,0,0.3)'; ctx.lineWidth = 2;
+    ctx.strokeRect(40, 40, 1000, 1000);
+  }
+  /* borderStyle === 'none' → skip */
+
+  /* ── Emoji top ── */
+  ctx.font = '110px serif';
+  ctx.textAlign = 'center';
+  ctx.fillStyle = '#ffffff';
+  ctx.shadowBlur = 0;
+  ctx.fillText(emoji, 540, 175);
+
+  /* ── Title ── */
+  var fontFamily = FONT_MAP[d.fontStyle] || 'Arial, sans-serif';
+  ctx.font = 'bold 70px ' + fontFamily;
+  ctx.shadowColor = 'rgba(0,0,0,0.55)'; ctx.shadowBlur = 20;
+  ctx.fillStyle = d.textColor || '#ffffff';
+  ctx.fillText(title, 540, 290);
+
+  /* ── Secondary emoji strip ── */
+  ctx.shadowBlur = 0;
+  ctx.font = '42px serif';
+  ctx.fillStyle = '#ffffff';
+  ctx.fillText(emoji2, 540, 390);
+
+  /* ── Divider line ── */
+  ctx.beginPath();
+  ctx.strokeStyle = 'rgba(255,255,255,0.2)'; ctx.lineWidth = 1;
+  ctx.moveTo(100, 428); ctx.lineTo(980, 428);
+  ctx.stroke();
+
+  /* ── Message text (bottom section) ── */
+  var fontSize   = TEXT_SIZE_MAP[d.textSize] || 38;
+  var lineHeight = Math.round(fontSize * 1.6);
+  ctx.font       = fontSize + 'px ' + fontFamily;
+  ctx.shadowBlur = 14; ctx.shadowColor = 'rgba(0,0,0,0.7)';
+  ctx.fillStyle  = d.textColor || '#ffffff';
+  wrapCanvasText(ctx, text.substring(0, 320), 540, 490, 900, lineHeight);
+
+  /* ── Watermark ── */
+  if (d.showWatermark) {
+    ctx.shadowBlur = 0;
+    ctx.font = '21px Arial, sans-serif';
+    ctx.fillStyle = 'rgba(255,255,255,0.32)';
+    ctx.fillText('Made with Clarix AI  ·  clarix.digital', 540, 1050);
+  }
+}
+
+/* ── generateFestivalCard — called from renderStudioOutput ── */
 function generateFestivalCard(text) {
   var festival = null;
   for (var i = 0; i < FESTIVALS.length; i++) {
@@ -555,112 +746,249 @@ function generateFestivalCard(text) {
   if (!wrap) return;
   wrap.innerHTML = '';
 
+  /* Reset design to festival theme on new generate */
+  cardDesign.bgPreset = 0;
+
   var canvas = document.createElement('canvas');
-  canvas.width = 1080; canvas.height = 1080;
-  var ctx = canvas.getContext('2d');
+  drawFestivalCanvas(canvas, { festival: festival, text: text, design: cardDesign });
 
-  /* Background gradient */
-  var grad = ctx.createLinearGradient(0, 0, 1080, 1080);
-  grad.addColorStop(0, festival.grad[0]);
-  grad.addColorStop(0.5, festival.grad[1]);
-  grad.addColorStop(1, festival.grad[2]);
-  ctx.fillStyle = grad;
-  ctx.fillRect(0, 0, 1080, 1080);
+  /* Store globally */
+  window._festivalCanvas  = canvas;
+  window._festivalText    = text;
+  window._festivalName    = festival.name;
+  window._festivalOpts    = { festival: festival, text: text };
 
-  /* Dark overlay */
-  ctx.fillStyle = 'rgba(0,0,0,0.32)';
-  ctx.fillRect(0, 0, 1080, 1080);
-
-  /* Border frames */
-  ctx.strokeStyle = 'rgba(255,255,255,0.25)';
-  ctx.lineWidth = 6;
-  ctx.strokeRect(28, 28, 1024, 1024);
-  ctx.strokeStyle = 'rgba(255,255,255,0.1)';
-  ctx.lineWidth = 2;
-  ctx.strokeRect(48, 48, 984, 984);
-
-  /* Festival emoji — top */
-  ctx.font = '120px serif';
-  ctx.textAlign = 'center';
-  ctx.fillStyle = '#ffffff';
-  ctx.fillText(festival.emoji, 540, 190);
-
-  /* Festival name */
-  ctx.font = 'bold 72px Arial, sans-serif';
-  ctx.shadowColor = 'rgba(0,0,0,0.5)';
-  ctx.shadowBlur = 18;
-  ctx.fillStyle = '#ffffff';
-  ctx.fillText(festival.name, 540, 300);
-
-  /* Decorative emoji strip — middle divider */
-  ctx.shadowBlur = 0;
-  ctx.font = '44px serif';
-  ctx.fillText(festival.emoji2, 540, 400);
-
-  /* Divider line */
-  ctx.beginPath();
-  ctx.strokeStyle = 'rgba(255,255,255,0.25)';
-  ctx.lineWidth = 1;
-  ctx.moveTo(100, 440); ctx.lineTo(980, 440);
-  ctx.stroke();
-
-  /* AI message text — BOTTOM section of card */
-  ctx.font = '38px Arial, sans-serif';
-  ctx.shadowBlur = 14;
-  ctx.shadowColor = 'rgba(0,0,0,0.7)';
-  ctx.fillStyle = 'rgba(255,255,255,0.96)';
-  wrapCanvasText(ctx, text.substring(0, 300), 540, 510, 900, 60);
-
-  /* Watermark — very bottom */
-  ctx.shadowBlur = 0;
-  ctx.font = '22px Arial, sans-serif';
-  ctx.fillStyle = 'rgba(255,255,255,0.35)';
-  ctx.fillText('Made with Clarix AI  ·  clarix.digital', 540, 1048);
-
-  /* Store canvas globally for share actions */
-  window._festivalCanvas = canvas;
-  window._festivalText   = text;
-  window._festivalName   = festival.name;
-  window._festivalGrad   = festival.grad;
-
-  /* Show canvas */
   canvas.style.cssText = 'width:100%;border-radius:16px;display:block;box-shadow:0 20px 60px rgba(0,0,0,0.6);margin-top:16px;';
+  canvas.id = 'festivalCanvasEl';
   wrap.appendChild(canvas);
 
-  /* ── 3-button action row ── */
+  appendShareButtons(wrap, festival.grad);
+  renderCardControls(wrap);
+}
+
+/* ── generateBlankCard — called from blank canvas mode ── */
+function generateBlankCard() {
+  var textEl  = document.getElementById('blankCardText');
+  var emojiEl = document.getElementById('blankCardEmoji');
+  var titleEl = document.getElementById('blankCardTitle');
+  var text    = (textEl  ? textEl.value.trim()  : '') || 'Happy Celebrations!';
+  var emoji   = (emojiEl ? emojiEl.value.trim() : '') || '✨';
+  var title   = (titleEl ? titleEl.value.trim() : '') || 'My Card';
+
+  var wrap = document.getElementById('blankCardCanvas');
+  if (!wrap) return;
+
+  var existing = document.getElementById('blankCanvasEl');
+  var canvas = existing || document.createElement('canvas');
+  canvas.id = 'blankCanvasEl';
+
+  drawFestivalCanvas(canvas, {
+    text: text, emoji: emoji, title: title,
+    emoji2: emoji + '  ' + emoji,
+    design: cardDesign
+  });
+
+  if (!existing) {
+    canvas.style.cssText = 'width:100%;border-radius:16px;display:block;box-shadow:0 20px 60px rgba(0,0,0,0.6);margin-top:16px;';
+    wrap.appendChild(canvas);
+    appendShareButtons(wrap, ['#ff7043','#ff5722','#bf360c']);
+    renderCardControls(wrap);
+  }
+
+  /* Store globally */
+  window._festivalCanvas = canvas;
+  window._festivalText   = text;
+  window._festivalName   = title || 'my-card';
+}
+
+/* ── redrawCard — live re-render when design changes ── */
+function redrawCard() {
+  var canvasEl = document.getElementById('festivalCanvasEl') || document.getElementById('blankCanvasEl');
+  if (!canvasEl) return;
+  var opts = window._festivalOpts || {};
+  if (blankCanvasMode) {
+    generateBlankCard();
+  } else {
+    var text = window._festivalText || '';
+    var festival = null;
+    for (var i = 0; i < FESTIVALS.length; i++) {
+      if (FESTIVALS[i].name === selectedFestival) { festival = FESTIVALS[i]; break; }
+    }
+    if (!festival) return;
+    drawFestivalCanvas(canvasEl, { festival: festival, text: text, design: cardDesign });
+    window._festivalCanvas = canvasEl;
+  }
+}
+
+/* ── Design Control Panel ── */
+function renderCardControls(wrap) {
+  /* Remove old panel if any */
+  var old = document.getElementById('cardDesignPanel');
+  if (old) old.remove();
+
+  var panel = document.createElement('div');
+  panel.id = 'cardDesignPanel';
+  panel.className = 'card-design-panel';
+  panel.innerHTML = [
+    '<div class="cdp-header" onclick="this.parentElement.classList.toggle(\'open\')">',
+      '<span>🎨 Customise Card</span>',
+      '<span class="cdp-arrow">▼</span>',
+    '</div>',
+    '<div class="cdp-body">',
+
+    /* Background presets */
+    '<div class="cdp-label">Background</div>',
+    '<div class="cdp-row">',
+      BG_PRESETS.map(function(p, i) {
+        var bg = p.colors
+          ? 'background:linear-gradient(135deg,' + p.colors.join(',') + ')'
+          : 'background:linear-gradient(135deg,#ff6b00,#ffc300)';
+        return '<button class="cdp-swatch' + (cardDesign.bgPreset === i ? ' active' : '') + '" '
+          + 'style="' + bg + '" onclick="cardDesign.bgPreset=' + i + ';updateDesignUI();redrawCard();" title="' + p.name + '">'
+          + (cardDesign.bgPreset === i ? '✓' : '')
+          + '</button>';
+      }).join(''),
+      '<input type="color" class="cdp-color-input" id="cdpBgColor" value="#1a1a2e" title="Custom color" '
+        + 'onchange="cardDesign.bgPreset=-1;cardDesign.bgCustom=this.value;redrawCard();">',
+    '</div>',
+
+    /* Font style */
+    '<div class="cdp-label">Font Style</div>',
+    '<div class="cdp-pill-row">',
+      [['sans','Modern'],['serif','Classic'],['bold','Bold'],['decorative','Elegant']].map(function(f) {
+        return '<button class="cdp-pill' + (cardDesign.fontStyle === f[0] ? ' active' : '') + '" '
+          + 'onclick="cardDesign.fontStyle=\'' + f[0] + '\';updateDesignUI();redrawCard();">' + f[1] + '</button>';
+      }).join(''),
+    '</div>',
+
+    /* Text size */
+    '<div class="cdp-label">Text Size</div>',
+    '<div class="cdp-pill-row">',
+      [['small','Small'],['medium','Medium'],['large','Large']].map(function(s) {
+        return '<button class="cdp-pill' + (cardDesign.textSize === s[0] ? ' active' : '') + '" '
+          + 'onclick="cardDesign.textSize=\'' + s[0] + '\';updateDesignUI();redrawCard();">' + s[1] + '</button>';
+      }).join(''),
+    '</div>',
+
+    /* Text colour */
+    '<div class="cdp-label">Text Colour</div>',
+    '<div class="cdp-row">',
+      [['#ffffff','White'],['#ffd700','Gold ✨'],['#222222','Dark']].map(function(c) {
+        return '<button class="cdp-swatch cdp-text-swatch' + (cardDesign.textColor === c[0] ? ' active' : '') + '" '
+          + 'style="background:' + c[0] + ';border:2px solid rgba(255,255,255,0.3);" '
+          + 'onclick="cardDesign.textColor=\'' + c[0] + '\';updateDesignUI();redrawCard();" title="' + c[1] + '">'
+          + (cardDesign.textColor === c[0] ? '✓' : '') + '</button>';
+      }).join(''),
+      '<input type="color" class="cdp-color-input" id="cdpTextColor" value="#ffffff" title="Custom text color" '
+        + 'onchange="cardDesign.textColor=this.value;redrawCard();">',
+    '</div>',
+
+    /* Border / Frame */
+    '<div class="cdp-label">Border / Frame</div>',
+    '<div class="cdp-pill-row">',
+      [['none','None'],['double','Classic'],['glow','Glow'],['gold','Gold 🌟']].map(function(b) {
+        return '<button class="cdp-pill' + (cardDesign.borderStyle === b[0] ? ' active' : '') + '" '
+          + 'onclick="cardDesign.borderStyle=\'' + b[0] + '\';updateDesignUI();redrawCard();">' + b[1] + '</button>';
+      }).join(''),
+    '</div>',
+
+    /* Watermark toggle */
+    '<div class="cdp-label">Watermark</div>',
+    '<div class="cdp-row">',
+      '<label class="cdp-toggle"><input type="checkbox" id="cdpWatermark"' + (cardDesign.showWatermark ? ' checked' : '') + ' '
+        + 'onchange="cardDesign.showWatermark=this.checked;redrawCard();"> Show "Made with Clarix AI"</label>',
+    '</div>',
+
+    '</div>' /* cdp-body */
+  ].join('');
+
+  wrap.appendChild(panel);
+}
+
+function updateDesignUI() {
+  /* Refresh active states on all swatches/pills without full re-render */
+  var panel = document.getElementById('cardDesignPanel');
+  if (!panel) return;
+  panel.querySelectorAll('.cdp-pill').forEach(function(el) {
+    var txt = el.textContent.trim().toLowerCase();
+    var isActive = (
+      cardDesign.fontStyle === txt.split(' ')[0] ||
+      cardDesign.textSize  === txt ||
+      cardDesign.borderStyle === txt.replace(' 🌟','') ||
+      (txt === 'classic' && cardDesign.borderStyle === 'double') ||
+      (txt === 'elegant' && cardDesign.fontStyle === 'decorative')
+    );
+    /* Let onclick handle active class to keep it simple */
+  });
+}
+
+/* ── Share buttons row ── */
+function appendShareButtons(wrap, gradColors) {
+  var existing = wrap.querySelector('.studio-share-row');
+  if (existing) existing.remove();
+
   var btnRow = document.createElement('div');
+  btnRow.className = 'studio-share-row';
   btnRow.style.cssText = 'display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;';
 
   var dlBtn = document.createElement('button');
   dlBtn.textContent = '⬇️ Download';
-  dlBtn.style.cssText = 'flex:1;min-width:120px;padding:13px 10px;border-radius:12px;background:linear-gradient(135deg,'
-    + festival.grad[0] + ',' + festival.grad[1] + ');border:none;color:#fff;font-size:14px;font-weight:800;cursor:pointer;font-family:var(--font-body);';
+  dlBtn.style.cssText = 'flex:1;min-width:110px;padding:13px 10px;border-radius:12px;background:linear-gradient(135deg,'
+    + (gradColors[0]||'#ff7043') + ',' + (gradColors[1]||'#ff5722') + ');border:none;color:#fff;font-size:14px;font-weight:800;cursor:pointer;font-family:var(--font-body);';
   dlBtn.onclick = function() { studioTipAction('download'); };
   btnRow.appendChild(dlBtn);
 
+  var shareBtn = document.createElement('button');
+  shareBtn.textContent = '📤 Share';
+  shareBtn.style.cssText = 'flex:1;min-width:110px;padding:13px 10px;border-radius:12px;background:rgba(255,112,67,0.15);border:1px solid rgba(255,112,67,0.5);color:#ff7043;font-size:14px;font-weight:800;cursor:pointer;font-family:var(--font-body);';
+  shareBtn.onclick = function() { studioTipAction('share'); };
+  btnRow.appendChild(shareBtn);
+
   var wpBtn = document.createElement('button');
   wpBtn.textContent = '💬 WhatsApp';
-  wpBtn.style.cssText = 'flex:1;min-width:120px;padding:13px 10px;border-radius:12px;background:rgba(37,211,102,0.13);border:1px solid rgba(37,211,102,0.5);color:#25d366;font-size:14px;font-weight:800;cursor:pointer;font-family:var(--font-body);';
+  wpBtn.style.cssText = 'flex:1;min-width:110px;padding:13px 10px;border-radius:12px;background:rgba(37,211,102,0.13);border:1px solid rgba(37,211,102,0.5);color:#25d366;font-size:14px;font-weight:800;cursor:pointer;font-family:var(--font-body);';
   wpBtn.onclick = function() { studioTipAction('whatsapp'); };
   btnRow.appendChild(wpBtn);
 
   var igBtn = document.createElement('button');
   igBtn.textContent = '📸 Instagram';
-  igBtn.style.cssText = 'flex:1;min-width:120px;padding:13px 10px;border-radius:12px;background:rgba(225,48,108,0.12);border:1px solid rgba(225,48,108,0.45);color:#e1306c;font-size:14px;font-weight:800;cursor:pointer;font-family:var(--font-body);';
+  igBtn.style.cssText = 'flex:1;min-width:110px;padding:13px 10px;border-radius:12px;background:rgba(225,48,108,0.12);border:1px solid rgba(225,48,108,0.45);color:#e1306c;font-size:14px;font-weight:800;cursor:pointer;font-family:var(--font-body);';
   igBtn.onclick = function() { studioTipAction('instagram'); };
   btnRow.appendChild(igBtn);
 
   wrap.appendChild(btnRow);
 }
 
-/* ── Studio Tip / Share Actions ── */
+/* ── Share / Download Actions ── */
 function studioTipAction(type) {
   var canvas = window._festivalCanvas;
   var text   = window._festivalText || '';
-  var name   = (window._festivalName || 'festival').toLowerCase().replace(/\s+/g, '-');
+  var name   = (window._festivalName || 'my-card').toLowerCase().replace(/\s+/g, '-');
+  var msg    = text.substring(0, 300) + '\n\n✨ Made with Clarix AI · clarix.digital';
 
   if (!canvas) {
-    Toast.show('Generate a festival card first! 🎉', 'error');
+    Toast.show('Generate a card first! 🎉', 'error'); return;
+  }
+
+  /* ── Native Share Sheet (Android/iOS) ── */
+  if (type === 'share' || (type === 'whatsapp' && navigator.share && navigator.canShare)) {
+    canvas.toBlob(function(blob) {
+      var file = new File([blob], 'clarix-' + name + '-card.png', { type: 'image/png' });
+      var shareData = { files: [file], text: msg, title: 'Festival Card from Clarix AI' };
+      if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
+        navigator.share(shareData)
+          .then(function() { Toast.show('🎉 Shared successfully!', 'success'); })
+          .catch(function(err) {
+            if (err.name !== 'AbortError') {
+              /* Share was cancelled by user or failed — fallback to download */
+              studioTipAction('download');
+            }
+          });
+        return;
+      }
+      /* Desktop fallback — download */
+      studioTipAction('download');
+    }, 'image/png');
     return;
   }
 
@@ -669,22 +997,20 @@ function studioTipAction(type) {
     a.download = 'clarix-' + name + '-card.png';
     a.href = canvas.toDataURL('image/png');
     a.click();
-    Toast.show('📥 Festival card downloaded!', 'success');
+    Toast.show('📥 Card downloaded!', 'success');
 
   } else if (type === 'whatsapp') {
-    /* Download image + open WhatsApp with text */
+    /* Desktop fallback — download + open WhatsApp web */
     var a2 = document.createElement('a');
     a2.download = 'clarix-' + name + '-card.png';
     a2.href = canvas.toDataURL('image/png');
     a2.click();
     setTimeout(function() {
-      var msg = text.substring(0, 300) + '\n\n✨ Made with Clarix AI · clarix.digital';
       window.open('https://wa.me/?text=' + encodeURIComponent(msg), '_blank', 'noopener noreferrer');
-      Toast.show('📥 Image saved! Now attach it in the WhatsApp tab that opened.', 'success', 5000);
+      Toast.show('📥 Image saved — attach it in WhatsApp!', 'success', 5000);
     }, 700);
 
   } else if (type === 'instagram') {
-    /* Download image + copy caption to clipboard */
     var a3 = document.createElement('a');
     a3.download = 'clarix-' + name + '-card.png';
     a3.href = canvas.toDataURL('image/png');
@@ -692,7 +1018,7 @@ function studioTipAction(type) {
     var caption = text.substring(0, 400) + '\n\n✨ Made with Clarix AI · clarix.digital';
     if (navigator.clipboard) {
       navigator.clipboard.writeText(caption).then(function() {
-        Toast.show('📸 Image saved + caption copied! Upload to Instagram & paste caption.', 'success', 5000);
+        Toast.show('📸 Image saved + caption copied! Upload to Instagram.', 'success', 5000);
       });
     } else {
       Toast.show('📸 Image downloaded! Open Instagram and upload it.', 'success', 4000);
