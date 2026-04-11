@@ -129,6 +129,14 @@ document.addEventListener('DOMContentLoaded', () => {
     clearTimeout(suggestTimer);
     suggestTimer = setTimeout(() => renderAutoSuggest(e.target.value), 1200);
     setStep(3);
+    // Restore enhance button when user edits
+    var enhBtn = document.getElementById('enhanceBtn');
+    if (enhBtn && enhBtn.innerHTML.includes('Enhanced')) {
+      enhBtn.style.opacity = '';
+      enhBtn.style.transform = '';
+      enhBtn.title = '';
+      enhBtn.innerHTML = '\u26A1 Enhance with AI';
+    }
   });
 
   // Issue 7 fix: auto-select platform if coming from Apps with a preset
@@ -537,6 +545,15 @@ function renderResults(r, aiPlatform, socialPlatform) {
 
   // Breakdown CTA
   document.getElementById('breakdownCta').style.display = 'flex';
+
+  // Hide the Enhance button after results appear — user can see results now
+  var enhBtn = document.getElementById('enhanceBtn');
+  if (enhBtn) {
+    enhBtn.style.opacity = '0.35';
+    enhBtn.style.transform = 'scale(0.97)';
+    enhBtn.title = 'Edit your prompt above to re-enhance';
+    enhBtn.innerHTML = '\u2714 Enhanced — Edit prompt to re-enhance';
+  }
 }
 
 

@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Share Your Experience – Clarix</title>
+  <meta name="description" content="Tell us what you think about Clarix. Your feedback shapes the future of AI tools for Indian creators.">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%23ff7043'/><text x='50%' y='55%' font-size='18' text-anchor='middle' dominant-baseline='middle' fill='white'>✦</text></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --accent: #ff7043;
+      --accent2: #ff5722;
+      --bg: #080808;
+      --card: #111;
+      --border: rgba(255,255,255,0.08);
+      --text: #e0e0e0;
+      --muted: rgba(255,255,255,0.45);
+      --r: 16px;
+      --font: 'Inter', sans-serif;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font);
+      min-height: 100vh;
+      padding-bottom: 80px;
+    }
+
+    /* ── HERO ─────────────────────────────────────── */
+    .fb-hero {
+      background: linear-gradient(135deg, #0f0f0f 0%, #1a0d07 50%, #0f0f0f 100%);
+      padding: 56px 20px 40px;
+      text-align: center;
+      border-bottom: 1px solid var(--border);
+      position: relative;
+      overflow: hidden;
+    }
+    .fb-hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: radial-gradient(ellipse 60% 50% at 50% 0%, rgba(255,112,67,0.12) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .fb-logo {
+      font-size: 13px; font-weight: 700; letter-spacing: 0.15em;
+      text-transform: uppercase; color: var(--accent);
+      margin-bottom: 20px; display: flex; align-items: center;
+      justify-content: center; gap: 8px;
+    }
+    .fb-hero h1 {
+      font-size: clamp(26px, 6vw, 40px);
+      font-weight: 900; color: #fff;
+      line-height: 1.2; margin-bottom: 12px;
+    }
+    .fb-hero h1 span { color: var(--accent); }
+    .fb-hero p {
+      font-size: 15px; color: var(--muted);
+      max-width: 420px; margin: 0 auto; line-height: 1.7;
+    }
+    .fb-stats {
+      display: flex; gap: 28px; justify-content: center;
+      margin-top: 28px; flex-wrap: wrap;
+    }
+    .fb-stat { text-align: center; }
+    .fb-stat-num { font-size: 22px; font-weight: 900; color: var(--accent); }
+    .fb-stat-lbl { font-size: 11px; color: var(--muted); margin-top: 2px; }
+
+    /* ── CONTAINER ──────────────────────────────── */
+    .fb-wrap { max-width: 620px; margin: 0 auto; padding: 32px 16px; }
+
+    /* ── CARD ───────────────────────────────────── */
+    .fb-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      padding: 24px 20px;
+      margin-bottom: 16px;
+    }
+    .fb-card-title {
+      font-size: 13px; font-weight: 700; color: var(--muted);
+      text-transform: uppercase; letter-spacing: 0.1em;
+      margin-bottom: 16px; display: flex; align-items: center; gap: 8px;
+    }
+
+    /* ── STAR RATING ─────────────────────────────── */
+    .star-row { display: flex; gap: 6px; justify-content: center; margin-bottom: 8px; }
+    .star-btn {
+      font-size: 36px; cursor: pointer; line-height: 1;
+      transition: transform 0.15s ease, filter 0.15s ease;
+      filter: grayscale(1) opacity(0.3);
+      border: none; background: none; padding: 4px;
+    }
+    .star-btn.active, .star-btn:hover { filter: none; transform: scale(1.15); }
+    .star-label {
+      text-align: center; font-size: 14px; font-weight: 600;
+      color: var(--accent); min-height: 22px; transition: all 0.2s;
+    }
+
+    /* ── INPUT / TEXTAREA ───────────────────────── */
+    .fb-input, .fb-textarea, .fb-select {
+      width: 100%;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 12px;
+      padding: 13px 16px;
+      color: var(--text);
+      font-family: var(--font);
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .fb-input:focus, .fb-textarea:focus, .fb-select:focus {
+      border-color: rgba(255,112,67,0.5);
+      background: rgba(255,112,67,0.04);
+    }
+    .fb-textarea { resize: vertical; min-height: 90px; line-height: 1.6; }
+    .fb-select option { background: #111; color: #e0e0e0; }
+    .fb-input::placeholder, .fb-textarea::placeholder { color: rgba(255,255,255,0.25); }
+
+    /* ── LABEL ──────────────────────────────────── */
+    .fb-label {
+      font-size: 12px; font-weight: 600;
+      color: rgba(255,255,255,0.55);
+      margin-bottom: 6px; display: block;
+    }
+    .fb-field { margin-bottom: 14px; }
+
+    /* ── CHIP SELECTOR ───────────────────────────── */
+    .chip-multi { display: flex; flex-wrap: wrap; gap: 8px; }
+    .chip-m {
+      padding: 8px 16px; border-radius: 24px; font-size: 13px; font-weight: 600;
+      border: 1.5px solid rgba(255,255,255,0.1);
+      background: rgba(255,255,255,0.03); color: rgba(255,255,255,0.65);
+      cursor: pointer; transition: all 0.18s; -webkit-user-select: none; user-select: none;
+    }
+    .chip-m:hover { border-color: rgba(255,112,67,0.4); color: #fff; }
+    .chip-m.active { background: rgba(255,112,67,0.15); border-color: rgba(255,112,67,0.6); color: #fff; }
+
+    /* ── VIDEO RECORD ZONE ───────────────────────── */
+    .video-zone {
+      border: 2px dashed rgba(255,112,67,0.3);
+      border-radius: var(--r);
+      padding: 28px 20px;
+      text-align: center;
+      background: rgba(255,112,67,0.03);
+      cursor: pointer;
+      transition: all 0.2s;
+      position: relative;
+    }
+    .video-zone:hover { border-color: rgba(255,112,67,0.6); background: rgba(255,112,67,0.06); }
+    .video-zone.recording { border-color: #ef4444; background: rgba(239,68,68,0.06); animation: pulse-red 1.5s infinite; }
+    @keyframes pulse-red {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(239,68,68,0.3); }
+      50% { box-shadow: 0 0 0 8px rgba(239,68,68,0); }
+    }
+    .video-zone.has-video { border-style: solid; border-color: rgba(255,112,67,0.5); }
+    .vz-icon { font-size: 36px; margin-bottom: 8px; }
+    .vz-title { font-size: 15px; font-weight: 700; color: #fff; margin-bottom: 4px; }
+    .vz-sub { font-size: 12px; color: var(--muted); line-height: 1.5; }
+    .vz-timer { font-size: 22px; font-weight: 800; color: #ef4444; margin: 8px 0; display: none; }
+    .vz-timer.active { display: block; }
+    .vz-actions { display: flex; gap: 10px; justify-content: center; margin-top: 14px; }
+    .vz-btn {
+      padding: 10px 20px; border-radius: 24px; font-size: 13px; font-weight: 700;
+      border: none; cursor: pointer; font-family: var(--font); transition: all 0.2s;
+    }
+    .vz-btn-rec { background: #ef4444; color: #fff; }
+    .vz-btn-rec:hover { filter: brightness(1.1); }
+    .vz-btn-stop { background: rgba(255,255,255,0.1); color: #fff; border: 1px solid rgba(255,255,255,0.2); }
+    .vz-btn-stop:hover { background: rgba(255,255,255,0.18); }
+    .vz-btn-upload { background: rgba(255,112,67,0.15); color: var(--accent); border: 1px solid rgba(255,112,67,0.35); }
+    .vz-btn-upload:hover { background: rgba(255,112,67,0.25); }
+    .vz-btn-clear { background: none; color: var(--muted); border: 1px solid var(--border); }
+    .vz-preview { margin-top: 14px; display: none; }
+    .vz-preview video { width: 100%; border-radius: 12px; max-height: 200px; }
+    .vz-preview.active { display: block; }
+    .hidden { display: none !important; }
+
+    /* ── PERMISSION TIP ──────────────────────────── */
+    .perm-tip {
+      font-size: 11px; color: var(--muted); margin-top: 8px; line-height: 1.5;
+    }
+
+    /* ── SUBMIT ─────────────────────────────────── */
+    .fb-submit {
+      width: 100%; padding: 16px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      border: none; border-radius: var(--r);
+      color: #fff; font-family: var(--font);
+      font-size: 16px; font-weight: 800;
+      cursor: pointer; transition: all 0.2s;
+      box-shadow: 0 8px 24px rgba(255,112,67,0.35);
+      margin-top: 8px;
+    }
+    .fb-submit:hover { filter: brightness(1.08); transform: translateY(-1px); }
+    .fb-submit:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+    /* ── SUCCESS STATE ───────────────────────────── */
+    .fb-success {
+      display: none;
+      text-align: center;
+      padding: 48px 24px;
+    }
+    .fb-success.show { display: block; }
+    .fs-emoji { font-size: 56px; margin-bottom: 16px; animation: pop 0.5s ease; }
+    @keyframes pop { from { transform: scale(0); } to { transform: scale(1); } }
+    .fs-title { font-size: 26px; font-weight: 900; color: #fff; margin-bottom: 8px; }
+    .fs-sub { font-size: 14px; color: var(--muted); max-width: 320px; margin: 0 auto 24px; line-height: 1.7; }
+    .fs-back { display: inline-block; padding: 13px 28px; background: var(--accent); color: #fff; border-radius: 24px; font-weight: 700; text-decoration: none; font-size: 14px; }
+
+    /* ── BACK LINK ───────────────────────────────── */
+    .fb-back-link {
+      display: flex; align-items: center; gap: 6px;
+      color: var(--muted); font-size: 13px; font-weight: 600;
+      text-decoration: none; padding: 16px 0 0;
+      transition: color 0.2s;
+    }
+    .fb-back-link:hover { color: var(--accent); }
+
+    /* ── TOAST ───────────────────────────────────── */
+    #fb-toast {
+      position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(60px);
+      background: #222; border: 1px solid rgba(255,255,255,0.12);
+      color: #fff; padding: 12px 20px; border-radius: 24px;
+      font-size: 14px; font-weight: 600;
+      transition: transform 0.3s ease; z-index: 9999;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+      pointer-events: none;
+    }
+    #fb-toast.show { transform: translateX(-50%) translateY(0); }
+
+    /* ── DIVIDER ─────────────────────────────────── */
+    .or-divider {
+      display: flex; align-items: center; gap: 12px;
+      color: var(--muted); font-size: 12px; margin: 16px 0;
+    }
+    .or-divider::before, .or-divider::after {
+      content: ''; flex: 1; height: 1px; background: var(--border);
+    }
+
+    /* ── MOBILE ─────────────────────────────────── */
+    @media (max-width: 480px) {
+      .fb-hero { padding: 40px 16px 32px; }
+      .fb-stat-num { font-size: 18px; }
+      .star-btn { font-size: 30px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="fb-hero">
+  <div class="fb-logo">✦ clarix</div>
+  <h1>Your Voice <span>Shapes Clarix</span></h1>
+  <p>Take 60 seconds to tell us about your experience. Even a quick video review helps us build something amazing for you.</p>
+  <div class="fb-stats">
+    <div class="fb-stat">
+      <div class="fb-stat-num">25+</div>
+      <div class="fb-stat-lbl">Languages Supported</div>
+    </div>
+    <div class="fb-stat">
+      <div class="fb-stat-num">1000+</div>
+      <div class="fb-stat-lbl">Prompts Generated</div>
+    </div>
+    <div class="fb-stat">
+      <div class="fb-stat-num">🇮🇳</div>
+      <div class="fb-stat-lbl">Made for India</div>
+    </div>
+  </div>
+</div>
+
+<div class="fb-wrap">
+  <a href="index.html" class="fb-back-link">← Back to Clarix</a>
+
+  <div id="fbForm">
+    <!-- STAR RATING -->
+    <div class="fb-card" style="margin-top:20px;">
+      <div class="fb-card-title">⭐ How would you rate Clarix?</div>
+      <div class="star-row" id="starRow">
+        <button class="star-btn" data-val="1" onclick="setStar(1)" aria-label="1 star">⭐</button>
+        <button class="star-btn" data-val="2" onclick="setStar(2)" aria-label="2 stars">⭐</button>
+        <button class="star-btn" data-val="3" onclick="setStar(3)" aria-label="3 stars">⭐</button>
+        <button class="star-btn" data-val="4" onclick="setStar(4)" aria-label="4 stars">⭐</button>
+        <button class="star-btn" data-val="5" onclick="setStar(5)" aria-label="5 stars">⭐</button>
+      </div>
+      <div class="star-label" id="starLabel">Tap a star to rate</div>
+    </div>
+
+    <!-- WHAT FEATURE -->
+    <div class="fb-card">
+      <div class="fb-card-title">🎯 What do you use Clarix for?</div>
+      <div class="chip-multi" id="featureChips">
+        <div class="chip-m" onclick="toggleChip(this)">Write Page</div>
+        <div class="chip-m" onclick="toggleChip(this)">Inspire Me</div>
+        <div class="chip-m" onclick="toggleChip(this)">Creative Studios</div>
+        <div class="chip-m" onclick="toggleChip(this)">Social Captions</div>
+        <div class="chip-m" onclick="toggleChip(this)">Hindi / Regional Language</div>
+        <div class="chip-m" onclick="toggleChip(this)">Image Prompts</div>
+        <div class="chip-m" onclick="toggleChip(this)">Email / Messaging</div>
+        <div class="chip-m" onclick="toggleChip(this)">Just Exploring</div>
+      </div>
+    </div>
+
+    <!-- WHAT THEY LIKED / DISLIKED -->
+    <div class="fb-card">
+      <div class="fb-card-title">💬 Tell us more</div>
+      <div class="fb-field">
+        <label class="fb-label" for="fbLiked">What did you like most?</label>
+        <textarea class="fb-textarea" id="fbLiked" placeholder="e.g. Hindi output was great, the prompts were very professional..."></textarea>
+      </div>
+      <div class="fb-field">
+        <label class="fb-label" for="fbImprove">What should we improve?</label>
+        <textarea class="fb-textarea" id="fbImprove" placeholder="e.g. Gallery images took time to load, need more language options..."></textarea>
+      </div>
+    </div>
+
+    <!-- VIDEO REVIEW -->
+    <div class="fb-card">
+      <div class="fb-card-title">🎥 Record a 30-second video review (optional but loved!)</div>
+      <div id="videoZone" class="video-zone" onclick="handleVideoZoneClick()">
+        <div id="vzDefault">
+          <div class="vz-icon">🎤</div>
+          <div class="vz-title">Record your review</div>
+          <div class="vz-sub">Show us how you use Clarix or tell us what you think.<br>30 seconds is all we need.</div>
+          <div class="vz-actions" onclick="event.stopPropagation()">
+            <button class="vz-btn vz-btn-rec" id="btnStartRec" onclick="startRecording()">● Start Recording</button>
+          </div>
+        </div>
+        <div id="vzRecording" class="hidden">
+          <div class="vz-icon">🔴</div>
+          <div class="vz-title">Recording...</div>
+          <div class="vz-timer active" id="vzTimer">0:30</div>
+          <div class="vz-actions" onclick="event.stopPropagation()">
+            <button class="vz-btn vz-btn-stop" onclick="stopRecording()">■ Stop</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="vz-preview" id="vzPreview">
+        <video id="vzVideo" controls playsinline></video>
+        <div class="vz-actions" style="margin-top:10px;">
+          <button class="vz-btn vz-btn-rec" onclick="startRecording()">🔄 Re-record</button>
+          <button class="vz-btn vz-btn-clear" onclick="clearVideo()">🗑 Remove</button>
+        </div>
+      </div>
+
+      <div class="or-divider">or upload a file</div>
+      <div>
+        <input type="file" id="videoFileInput" accept="video/*" style="display:none" onchange="handleVideoUpload(this)">
+        <button class="vz-btn vz-btn-upload" style="width:100%;padding:12px;" onclick="document.getElementById('videoFileInput').click()">
+          📁 Upload Video from Gallery
+        </button>
+      </div>
+      <div class="perm-tip">📱 On mobile, tap "Upload Video" to pick from your gallery. Camera recording requires browser permission.</div>
+    </div>
+
+    <!-- NAME + CONTACT (optional) -->
+    <div class="fb-card">
+      <div class="fb-card-title">👤 About you <span style="font-weight:400;text-transform:none;letter-spacing:0;color:rgba(255,255,255,0.3)">(optional)</span></div>
+      <div class="fb-field">
+        <label class="fb-label" for="fbName">Your name</label>
+        <input type="text" class="fb-input" id="fbName" placeholder="e.g. Priya Singh">
+      </div>
+      <div class="fb-field">
+        <label class="fb-label" for="fbEmail">Email (for follow-up questions only)</label>
+        <input type="email" class="fb-input" id="fbEmail" placeholder="e.g. priya@gmail.com">
+      </div>
+      <div class="fb-field">
+        <label class="fb-label" for="fbRole">What best describes you?</label>
+        <select class="fb-select" id="fbRole">
+          <option value="">— Select your role —</option>
+          <option>Content Creator</option>
+          <option>Student</option>
+          <option>Professional</option>
+          <option>Business Owner</option>
+          <option>Freelancer</option>
+          <option>Just Curious</option>
+        </select>
+      </div>
+      <div class="fb-field" style="display:flex;align-items:center;gap:10px;margin-bottom:0;">
+        <input type="checkbox" id="fbConsent" style="accent-color:var(--accent);width:18px;height:18px;cursor:pointer;">
+        <label for="fbConsent" style="font-size:12px;color:rgba(255,255,255,0.5);cursor:pointer;line-height:1.5;">
+          I agree that Clarix may use my feedback (including video) for testimonials and product improvement.
+        </label>
+      </div>
+    </div>
+
+    <button class="fb-submit" id="fbSubmitBtn" onclick="submitFeedback()">
+      ✦ Submit My Feedback
+    </button>
+  </div>
+
+  <!-- SUCCESS STATE -->
+  <div class="fb-success" id="fbSuccess">
+    <div class="fs-emoji">🎉</div>
+    <div class="fs-title">Thank you so much!</div>
+    <div class="fs-sub">Your feedback makes Clarix better for lakhs of Indian creators. We truly value every word (and video!) you share.</div>
+    <a href="index.html" class="fs-back">← Back to Clarix</a>
+  </div>
+</div>
+
+<div id="fb-toast"></div>
+
+<script>
+  /* ── STATE ─────────────────────────────────────── */
+  let selectedStar = 0;
+  let mediaRecorder = null;
+  let recordedChunks = [];
+  let recordedBlob = null;
+  let recordingTimer = null;
+  let timeLeft = 30;
+
+  /* ── STAR RATING ───────────────────────────────── */
+  const STAR_LABELS = ['', 'Needs Work', 'OK', 'Good', 'Great!', 'Love it! ✦'];
+  function setStar(val) {
+    selectedStar = val;
+    document.querySelectorAll('.star-btn').forEach((btn, i) => {
+      btn.classList.toggle('active', i < val);
+    });
+    document.getElementById('starLabel').textContent = STAR_LABELS[val];
+  }
+
+  /* ── CHIP MULTI-SELECT ─────────────────────────── */
+  function toggleChip(el) {
+    el.classList.toggle('active');
+  }
+
+  /* ── VIDEO RECORDING ───────────────────────────── */
+  function handleVideoZoneClick() {
+    if (!recordedBlob && !mediaRecorder) startRecording();
+  }
+
+  async function startRecording() {
+    recordedChunks = [];
+    recordedBlob = null;
+    clearVideo();
+
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+      mediaRecorder = new MediaRecorder(stream);
+      mediaRecorder.ondataavailable = e => { if (e.data.size > 0) recordedChunks.push(e.data); };
+      mediaRecorder.onstop = handleRecordingStop;
+      mediaRecorder.start();
+
+      document.getElementById('vzDefault').classList.add('hidden');
+      document.getElementById('vzRecording').classList.remove('hidden');
+      document.getElementById('videoZone').classList.add('recording');
+
+      /* Countdown timer */
+      timeLeft = 30;
+      updateTimer();
+      recordingTimer = setInterval(() => {
+        timeLeft--;
+        updateTimer();
+        if (timeLeft <= 0) stopRecording();
+      }, 1000);
+
+    } catch (err) {
+      showToast('⚠️ Camera permission needed. Use the Upload button instead.');
+    }
+  }
+
+  function updateTimer() {
+    document.getElementById('vzTimer').textContent = '0:' + String(timeLeft).padStart(2, '0');
+  }
+
+  function stopRecording() {
+    clearInterval(recordingTimer);
+    if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+      mediaRecorder.stop();
+      mediaRecorder.stream.getTracks().forEach(t => t.stop());
+    }
+  }
+
+  function handleRecordingStop() {
+    recordedBlob = new Blob(recordedChunks, { type: 'video/webm' });
+    const url = URL.createObjectURL(recordedBlob);
+    showVideoPreview(url);
+    document.getElementById('vzDefault').classList.remove('hidden');
+    document.getElementById('vzRecording').classList.add('hidden');
+    document.getElementById('videoZone').classList.remove('recording');
+    showToast('✅ Video recorded! Looking good.');
+  }
+
+  function handleVideoUpload(input) {
+    const file = input.files[0];
+    if (!file) return;
+    if (file.size > 50 * 1024 * 1024) {
+      showToast('⚠️ Video too large. Please keep it under 50MB.');
+      return;
+    }
+    recordedBlob = file;
+    const url = URL.createObjectURL(file);
+    showVideoPreview(url);
+    showToast('✅ Video uploaded!');
+  }
+
+  function showVideoPreview(url) {
+    const preview = document.getElementById('vzPreview');
+    const video = document.getElementById('vzVideo');
+    video.src = url;
+    preview.classList.add('active');
+    document.getElementById('videoZone').classList.add('has-video');
+  }
+
+  function clearVideo() {
+    recordedBlob = null;
+    recordedChunks = [];
+    const preview = document.getElementById('vzPreview');
+    const video = document.getElementById('vzVideo');
+    video.src = '';
+    preview.classList.remove('active');
+    document.getElementById('videoZone').classList.remove('has-video');
+  }
+
+  /* ── SUBMIT ────────────────────────────────────── */
+  async function submitFeedback() {
+    if (!selectedStar) {
+      showToast('⭐ Please rate us first!'); return;
+    }
+
+    const features = [...document.querySelectorAll('#featureChips .chip-m.active')]
+      .map(c => c.textContent);
+
+    const payload = {
+      rating:   selectedStar,
+      features,
+      liked:    document.getElementById('fbLiked').value.trim(),
+      improve:  document.getElementById('fbImprove').value.trim(),
+      name:     document.getElementById('fbName').value.trim(),
+      email:    document.getElementById('fbEmail').value.trim(),
+      role:     document.getElementById('fbRole').value,
+      consent:  document.getElementById('fbConsent').checked,
+      hasVideo: !!recordedBlob,
+      ts:       new Date().toISOString(),
+      uid:      localStorage.getItem('clarix_uid') || 'anonymous',
+    };
+
+    const btn = document.getElementById('fbSubmitBtn');
+    btn.disabled = true;
+    btn.textContent = '⏳ Submitting...';
+
+    try {
+      /* Save to Firestore if user is logged in */
+      if (typeof firebase !== 'undefined' && firebase.firestore) {
+        const ref = firebase.firestore().collection('feedback').add(payload);
+        /* Upload video if available */
+        if (recordedBlob && payload.consent && typeof firebase.storage !== 'undefined') {
+          const uid = payload.uid;
+          const ts  = Date.now();
+          const ext = recordedBlob.type.includes('webm') ? '.webm' : '.mp4';
+          const storageRef = firebase.storage().ref(`feedback-videos/${uid}_${ts}${ext}`);
+          await storageRef.put(recordedBlob);
+          const videoUrl = await storageRef.getDownloadURL();
+          /* Update Firestore doc with video URL */
+          const docRef = await ref;
+          if (docRef) docRef.update({ videoUrl });
+        }
+      }
+    } catch (e) {
+      console.warn('Firestore save error:', e);
+    }
+
+    /* Always save to localStorage as backup */
+    const existing = JSON.parse(localStorage.getItem('clarix_feedback') || '[]');
+    existing.unshift(payload);
+    localStorage.setItem('clarix_feedback', JSON.stringify(existing.slice(0, 20)));
+
+    /* Show success */
+    document.getElementById('fbForm').style.display = 'none';
+    document.getElementById('fbSuccess').classList.add('show');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  /* ── TOAST ─────────────────────────────────────── */
+  let toastTimer;
+  function showToast(msg) {
+    const el = document.getElementById('fb-toast');
+    el.textContent = msg;
+    el.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => el.classList.remove('show'), 3000);
+  }
+</script>
+</body>
+</html>

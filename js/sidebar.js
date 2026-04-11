@@ -24,13 +24,14 @@ const Sidebar = {
     // Sidebar
     const page = window.location.pathname.split('/').pop() || 'index.html';
     const navLinks = [
-      { href:'index.html',   icon:'🏠', label:'Home' },
-      { href:'write.html',   icon:'✍️', label:'Write' },
-      { href:'inspire.html', icon:'🎨', label:'InspireMe' },
-      { href:'library.html', icon:'📚', label:'Library', dynamicBadge:'clarix_saved' },
-      { href:'apps.html',    icon:'🚀', label:'Apps' },
-      { href:'history.html', icon:'📜', label:'History' },
-      { href:'profile.html', icon:'👤', label:'Profile' },
+      { href:'index.html',    icon:'🏠', label:'Home' },
+      { href:'write.html',    icon:'✍️', label:'Write' },
+      { href:'inspire.html',  icon:'🎨', label:'InspireMe' },
+      { href:'library.html',  icon:'📚', label:'Library', dynamicBadge:'clarix_saved' },
+      { href:'apps.html',     icon:'🚀', label:'Apps' },
+      { href:'history.html',  icon:'📜', label:'History' },
+      { href:'profile.html',  icon:'👤', label:'Profile' },
+      { href:'feedback.html', icon:'⭐', label:'Give Feedback' },
     ];
 
     // Resolve dynamic badges from localStorage
@@ -95,6 +96,7 @@ const Sidebar = {
           <a href="terms.html" class="sidebar-footer-link">Terms</a>
           <a href="privacy.html" class="sidebar-footer-link">Privacy</a>
           <a href="refund.html" class="sidebar-footer-link">Refund</a>
+          <a href="feedback.html" class="sidebar-footer-link" style="color:rgba(255,112,67,0.8)">⭐ Feedback</a>
         </div>
       </div>
     `;
