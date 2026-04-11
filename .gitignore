@@ -24,3 +24,5 @@ build/
 
 # Serve cache
 .cache/
+
+.vercel
