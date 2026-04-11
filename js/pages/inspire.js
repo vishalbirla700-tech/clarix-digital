@@ -13,7 +13,7 @@ const GALLERY = [
   { id:6,  cat:'nature',    title:'Forest Cathedral',    prompt:'Ancient redwood forest with shafts of golden light piercing the canopy, misty ground fog, ethereal dreamlike atmosphere',                img:'https://images.unsplash.com/photo-1448375240586-882707db888b?w=600&q=80&auto=format&fit=crop' },
   { id:7,  cat:'fashion',   title:'Desert Editorial',    prompt:'Fashion editorial set in Sahara desert, model in flowing white fabric against red sand dunes, golden hour, minimalist, editorial',       img:'https://images.unsplash.com/photo-1469334031218-e382a71b716b?w=600&q=80&auto=format&fit=crop' },
   { id:8,  cat:'cinematic', title:'Abandoned City',      prompt:'Post-apocalyptic abandoned city overgrown with vegetation, golden hour light, moody cinematic atmosphere, hyperdetailed',                 img:'https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?w=600&q=80&auto=format&fit=crop' },
-  { id:9,  cat:'3d',        title:'Crystal Cave',        prompt:'Enormous underground crystal cave with giant amethyst formations, bioluminescent glow, otherworldly atmosphere, photorealistic',          img:'https://images.unsplash.com/photo-1520189345977-bc6c8c674ae0?w=600&q=80&auto=format&fit=crop' },
+  { id:9,  cat:'3d',        title:'Crystal Cave',        prompt:'Enormous underground crystal cave with giant amethyst formations, bioluminescent glow, otherworldly atmosphere, photorealistic',          img:'https://images.unsplash.com/photo-1518770660439-4636190af475?w=600&q=80&auto=format&fit=crop' },
   { id:10, cat:'video',     title:'Drone Coastline',     prompt:'Aerial drone shot of dramatic coastline at sunrise, turquoise water crashing white foam on black volcanic rocks, cinematic color grade',  img:'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=600&q=80&auto=format&fit=crop' },
   { id:11, cat:'blog',      title:'Minimal Workspace',   prompt:'Minimalist flat-lay workspace, MacBook, coffee, succulents, natural window light, clean white background, editorial lifestyle photography',img:'https://images.unsplash.com/photo-1484788984921-03950022c9ef?w=600&q=80&auto=format&fit=crop' },
   { id:12, cat:'nature',    title:'Aurora Borealis',     prompt:'Magnificent Northern Lights display over snow-covered pine forest, vivid green and purple aurora, starry night sky, long exposure',       img:'https://images.unsplash.com/photo-1531366936337-7c912a4589a7?w=600&q=80&auto=format&fit=crop' },
@@ -71,17 +71,34 @@ document.addEventListener('DOMContentLoaded', () => {
 /* ─── GALLERY ─────────────────────────────────── */
 function renderGallery(items) {
   const grid = document.getElementById('galleryGrid');
-  grid.innerHTML = items.map(item => `
+  // Gradient placeholders for broken/slow images — keyed by category
+  const CAT_GRADS = {
+    cinematic: 'linear-gradient(135deg,#0f2027,#203a43,#2c5364)',
+    fashion:   'linear-gradient(135deg,#c94b4b,#4b134f)',
+    nature:    'linear-gradient(135deg,#134e5e,#71b280)',
+    '3d':      'linear-gradient(135deg,#1a1a2e,#16213e,#0f3460)',
+    video:     'linear-gradient(135deg,#232526,#414345)',
+    blog:      'linear-gradient(135deg,#f5af19,#f12711)',
+    uploaded:  'linear-gradient(135deg,#ff7043,#ff9800)'
+  };
+  grid.innerHTML = items.map((item, idx) => {
+    const grad = CAT_GRADS[item.cat] || 'linear-gradient(135deg,#1a1a2e,#373b44)';
+    const loadAttr = idx < 6 ? 'eager' : 'lazy';
+    return `
     <div class="gallery-card" onclick="openLightbox(${item.id})" data-cat="${item.cat}">
-      <img class="gallery-card-img" src="${item.img}" alt="${item.title}" loading="lazy">
+      <img class="gallery-card-img"
+           src="${item.img}"
+           alt="${item.title}"
+           loading="${loadAttr}"
+           onerror="this.onerror=null;this.style.display='none';this.parentElement.style.background='${grad}'">
       <div class="gallery-card-cat">${item.cat}</div>
       <div class="gallery-card-overlay">
         <div class="gallery-card-title">${item.title}</div>
         <div class="gallery-card-prompt">${item.prompt}</div>
         <button class="gallery-card-open-btn">🔍 Preview →</button>
       </div>
-    </div>
-  `).join('');
+    </div>`;
+  }).join('');
 }
 
 function filterCategory(cat) {
@@ -176,15 +193,19 @@ async function enhanceEditorPrompt() {
   const btn = document.getElementById('editorEnhanceBtn');
   btn.classList.add('loading'); btn.disabled = true;
 
+  // Pass the user's selected language so AI respects it
+  const langCode = (typeof LangState !== 'undefined' && LangState.code) ? LangState.code : 'en';
+  const langName = (typeof LangState !== 'undefined' && LangState.name) ? LangState.name : 'English';
+
   try {
-    const result = await enhancePrompt(text, 'Midjourney', 'ai');
+    const result = await enhancePrompt(text, 'Midjourney', 'ai', langCode, langName);
     if (!result) return;
     editorResult = result.enhanced;
     document.getElementById('editorResultText').textContent = result.enhanced;
     document.getElementById('editorResult').style.display = 'block';
     document.getElementById('editorExport').style.display = 'flex';
     Toast.show('⚡ Prompt enhanced!', 'success');
-    // Issue 2 fix: scroll to result
+    // Scroll to result
     setTimeout(() => {
       document.getElementById('editorResult').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }, 200);

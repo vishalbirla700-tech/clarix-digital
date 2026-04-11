@@ -5,7 +5,7 @@
 ═══════════════════════════════════════════════ */
 
 /* ── BUMP THIS every deployment to notify existing users ── */
-const CLARIX_APP_VERSION = '20260411b';
+const CLARIX_APP_VERSION = '20260411e';
 
 const ClarixPWA = (() => {
 
@@ -72,7 +72,7 @@ const ClarixPWA = (() => {
         Update Now
       </button>
       <button
-        onclick="this.closest('#clarix-update-banner').remove()"
+        onclick="localStorage.setItem('clarix_version','${CLARIX_APP_VERSION}');this.closest('#clarix-update-banner').remove()"
         style="background:none;border:none;color:rgba(255,255,255,0.55);
                font-size:20px;cursor:pointer;line-height:1;padding:0;flex-shrink:0">✕</button>
     `;

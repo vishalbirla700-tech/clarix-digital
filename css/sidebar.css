@@ -180,3 +180,11 @@
   display: block; width: 20px; height: 1.5px;
   background: #fff; border-radius: 2px; transition: all 0.3s;
 }
+
+/* ── Light topnav (write page) — dark hamburger bars ── */
+.topnav.light .sidebar-toggle-btn span {
+  background: #333;
+}
+.topnav.light .sidebar-toggle-btn:hover {
+  background: rgba(0,0,0,0.06);
+}

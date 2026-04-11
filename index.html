@@ -63,17 +63,17 @@
   <link rel="apple-touch-icon" href="icons/icon-192.png">
 
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%23ff7043'/><text x='50%' y='55%' font-size='18' text-anchor='middle' dominant-baseline='middle' fill='white'>✦</text></svg>">
-  <link rel="stylesheet" href="css/design.css?v=20260411a">
-  <link rel="stylesheet" href="css/components.css?v=20260411a">
-  <link rel="stylesheet" href="css/pages/home.css?v=20260411a">
-  <link rel="stylesheet" href="css/auth.css?v=20260411a">
+  <link rel="stylesheet" href="css/design.css?v=20260411e">
+  <link rel="stylesheet" href="css/components.css?v=20260411e">
+  <link rel="stylesheet" href="css/pages/home.css?v=20260411e">
+  <link rel="stylesheet" href="css/auth.css?v=20260411e">
   <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
   <!-- Firebase SDKs -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
   <!-- Clarix Auth CSS -->
-  <link rel="stylesheet" href="/css/auth.css?v=20260411a"></head>
+  <link rel="stylesheet" href="/css/auth.css?v=20260411e"></head>
 <body class="theme-dark intro-active">
 
   <!-- TOP NAV -->
@@ -494,58 +494,20 @@
     </div>
   </nav>
 
-  <script src="config.js?v=20260411a"></script>
-  <script src="js/languages.js?v=20260411a"></script>
-  <script src="js/core.js?v=20260411a"></script>
-  <script src="js/ai.js?v=20260411a"></script>
-  <script src="js/voice.js?v=20260411a"></script>
-  <script src="js/share.js?v=20260411a"></script>
-  <script src="js/firebase.js?v=20260411a"></script>
-  <script src="js/pages/home.js?v=20260411a"></script>
-  <script src="js/email-capture.js?v=20260411a"></script>
+  <script src="config.js?v=20260411e"></script>
+  <script src="js/languages.js?v=20260411e"></script>
+  <script src="js/core.js?v=20260411e"></script>
+  <script src="js/ai.js?v=20260411e"></script>
+  <script src="js/voice.js?v=20260411e"></script>
+  <script src="js/share.js?v=20260411e"></script>
+  <script src="js/firebase.js?v=20260411e"></script>
+  <script src="js/pages/home.js?v=20260411e"></script>
+  <script src="js/email-capture.js?v=20260411e"></script>
   <script>
     if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('/sw.js').then(reg => {
-        reg.addEventListener('updatefound', () => {
-          const newWorker = reg.installing;
-          newWorker.addEventListener('statechange', () => {
-            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-              // New version available — show update banner
-              showUpdateBanner();
-            }
-          });
-        });
-      }).catch(() => {});
-
-      // Also handle case where SW was already updated and page just loaded
-      navigator.serviceWorker.addEventListener('controllerchange', () => {
-        window.location.reload();
-      });
-    }
-
-    function showUpdateBanner() {
-      const existing = document.getElementById('clarix-update-banner');
-      if (existing) return;
-      const banner = document.createElement('div');
-      banner.id = 'clarix-update-banner';
-      banner.style.cssText = `
-        position: fixed; top: 0; left: 0; right: 0; z-index: 99999;
-        background: #ff7043; color: #fff; text-align: center;
-        padding: 14px 20px; font-size: 14px; font-weight: 700;
-        font-family: 'DM Sans', sans-serif; cursor: pointer;
-        box-shadow: 0 4px 20px rgba(255,112,67,0.5);
-        animation: slideDown 0.4s ease;
-      `;
-      banner.innerHTML = '🔄 New version available! <u>Tap here to update</u>';
-      banner.onclick = () => {
-        if (navigator.serviceWorker.controller) {
-          navigator.serviceWorker.controller.postMessage('SKIP_WAITING');
-        }
-        window.location.reload(true);
-      };
-      document.body.prepend(banner);
+      navigator.serviceWorker.register('/sw.js').catch(() => {});
     }
   </script>
-  <script src="js/pwa.js?v=20260411a"></script>
+  <script src="js/pwa.js?v=20260411e"></script>
 </body>
 </html>

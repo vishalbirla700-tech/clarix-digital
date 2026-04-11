@@ -131,10 +131,8 @@ document.addEventListener('DOMContentLoaded', () => {
     setStep(3);
     // Restore enhance button when user edits
     var enhBtn = document.getElementById('enhanceBtn');
-    if (enhBtn && enhBtn.innerHTML.includes('Enhanced')) {
-      enhBtn.style.opacity = '';
-      enhBtn.style.transform = '';
-      enhBtn.title = '';
+    if (enhBtn && enhBtn.dataset.state === 'done') {
+      enhBtn.dataset.state = '';
       enhBtn.innerHTML = '\u26A1 Enhance with AI';
     }
   });
@@ -184,6 +182,17 @@ function onLangChange(sel) {
   LangState.set(code, name, flag, native);
   updateLangUI(flag, name, code);
   setStep(2);
+
+  // Always restore the Enhance button when language changes
+  var enhBtn = document.getElementById('enhanceBtn');
+  if (enhBtn) {
+    enhBtn.style.opacity = '';
+    enhBtn.style.transform = '';
+    enhBtn.dataset.state = '';
+    if (enhBtn.innerHTML.includes('Enhanced') || enhBtn.innerHTML.includes('Again')) {
+      enhBtn.innerHTML = '\u26A1 Re-enhance in ' + name;
+    }
+  }
 
   // If results are already showing, warn the user and prompt re-enhance
   if (currentResult) {
@@ -545,13 +554,14 @@ function renderResults(r, aiPlatform, socialPlatform) {
   // Breakdown CTA
   document.getElementById('breakdownCta').style.display = 'flex';
 
-  // Hide the Enhance button after results appear — user can see results now
+  // After results appear: change button to "Enhance Again" but keep it FULLY active
   var enhBtn = document.getElementById('enhanceBtn');
   if (enhBtn) {
-    enhBtn.style.opacity = '0.35';
-    enhBtn.style.transform = 'scale(0.97)';
-    enhBtn.title = 'Edit your prompt above to re-enhance';
-    enhBtn.innerHTML = '\u2714 Enhanced — Edit prompt to re-enhance';
+    enhBtn.style.opacity = '';
+    enhBtn.style.transform = '';
+    enhBtn.title = 'Enhance again for a fresh result';
+    enhBtn.dataset.state = 'done';
+    enhBtn.innerHTML = '\u26A1 Enhance Again';
   }
 }
 

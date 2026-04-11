@@ -136,6 +136,38 @@ var studioVoiceOn = false;
 var studioRecognition = null;
 var blankCanvasMode = false;
 
+/* ── Studio Templates (shown as dropdown in each studio) ── */
+var STUDIO_TEMPLATES = {
+  'kids': [
+    { icon: '🐕', name: 'Kid with Pet',       text: 'My daughter playing with her golden puppy at the park on a sunny day' },
+    { icon: '🦸', name: 'Superhero Child',   text: 'My son dressed as a superhero flying over the city with a colorful cape' },
+    { icon: '🎂', name: 'Birthday Party',   text: 'Kids birthday party with colorful balloons, big cake and confetti everywhere' },
+    { icon: '🌳', name: 'Nature Adventure',  text: 'Children exploring an enchanted forest and discovering magical glowing creatures' },
+    { icon: '🎮', name: 'Game World',        text: 'My child as a cartoon game character inside a magical pixel adventure world' },
+  ],
+  'corporate': [
+    { icon: '💼', name: 'Team at Office',    text: 'Our tech startup team in a modern co-working space in Mumbai' },
+    { icon: '🚀', name: 'Product Launch',    text: 'New product launch event with professional stage setup and company branding' },
+    { icon: '📊', name: 'Pitch Deck Visual', text: 'Business pitch presentation for investors in a sleek boardroom setting' },
+    { icon: '🤝', name: 'Partnership Deal',  text: 'Professional handshake and collaboration between two business leaders' },
+    { icon: '🏆', name: 'Award Ceremony',   text: 'Company awards night with team celebrating excellence and achievement on stage' },
+  ],
+  'cultural': [
+    { icon: '🪤', name: 'Diwali Wish',       text: 'From our family to yours — wishing you a bright, prosperous and joyful Diwali' },
+    { icon: '🌈', name: 'Holi Greetings',   text: 'May colours of joy and happiness fill your life — Happy Holi from all of us' },
+    { icon: '🎊', name: 'New Year',          text: 'Wishing you success, good health, and endless happiness in the new year ahead' },
+    { icon: '🌙', name: 'Eid Mubarak',       text: 'Eid Mubarak! May peace, joy and prosperity be yours always this blessed season' },
+    { icon: '👉', name: 'Business Greeting', text: 'Warm festival greetings from our team to yours — wishing you continued growth' },
+  ],
+  'multilingual': [
+    { icon: '🪧', name: 'Shop Banner',       text: 'This is a Diwali sale banner from a local sweet shop in Pune with Marathi text' },
+    { icon: '💌', name: 'Wedding Card',      text: 'Hindu wedding invitation card with Sanskrit blessings and traditional floral patterns' },
+    { icon: '🏷️', name: 'Product Label',    text: 'Ayurvedic product label with Hindi description listing herbal ingredients and benefits' },
+    { icon: '🎨', name: 'Cultural Poster',  text: 'Classical Bharatnatyam dance performance poster in Tamil with event details' },
+    { icon: '📰', name: 'News Headline',     text: 'Regional Marathi newspaper headline about a local community festival celebration' },
+  ],
+};
+
 /* ── Card Design State ── */
 var cardDesign = {
   bgPreset: 0,          /* 0 = festival theme, 1-5 = presets */
@@ -436,8 +468,27 @@ function buildStudioModal() {
     opts += '</div>';
   }
 
-  /* Context + Voice */
+  /* Context + Templates + Voice */
+  var studioId = s.id;
+  var tpls = (STUDIO_TEMPLATES[studioId] || []);
+  var tplDropdown = '';
+  if (tpls.length) {
+    tplDropdown = '<div style="position:relative;margin-bottom:8px" id="studioTplWrap">'
+      + '<button class="btn btn-ghost btn-sm" id="studioTplBtn" onclick="studioToggleTemplates()" style="font-size:12px">\uD83D\uDCCB Templates \u25BE</button>'
+      + '<div id="studioTplDropdown" style="display:none;position:absolute;top:calc(100%+6px);left:0;z-index:60;background:#111;border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:8px;min-width:260px;box-shadow:0 12px 40px rgba(0,0,0,0.6)">'
+      + '<div style="font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,0.35);padding:4px 8px 8px;border-bottom:1px solid rgba(255,255,255,0.06);margin-bottom:6px">Quick Templates</div>';
+    for (var ti = 0; ti < tpls.length; ti++) {
+      var tp = tpls[ti];
+      tplDropdown += '<div onclick="studioApplyTemplate(' + JSON.stringify(studioId) + ',' + ti + ')"'
+        + ' style="display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;cursor:pointer;transition:background .15s;font-size:13px;color:rgba(255,255,255,0.8)"'
+        + ' onmouseover="this.style.background=\'rgba(255,112,67,0.1)\'" onmouseout="this.style.background=\'\'">'
+        + '<span style="font-size:16px;width:22px;text-align:center;flex-shrink:0">' + tp.icon + '</span>'
+        + '<span>' + tp.name + '</span></div>';
+    }
+    tplDropdown += '</div></div>';
+  }
   var ctx = '<div class="studio-options-label">Add Your Personal Touch</div>'
+    + tplDropdown
     + '<div class="studio-voice-row">'
     + '<textarea id="studioContext" rows="3" class="studio-textarea" placeholder="' + s.placeholder + '"></textarea>'
     + '<button class="studio-mic-btn" id="studioMicBtn" onclick="toggleStudioVoice()" title="Voice input">🎤</button>'
@@ -447,6 +498,18 @@ function buildStudioModal() {
     + '<button class="studio-ctx-btn" onclick="reuseLastContext()" title="Reuse last input">🔄 Reuse Last</button>'
     + '<button class="studio-ctx-btn" onclick="saveStudioDraft()" title="Save as draft" style="color:var(--accent);">💾 Save Draft</button>'
     + '</div>';
+
+  /* Close templates dropdown when clicking outside */
+  setTimeout(function() {
+    document.addEventListener('click', function _studioTplClose(e) {
+      var wrap = document.getElementById('studioTplWrap');
+      if (!wrap || !wrap.contains(e.target)) {
+        var dd = document.getElementById('studioTplDropdown');
+        if (dd) dd.style.display = 'none';
+        document.removeEventListener('click', _studioTplClose);
+      }
+    });
+  }, 100);
 
   /* Output */
   var out = '<div class="studio-output" id="studioOutput">'
@@ -742,6 +805,24 @@ function clearStudioContext() {
   if (ta) { ta.value = ''; ta.focus(); }
   Toast.show('Cleared', 'info', 1500);
 }
+
+/* ── Studio Template Helpers ── */
+function studioToggleTemplates() {
+  var dd = document.getElementById('studioTplDropdown');
+  if (!dd) return;
+  dd.style.display = dd.style.display === 'none' ? 'block' : 'none';
+}
+
+function studioApplyTemplate(studioId, idx) {
+  var tpls = STUDIO_TEMPLATES[studioId] || [];
+  if (idx >= tpls.length) return;
+  var ta = document.getElementById('studioContext');
+  if (ta) { ta.value = tpls[idx].text; ta.focus(); }
+  var dd = document.getElementById('studioTplDropdown');
+  if (dd) dd.style.display = 'none';
+  Toast.show('Template "' + tpls[idx].name + '" loaded', 'success', 2000);
+}
+
 
 function reuseLastContext() {
   var last = localStorage.getItem('clarix_last_context') || '';
