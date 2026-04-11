@@ -140,9 +140,9 @@ const Sidebar = {
 
     // User block
     const avatarEl = document.getElementById('sb-avatar');
-    if (avatarEl) avatarEl.textContent = name.charAt(0).toUpperCase();
+    if (avatarEl) avatarEl.textContent = (name && name !== 'undefined') ? name.charAt(0).toUpperCase() : 'C';
     const nameEl = document.getElementById('sb-name');
-    if (nameEl) nameEl.textContent = name;
+    if (nameEl) nameEl.textContent = (name && name !== 'undefined') ? name : 'Clarix User';
     const langEl = document.getElementById('sb-lang');
     if (langEl) langEl.textContent = `${LangState.flag} ${LangState.name}`;
     const badgeEl = document.getElementById('sb-badge');
