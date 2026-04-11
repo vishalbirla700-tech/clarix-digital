@@ -12,7 +12,7 @@
 .ws-arrow { color: #ddd; font-size: 14px; }
 /* Mobile: hide step labels, keep only numbers so stepper fits */
 @media (max-width: 480px) {
-  .write-stepper { padding: 8px 12px; gap: 2px; justify-content: space-between; }
+  .write-stepper { padding: 8px 12px; gap: 2px; justify-content: flex-start; }
   .ws-step { padding: 5px 8px; gap: 4px; }
   .ws-label { display: none; }
   .ws-step.active .ws-label, .ws-step.done .ws-label { display: inline; font-size: 10px; }
