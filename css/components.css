@@ -229,6 +229,17 @@
 }
 .mnav-icon { font-size: 20px; line-height: 1; }
 
+/* ─── MOBILE NAV RIGHT FIX ────────────────────── */
+@media (max-width: 480px) {
+  .nav-right { gap: 6px; }
+  /* Hide the text Login button on mobile — sidebar handles auth */
+  #authNavBtn { display: none !important; }
+  /* Make usage counter smaller on mobile */
+  .usage-counter { font-size: 11px; padding: 4px 8px; }
+  /* Make profile button compact */
+  .nav-right .btn-sm { padding: 6px 12px; font-size: 12px; }
+}
+
 /* Body padding for mobile nav */
 @media (max-width: 768px) {
   body { padding-bottom: 74px; }

@@ -196,9 +196,9 @@ function onLangChange(sel) {
     if (!nudge) {
       nudge = document.createElement('div');
       nudge.id = 'langChangeNudge';
-      nudge.style.cssText = 'background:rgba(255,152,0,0.08);border:1px solid rgba(255,152,0,0.3);border-radius:10px;padding:10px 14px;font-size:13px;color:#ff9800;display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px;animation:fadeUp 0.3s ease both';
-      nudge.innerHTML = '⚠️ Language changed to <strong>' + name + '</strong>. Re-enhance to get output in new language.' +
-        '<button class="btn btn-primary btn-sm" onclick="handleEnhance();document.getElementById(\'langChangeNudge\')?.remove()" style="white-space:nowrap;flex-shrink:0">⚡ Re-enhance</button>';
+      nudge.style.cssText = 'background:rgba(255,152,0,0.06);border:1px solid rgba(255,152,0,0.25);border-radius:12px;padding:12px 16px;font-size:13px;color:#cc5500;margin-bottom:10px;animation:fadeUp 0.3s ease both';
+      nudge.innerHTML = '<div style="margin-bottom:8px">🌐 Language changed to <strong>' + name + '</strong>. Tap to get output in the new language.</div>' +
+        '<button class="btn btn-primary btn-sm" style="width:100%;padding:10px" onclick="handleEnhance();document.getElementById(\'langChangeNudge\')?.remove()">⚡ Re-enhance in ' + name + '</button>';
       const scoresRow = document.getElementById('scoresRow');
       if (scoresRow) scoresRow.insertAdjacentElement('afterend', nudge);
     } else {
@@ -472,18 +472,17 @@ function renderResults(r, aiPlatform, socialPlatform) {
   // Remove old language nudge when fresh results come in
   document.getElementById('langChangeNudge')?.remove();
 
-  // Show API note if local fallback can't handle this language natively
+  // Show friendly tip if local fallback handled a non-English language
   var apiNoteEl = document.getElementById('apiLanguageNote');
   if (r._apiNote === '[API_NOTE]') {
     if (!apiNoteEl) {
       apiNoteEl = document.createElement('div');
       apiNoteEl.id = 'apiLanguageNote';
-      apiNoteEl.style.cssText = 'background:rgba(255,152,0,0.08);border:1px solid rgba(255,152,0,0.3);border-radius:10px;padding:10px 16px;font-size:13px;color:#ff9800;margin-bottom:12px;line-height:1.6';
+      apiNoteEl.style.cssText = 'background:rgba(255,112,67,0.05);border:1px solid rgba(255,112,67,0.18);border-radius:12px;padding:12px 16px;font-size:13px;color:rgba(0,0,0,0.7);margin-bottom:12px;line-height:1.7;display:flex;align-items:flex-start;gap:10px;';
       document.getElementById('resultsContent').insertAdjacentElement('afterbegin', apiNoteEl);
     }
-    apiNoteEl.innerHTML = '🔑 <strong>API key required</strong> for full ' + (r._langName || LangState.name) + ' output.' +
-      ' Add your Anthropic key in <code style="background:rgba(255,255,255,0.1);padding:1px 5px;border-radius:4px">config.js → claudeApiKey</code>.' +
-      ' Below is a cleaned English version. <a href="https://console.anthropic.com" target="_blank" style="color:#ff9800;text-decoration:underline">Get free key →</a>';
+    var langDisplay = r._langName || LangState.name;
+    apiNoteEl.innerHTML = '<span style="font-size:18px;margin-top:1px">✨</span><span><strong style="color:#ff7043;">Enhancing in ' + langDisplay + '</strong> — Clarix AI has prepared your prompt. For fully native ' + langDisplay + ' output, connect an AI platform (ChatGPT, Claude, etc.) above and paste the prompt there.</span>';
   } else if (apiNoteEl) {
     apiNoteEl.remove();
   }

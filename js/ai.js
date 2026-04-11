@@ -588,7 +588,7 @@ async function enhancePrompt(text, platform, mode, langCode, langName, socialPla
   result._engine = engineUsed;
 
   if (engineUsed !== 'Local') {
-    Toast.show('Enhanced with ' + engineUsed + ' ✦', 'success', 2000);
+    Toast.show('✦ Enhanced by Clarix AI', 'success', 2000);
   }
 
   ClarixState.inc();

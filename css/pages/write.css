@@ -1,7 +1,8 @@
 /* ═══════════════════════════════════════════
    CLARIX — WRITE PAGE CSS V2
 ═══════════════════════════════════════════ */
-.write-stepper { display: flex; align-items: center; justify-content: center; gap: 4px; padding: 10px 24px; background: #f5f5f7; border-bottom: 1px solid #e8e8ea; overflow-x: auto; white-space: nowrap; }
+.write-stepper { display: flex; align-items: center; justify-content: center; gap: 4px; padding: 10px 24px; background: #f5f5f7; border-bottom: 1px solid #e8e8ea; overflow-x: auto; white-space: nowrap; scrollbar-width: none; }
+.write-stepper::-webkit-scrollbar { display: none; }
 .ws-step { display: flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: var(--r-full); font-size: 12px; font-weight: 600; color: #bbb; transition: all 0.2s; }
 .ws-step.active { background: rgba(255,112,67,0.1); color: var(--accent); }
 .ws-step.done { color: #22c55e; }
@@ -9,6 +10,15 @@
 .ws-step.active .ws-num { background: var(--accent); color: #fff; border-color: var(--accent); }
 .ws-step.done .ws-num { background: #22c55e; color: #fff; border-color: #22c55e; }
 .ws-arrow { color: #ddd; font-size: 14px; }
+/* Mobile: hide step labels, keep only numbers so stepper fits */
+@media (max-width: 480px) {
+  .write-stepper { padding: 8px 12px; gap: 2px; justify-content: space-between; }
+  .ws-step { padding: 5px 8px; gap: 4px; }
+  .ws-label { display: none; }
+  .ws-step.active .ws-label, .ws-step.done .ws-label { display: inline; font-size: 10px; }
+  .ws-arrow { font-size: 10px; }
+  .ws-num { width: 22px; height: 22px; font-size: 11px; }
+}
 
 .write-layout { display: grid; grid-template-columns: 460px 1fr; min-height: calc(100vh - 108px); }
 @media (max-width: 900px) { .write-layout { grid-template-columns: 1fr; } }
