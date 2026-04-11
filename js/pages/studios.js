@@ -441,6 +441,11 @@ function buildStudioModal() {
     + '<div class="studio-voice-row">'
     + '<textarea id="studioContext" rows="3" class="studio-textarea" placeholder="' + s.placeholder + '"></textarea>'
     + '<button class="studio-mic-btn" id="studioMicBtn" onclick="toggleStudioVoice()" title="Voice input">🎤</button>'
+    + '</div>'
+    + '<div class="studio-context-actions">'
+    + '<button class="studio-ctx-btn" onclick="clearStudioContext()" title="Clear text">🗑 Clear</button>'
+    + '<button class="studio-ctx-btn" onclick="reuseLastContext()" title="Reuse last input">🔄 Reuse Last</button>'
+    + '<button class="studio-ctx-btn" onclick="saveStudioDraft()" title="Save as draft" style="color:var(--accent);">💾 Save Draft</button>'
     + '</div>';
 
   /* Output */
@@ -550,6 +555,27 @@ function studioDrop(e) {
 function studioFileSelected(file) {
   if (!file) return;
   studioFile = file;
+  /* Logo PNG Quality Warning */
+  if (file.type !== 'image/png') {
+    Toast.show('💡 For logos: PNG gives best results. JPG may affect quality.', 'info', 5000);
+    /* Show warning banner inside the upload zone */
+    setTimeout(function() {
+      var zone = document.getElementById('studioDropZone');
+      if (zone) {
+        var warn = document.getElementById('studioLogoWarn');
+        if (!warn) {
+          warn = document.createElement('div');
+          warn.id = 'studioLogoWarn';
+          warn.style.cssText = 'margin-top:8px;padding:8px 12px;background:rgba(255,193,7,0.1);border:1px solid rgba(255,193,7,0.3);border-radius:8px;font-size:12px;color:#ffc107;line-height:1.5;';
+          warn.innerHTML = '⚠️ <strong>Logo detected as non-PNG.</strong> For best output quality, upload a transparent PNG logo. Your result will be close but may vary.';
+          zone.parentNode.insertBefore(warn, zone.nextSibling);
+        }
+      }
+    }, 300);
+  } else {
+    var warn = document.getElementById('studioLogoWarn');
+    if (warn) warn.remove();
+  }
   var reader = new FileReader();
   reader.onload = function(ev) {
     studioDataUrl = ev.target.result;
@@ -642,6 +668,9 @@ async function runStudio() {
     }
 
     renderStudioOutput(result);
+    saveStudioGenerationToHistory(result);
+    /* Show Continue or Change modal after 1.5s */
+    setTimeout(showStudioContinueModal, 1500);
   } catch(err) {
     console.error('[Studio]', err);
     Toast.show('❌ ' + (err.message || 'Something went wrong. Try again.'), 'error');
@@ -700,10 +729,98 @@ function copyVar(i) {
 
 function sendStudioToWrite() {
   if (!window._studioVars || selectedVariation === null) return;
-  localStorage.setItem('clarix_intent', window._studioVars[selectedVariation]);
+  var text = window._studioVars[selectedVariation];
+  localStorage.setItem('clarix_intent', text);
   localStorage.setItem('clarix_intent_source', 'studio');
   closeStudio();
   window.location.href = 'write.html';
+}
+
+/* ── Clear / Reuse / Save Draft helpers ── */
+function clearStudioContext() {
+  var ta = document.getElementById('studioContext');
+  if (ta) { ta.value = ''; ta.focus(); }
+  Toast.show('Cleared', 'info', 1500);
+}
+
+function reuseLastContext() {
+  var last = localStorage.getItem('clarix_last_context') || '';
+  var ta = document.getElementById('studioContext');
+  if (!last) { Toast.show('No previous input found', 'info', 2000); return; }
+  if (ta) { ta.value = last; ta.focus(); }
+  Toast.show('Last input restored ✓', 'success', 2000);
+}
+
+function saveStudioDraft() {
+  var ta = document.getElementById('studioContext');
+  var text = ta ? ta.value.trim() : '';
+  if (!text) { Toast.show('Nothing to save yet', 'info', 2000); return; }
+  localStorage.setItem('clarix_last_context', text);
+  /* Save to Firestore history if logged in */
+  try {
+    var uid = localStorage.getItem('clarix_uid');
+    if (uid && typeof firebase !== 'undefined' && firebase.firestore) {
+      firebase.firestore().collection('users').doc(uid)
+        .collection('drafts').add({
+          text: text,
+          studio: activeStudio ? activeStudio.id : 'unknown',
+          createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+    }
+  } catch(e) {}
+  Toast.show('💾 Draft saved!', 'success', 2000);
+}
+
+/* Save studio generation result to Firestore history */
+function saveStudioGenerationToHistory(result) {
+  try {
+    var uid = localStorage.getItem('clarix_uid');
+    var text = Array.isArray(result) ? result[0] : (result.variation1 || '');
+    var context = (document.getElementById('studioContext') || {}).value || '';
+    /* localStorage backup */
+    var saved = JSON.parse(localStorage.getItem('clarix_saved') || '[]');
+    saved.unshift({
+      text: text, source: 'studio',
+      studio: activeStudio ? activeStudio.id : 'unknown',
+      context: context,
+      time: new Date().toISOString()
+    });
+    if (saved.length > 100) saved.pop();
+    localStorage.setItem('clarix_saved', JSON.stringify(saved));
+    localStorage.setItem('clarix_last_context', context);
+    /* Firestore cloud save */
+    if (uid && typeof firebase !== 'undefined' && firebase.firestore) {
+      firebase.firestore().collection('users').doc(uid)
+        .collection('history').add({
+          text: text, source: 'studio',
+          studio: activeStudio ? activeStudio.id : 'unknown',
+          context: context,
+          createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+    }
+  } catch(e) {}
+}
+
+/* Studio Continue or Change modal */
+function showStudioContinueModal() {
+  var existing = document.getElementById('clarix-studio-continue');
+  if (existing) existing.remove();
+  var el = document.createElement('div');
+  el.id = 'clarix-studio-continue';
+  el.style.cssText = 'position:fixed;inset:0;z-index:10000;background:rgba(0,0,0,0.88);backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;padding:20px;';
+  var studioName = activeStudio ? activeStudio.name : 'Studio';
+  el.innerHTML = '<div style="background:#111;border:1px solid rgba(255,112,67,0.3);border-radius:20px;padding:32px 28px;max-width:380px;width:100%;text-align:center;">'
+    + '<div style="font-size:30px;margin-bottom:12px;">✨</div>'
+    + '<div style="font-size:18px;font-weight:800;color:#fff;margin-bottom:8px;font-family:var(--font-head);">Great output!</div>'
+    + '<div style="font-size:13px;color:rgba(255,255,255,0.6);margin-bottom:24px;line-height:1.6;">What would you like to do next?</div>'
+    + '<div style="display:flex;flex-direction:column;gap:10px;">'
+    + '<button onclick="document.getElementById(\'clarix-studio-continue\').remove()" style="background:var(--accent);color:#fff;border:none;border-radius:12px;padding:13px;font-size:14px;font-weight:700;cursor:pointer;">🔄 Refine or Enhance More</button>'
+    + '<button onclick="document.getElementById(\'clarix-studio-continue\').remove();clearStudioContext()" style="background:rgba(255,255,255,0.06);color:#fff;border:1px solid rgba(255,255,255,0.12);border-radius:12px;padding:13px;font-size:14px;font-weight:700;cursor:pointer;">🎨 Change Style / Options</button>'
+    + '<button onclick="sendStudioToWrite()" style="background:rgba(255,255,255,0.06);color:#fff;border:1px solid rgba(255,255,255,0.12);border-radius:12px;padding:13px;font-size:14px;font-weight:700;cursor:pointer;">✍️ Open in Write Studio</button>'
+    + '<button onclick="document.getElementById(\'clarix-studio-continue\').remove();closeStudio()" style="background:none;border:none;color:rgba(255,255,255,0.35);cursor:pointer;font-size:13px;padding:8px;">Back to Apps</button>'
+    + '</div></div>';
+  document.body.appendChild(el);
+  el.addEventListener('click', function(e) { if (e.target === el) el.remove(); });
 }
 
 /* ════════════════════════════════════════════

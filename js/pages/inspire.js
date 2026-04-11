@@ -5,28 +5,32 @@
 
 /* ─── GALLERY DATA ────────────────────────────── */
 const GALLERY = [
-  { id:1,  cat:'cinematic', title:'Neon Cityscape',     prompt:'A rain-drenched cyberpunk city at midnight, neon signs reflecting on wet streets, atmospheric fog, lone figure in foreground',              img:'https://images.unsplash.com/photo-1519501025264-65ba15a82390?w=600&q=80' },
-  { id:2,  cat:'nature',    title:'Misty Mountains',    prompt:'Breathtaking mountain range at dawn, layers of fog filling the valleys, golden sunrise rays piercing through peaks',                       img:'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=600&q=80' },
-  { id:3,  cat:'fashion',   title:'Portrait Gold',      prompt:'High-fashion editorial portrait, dramatic golden hour backlight, luxury silk fabric, film grain, Vogue magazine aesthetic',               img:'https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?w=600&q=80' },
-  { id:4,  cat:'cinematic', title:'Ocean Storm',        prompt:'Massive ocean waves crashing against rocky cliffs at dusk, dramatic storm clouds, cinematic wide angle, raw power of nature',             img:'https://images.unsplash.com/photo-1505118380757-91f5f5632de0?w=600&q=80' },
-  { id:5,  cat:'3d',        title:'Sci-Fi Portal',      prompt:'A glowing dimensional portal in a futuristic space station, ethereal energy beams, floating debris, cinematic sci-fi concept art',       img:'https://images.unsplash.com/photo-1462331940025-496dfbfc7564?w=600&q=80' },
-  { id:6,  cat:'nature',    title:'Forest Cathedral',   prompt:'Ancient redwood forest with shafts of golden light piercing the canopy, misty ground fog, ethereal dreamlike atmosphere',                img:'https://images.unsplash.com/photo-1448375240586-882707db888b?w=600&q=80' },
-  { id:7,  cat:'fashion',   title:'Desert Queen',       prompt:'Fashion editorial set in Sahara desert, model in flowing white fabric against red sand dunes, golden hour, minimalist, editorial',       img:'https://images.unsplash.com/photo-1509631179647-0177331693ae?w=600&q=80' },
-  { id:8,  cat:'cinematic', title:'Abandoned City',     prompt:'Post-apocalyptic abandoned city overgrown with vegetation, golden hour light, moody cinematic atmosphere, hyperdetailed',                 img:'https://images.unsplash.com/photo-1518791841217-8f162f1912da?w=600&q=80' },
-  { id:9,  cat:'3d',        title:'Crystal Cave',       prompt:'Enormous underground crystal cave with giant amethyst formations, bioluminescent glow, otherworldly atmosphere, photorealistic',          img:'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&q=80' },
-  { id:10, cat:'video',     title:'Drone Coastline',    prompt:'Aerial drone shot of dramatic coastline at sunrise, turquoise water crashing white foam on black volcanic rocks, cinematic color grade',  img:'https://images.unsplash.com/photo-1505118380757-91f5f5632de0?w=600&q=80' },
-  { id:11, cat:'blog',      title:'Minimal Workspace',  prompt:'Minimalist flat-lay workspace, MacBook, coffee, succulents, natural window light, clean white background, editorial lifestyle photography',img:'https://images.unsplash.com/photo-1484788984921-03950022c9ef?w=600&q=80' },
-  { id:12, cat:'nature',    title:'Aurora Borealis',    prompt:'Magnificent Northern Lights display over snow-covered pine forest, vivid green and purple aurora, starry night sky, long exposure',       img:'https://images.unsplash.com/photo-1531366936337-7c912a4589a7?w=600&q=80' },
-  { id:13, cat:'cinematic', title:'Epic Battle',        prompt:'Epic fantasy battle scene at sunset, armies clashing on a burning plain, dramatic storm clouds, god rays piercing through smoke',         img:'https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=600&q=80' },
-  { id:14, cat:'fashion',   title:'Urban Grunge',       prompt:'Street fashion editorial in gritty New York alley, neon signs, dramatic shadows, high-contrast noir lighting, film grain, attitude',     img:'https://images.unsplash.com/photo-1536766820879-059fec98ec0a?w=600&q=80' },
-  { id:15, cat:'3d',        title:'Holographic UI',     prompt:'Futuristic holographic interface floating in dark space, translucent data panels, electric blue and orange UI elements, sci-fi tech',     img:'https://images.unsplash.com/photo-1518770660439-4636190af475?w=600&q=80' },
-  { id:16, cat:'nature',    title:'Underwater World',   prompt:'Stunning underwater coral reef scene, vibrant tropical fish, shafts of turquoise light from surface, sea turtle, National Geographic',    img:'https://images.unsplash.com/photo-1583212292454-1fe6229603b7?w=600&q=80' },
-  { id:17, cat:'video',     title:'Time Lapse Storm',   prompt:'Cinematic time-lapse of a supercell thunderstorm forming over flat plains, lightning bolts, churning dark clouds, dramatic wide angle',   img:'https://images.unsplash.com/photo-1469908801-61b0c37b85db?w=600&q=80' },
-  { id:18, cat:'blog',      title:'Coffee Art',         prompt:'Artisan latte art in rustic ceramic cup, warm coffee shop bokeh background, natural window light, moody editorial food photography',      img:'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=600&q=80' },
-  { id:19, cat:'cinematic', title:'Golden Architecture',prompt:'Ancient temple complex at golden hour, warm amber light bathing intricate carved stone, rising incense smoke, spiritual atmosphere',      img:'https://images.unsplash.com/photo-1528360983277-13d401cdc186?w=600&q=80' },
-  { id:20, cat:'3d',        title:'Robot Portrait',     prompt:'Hyperrealistic portrait of a humanoid robot with expressive eyes, chrome surfaces with subsurface scattering, bokeh background, epic',   img:'https://images.unsplash.com/photo-1485827404703-89b55fcc595e?w=600&q=80' },
-  { id:21, cat:'fashion',   title:'Neon Glow',          prompt:'Fashion portrait in a neon-lit room, subject bathed in electric pink and blue light, glossy wet look, editorial glam, cinematic crop',   img:'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=600&q=80' },
-  { id:22, cat:'nature',    title:'Volcano Eruption',   prompt:'Active volcano erupting at night, rivers of glowing lava flowing down dark slopes, billowing ash clouds lit from below by fire',          img:'https://images.unsplash.com/photo-1472817081201-5e1e7c4c8fc5?w=600&q=80' },
+  { id:1,  cat:'cinematic', title:'Neon Cityscape',      prompt:'A rain-drenched cyberpunk city at midnight, neon signs reflecting on wet streets, atmospheric fog, lone figure in foreground',              img:'https://images.unsplash.com/photo-1519501025264-65ba15a82390?w=600&q=80&auto=format&fit=crop' },
+  { id:2,  cat:'nature',    title:'Misty Mountains',     prompt:'Breathtaking mountain range at dawn, layers of fog filling the valleys, golden sunrise rays piercing through peaks',                       img:'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=600&q=80&auto=format&fit=crop' },
+  { id:3,  cat:'fashion',   title:'Portrait Gold',       prompt:'High-fashion editorial portrait, dramatic golden hour backlight, luxury silk fabric, film grain, Vogue magazine aesthetic',               img:'https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?w=600&q=80&auto=format&fit=crop' },
+  { id:4,  cat:'cinematic', title:'Ocean Storm',         prompt:'Massive ocean waves crashing against rocky cliffs at dusk, dramatic storm clouds, cinematic wide angle, raw power of nature',             img:'https://images.unsplash.com/photo-1505118380757-91f5f5632de0?w=600&q=80&auto=format&fit=crop' },
+  { id:5,  cat:'3d',        title:'Sci-Fi Portal',       prompt:'A glowing dimensional portal in a futuristic space station, ethereal energy beams, floating debris, cinematic sci-fi concept art',       img:'https://images.unsplash.com/photo-1462331940025-496dfbfc7564?w=600&q=80&auto=format&fit=crop' },
+  { id:6,  cat:'nature',    title:'Forest Cathedral',    prompt:'Ancient redwood forest with shafts of golden light piercing the canopy, misty ground fog, ethereal dreamlike atmosphere',                img:'https://images.unsplash.com/photo-1448375240586-882707db888b?w=600&q=80&auto=format&fit=crop' },
+  { id:7,  cat:'fashion',   title:'Desert Editorial',    prompt:'Fashion editorial set in Sahara desert, model in flowing white fabric against red sand dunes, golden hour, minimalist, editorial',       img:'https://images.unsplash.com/photo-1469334031218-e382a71b716b?w=600&q=80&auto=format&fit=crop' },
+  { id:8,  cat:'cinematic', title:'Abandoned City',      prompt:'Post-apocalyptic abandoned city overgrown with vegetation, golden hour light, moody cinematic atmosphere, hyperdetailed',                 img:'https://images.unsplash.com/photo-1581097518571-fa9b53f14f87?w=600&q=80&auto=format&fit=crop' },
+  { id:9,  cat:'3d',        title:'Crystal Cave',        prompt:'Enormous underground crystal cave with giant amethyst formations, bioluminescent glow, otherworldly atmosphere, photorealistic',          img:'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=600&q=80&auto=format&fit=crop' },
+  { id:10, cat:'video',     title:'Drone Coastline',     prompt:'Aerial drone shot of dramatic coastline at sunrise, turquoise water crashing white foam on black volcanic rocks, cinematic color grade',  img:'https://images.unsplash.com/photo-1433086966358-54859d0ed716?w=600&q=80&auto=format&fit=crop' },
+  { id:11, cat:'blog',      title:'Minimal Workspace',   prompt:'Minimalist flat-lay workspace, MacBook, coffee, succulents, natural window light, clean white background, editorial lifestyle photography',img:'https://images.unsplash.com/photo-1484788984921-03950022c9ef?w=600&q=80&auto=format&fit=crop' },
+  { id:12, cat:'nature',    title:'Aurora Borealis',     prompt:'Magnificent Northern Lights display over snow-covered pine forest, vivid green and purple aurora, starry night sky, long exposure',       img:'https://images.unsplash.com/photo-1531366936337-7c912a4589a7?w=600&q=80&auto=format&fit=crop' },
+  { id:13, cat:'cinematic', title:'Epic Landscape',      prompt:'Dramatic canyon at golden hour, towering red rock formations, sweeping vista, god rays through storm clouds, cinematic wide',            img:'https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=600&q=80&auto=format&fit=crop' },
+  { id:14, cat:'fashion',   title:'Urban Street Style',  prompt:'Street fashion editorial in urban alley, dramatic shadows, high-contrast noir lighting, film grain, bold attitude',                       img:'https://images.unsplash.com/photo-1487222477894-8943e31ef7b2?w=600&q=80&auto=format&fit=crop' },
+  { id:15, cat:'3d',        title:'Holographic UI',      prompt:'Futuristic holographic interface floating in dark space, translucent data panels, electric blue and orange UI elements, sci-fi tech',     img:'https://images.unsplash.com/photo-1518770660439-4636190af475?w=600&q=80&auto=format&fit=crop' },
+  { id:16, cat:'nature',    title:'Underwater World',    prompt:'Stunning underwater coral reef scene, vibrant tropical fish, shafts of turquoise light from surface, sea turtle, National Geographic',    img:'https://images.unsplash.com/photo-1518020382113-a7e8fc38eac9?w=600&q=80&auto=format&fit=crop' },
+  { id:17, cat:'video',     title:'Storm Timelapse',     prompt:'Cinematic timelapse of a supercell thunderstorm forming over flat plains, lightning bolts, churning dark clouds, dramatic wide angle',    img:'https://images.unsplash.com/photo-1504608524841-42584120d693?w=600&q=80&auto=format&fit=crop' },
+  { id:18, cat:'blog',      title:'Coffee Art',          prompt:'Artisan latte art in rustic ceramic cup, warm coffee shop bokeh background, natural window light, moody editorial food photography',      img:'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=600&q=80&auto=format&fit=crop' },
+  { id:19, cat:'cinematic', title:'Golden Architecture', prompt:'Ancient temple complex at golden hour, warm amber light bathing intricate carved stone, rising incense smoke, spiritual atmosphere',      img:'https://images.unsplash.com/photo-1561361513-2d000a50f0dc?w=600&q=80&auto=format&fit=crop' },
+  { id:20, cat:'3d',        title:'Robot Portrait',      prompt:'Hyperrealistic portrait of a humanoid robot with expressive eyes, chrome surfaces with subsurface scattering, bokeh background, epic',   img:'https://images.unsplash.com/photo-1485827404703-89b55fcc595e?w=600&q=80&auto=format&fit=crop' },
+  { id:21, cat:'fashion',   title:'Neon Glow',           prompt:'Fashion portrait in a neon-lit room, subject bathed in electric pink and blue light, glossy wet look, editorial glam, cinematic crop',   img:'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=600&q=80&auto=format&fit=crop' },
+  { id:22, cat:'nature',    title:'Volcano Eruption',    prompt:'Active volcano erupting at night, rivers of glowing lava flowing down dark slopes, billowing ash clouds lit from below by fire',          img:'https://images.unsplash.com/photo-1508193638397-1c4234db14d8?w=600&q=80&auto=format&fit=crop' },
+  { id:23, cat:'blog',      title:'City Skyline',        prompt:'Panoramic city skyline at blue hour, reflections on a glass-calm river, warm office lights against cool sky, urban serenity',           img:'https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?w=600&q=80&auto=format&fit=crop' },
+  { id:24, cat:'cinematic', title:'Night Market',        prompt:'Vibrant Indian street market at night, golden fairy lights, colorful spices and textiles, bokeh crowd, warm cinematic color grade',      img:'https://images.unsplash.com/photo-1555685812-4b943f1cb0eb?w=600&q=80&auto=format&fit=crop' },
+  { id:25, cat:'3d',        title:'Space Station',       prompt:'Interior of a futuristic space station, astronaut floating weightless, Earth visible through massive window, golden hour from orbit',     img:'https://images.unsplash.com/photo-1446941611757-91d2c3bd3d45?w=600&q=80&auto=format&fit=crop' },
+  { id:26, cat:'nature',    title:'Desert Dunes',        prompt:'Vast Sahara desert at golden hour, perfect rippling sand dunes casting long shadows, lone camel silhouette, cinematic panoramic',       img:'https://images.unsplash.com/photo-1509316785289-025f5b846b35?w=600&q=80&auto=format&fit=crop' },
 ];
 
 const ENHANCE_CHIPS = [
@@ -271,6 +275,82 @@ function exportEditorTXT() {
   const text = editorResult || document.getElementById('editorPrompt').value;
   downloadFile('clarix-inspire-prompt.txt', `CLARIX INSPIREME EXPORT\n${'='.repeat(40)}\n\nPROMPT:\n${text}\n\n${'='.repeat(40)}\nGenerated by Clarix`);
   Toast.show('Exported!', 'success');
+}
+
+function clearEditorPrompt() {
+  if (activeItem) {
+    document.getElementById('editorPrompt').value = activeItem.prompt;
+    selectedChips = [];
+    updateEditorChips();
+  } else {
+    document.getElementById('editorPrompt').value = '';
+  }
+  document.getElementById('editorResult').style.display = 'none';
+  document.getElementById('editorExport').style.display = 'none';
+  editorResult = '';
+  Toast.show('Cleared — original prompt restored', 'info');
+}
+
+function saveInspireToHistory() {
+  const text = editorResult || document.getElementById('editorPrompt').value;
+  if (!text) return;
+  /* Save to localStorage library */
+  const saved = JSON.parse(localStorage.getItem('clarix_saved') || '[]');
+  saved.unshift({
+    text: text,
+    source: 'inspire',
+    title: activeItem ? activeItem.title : 'Inspired Prompt',
+    time: new Date().toISOString()
+  });
+  if (saved.length > 100) saved.pop();
+  localStorage.setItem('clarix_saved', JSON.stringify(saved));
+  /* Also save to Firestore if logged in */
+  try {
+    const uid = localStorage.getItem('clarix_uid');
+    if (uid && typeof firebase !== 'undefined' && firebase.firestore) {
+      firebase.firestore().collection('users').doc(uid)
+        .collection('history').add({
+          text, source: 'inspire',
+          title: activeItem ? activeItem.title : 'Inspired Prompt',
+          createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+    }
+  } catch(e) { /* Firestore not available, localStorage fallback used */ }
+  Toast.show('💾 Saved to your history!', 'success');
+  showContinueOrChangeModal(text);
+}
+
+function showContinueOrChangeModal(savedText) {
+  const existing = document.getElementById('clarix-continue-modal');
+  if (existing) existing.remove();
+  const el = document.createElement('div');
+  el.id = 'clarix-continue-modal';
+  el.style.cssText = `
+    position:fixed;inset:0;z-index:9999;
+    background:rgba(0,0,0,0.85);backdrop-filter:blur(8px);
+    display:flex;align-items:center;justify-content:center;padding:20px;
+  `;
+  el.innerHTML = `
+    <div style="background:#111;border:1px solid rgba(255,112,67,0.3);border-radius:20px;padding:32px 28px;max-width:380px;width:100%;text-align:center;">
+      <div style="font-size:32px;margin-bottom:12px;">✨</div>
+      <div style="font-size:18px;font-weight:800;color:#fff;margin-bottom:8px;font-family:var(--font-head);">Prompt Saved!</div>
+      <div style="font-size:13px;color:rgba(255,255,255,0.6);margin-bottom:28px;line-height:1.6;">What would you like to do next?</div>
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        <button onclick="document.getElementById('clarix-continue-modal').remove()" style="background:var(--accent);color:#fff;border:none;border-radius:12px;padding:14px;font-size:14px;font-weight:700;cursor:pointer;">
+          🔄 Enhance This Further
+        </button>
+        <button onclick="document.getElementById('clarix-continue-modal').remove();clearEditorPrompt()" style="background:rgba(255,255,255,0.06);color:#fff;border:1px solid rgba(255,255,255,0.12);border-radius:12px;padding:14px;font-size:14px;font-weight:700;cursor:pointer;">
+          🎨 Try a Different Image
+        </button>
+        <button onclick="localStorage.setItem('clarix_intent',${JSON.stringify(savedText)});window.location.href='write.html'" style="background:rgba(255,255,255,0.06);color:#fff;border:1px solid rgba(255,255,255,0.12);border-radius:12px;padding:14px;font-size:14px;font-weight:700;cursor:pointer;">
+          ✍️ Open in Write Studio
+        </button>
+        <button onclick="document.getElementById('clarix-continue-modal').remove();closeEditor()" style="background:none;border:none;color:rgba(255,255,255,0.35);cursor:pointer;font-size:13px;padding:8px;">Back to Gallery</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(el);
+  el.addEventListener('click', e => { if (e.target === el) el.remove(); });
 }
 
 /* ─── IMAGE UPLOAD / VISION ───────────────────── */

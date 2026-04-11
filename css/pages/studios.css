@@ -205,7 +205,26 @@
 }
 
 /* ── CONTEXT + VOICE ROW ── */
-.studio-voice-row { position:relative; margin-bottom:16px; }
+.studio-voice-row { position:relative; margin-bottom:6px; }
+
+/* ── CONTEXT ACTION BUTTONS (Clear / Reuse / Save) ── */
+.studio-context-actions {
+  display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px; padding-top:2px;
+}
+.studio-ctx-btn {
+  padding:7px 14px; border-radius:20px; font-size:12px; font-weight:600;
+  background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.1);
+  color:rgba(255,255,255,.6); cursor:pointer; font-family:var(--font-body);
+  transition:all .18s;
+}
+.studio-ctx-btn:hover { background:rgba(255,255,255,.1); color:#fff; border-color:rgba(255,255,255,.25); }
+
+/* ── HOW TO USE LABEL ── */
+.studio-how-to-label {
+  font-size:11px; font-weight:700; letter-spacing:.08em;
+  text-transform:uppercase; color:rgba(255,255,255,.45);
+  margin:16px 0 8px;
+}
 .studio-textarea {
   width:100%; box-sizing:border-box;
   background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.09);
