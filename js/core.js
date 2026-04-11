@@ -119,7 +119,11 @@ const Toast = {
   }
 };
 
-/* ─── UPGRADE MODAL ───────────────────────────── */
+/* ─── UPGRADE MODAL — COMING SOON ────────────────
+   Payments not yet live. Show a premium "coming soon"
+   card with notify CTA. Swap activate() when Razorpay
+   is ready by replacing the modal body below.
+─────────────────────────────────────────────── */
 const UpgradeModal = {
   show(reason = '') {
     const existing = document.getElementById('upgrade-modal-overlay');
@@ -129,65 +133,100 @@ const UpgradeModal = {
     el.className = 'modal-overlay';
     el.id = 'upgrade-modal-overlay';
     el.innerHTML = `
-      <div class="modal">
+      <div class="modal upgrade-coming-soon-modal">
         <button class="modal-close" onclick="UpgradeModal.hide()">✕</button>
-        <div style="text-align:center">
-          <div style="font-size:40px;margin-bottom:12px">⚡</div>
-          <h3 style="font-family:var(--font-head);font-size:24px;margin-bottom:8px">
-            ${reason || "You've hit the free limit"}
-          </h3>
-          <p style="color:#888;font-size:14px;margin-bottom:24px">
-            Upgrade to Clarix Pro for unlimited enhancements, full Expert Breakdown, and priority AI.
-          </p>
-          <div style="background:rgba(255,112,67,0.06);border:1px solid rgba(255,112,67,0.2);border-radius:16px;padding:20px;margin-bottom:24px">
-            <div style="font-size:32px;font-weight:800;font-family:var(--font-head);color:var(--accent)">₹299<span style="font-size:16px;color:#888">/month</span></div>
-            <div style="font-size:13px;color:#aaa;margin-top:4px">Start with 7 days free</div>
-          </div>
-          <ul style="text-align:left;list-style:none;margin-bottom:24px;display:flex;flex-direction:column;gap:10px">
-            ${['Unlimited AI enhancements','Full Expert Breakdown','Pro upgrade prompts','All platforms + export','Priority AI processing'].map(f=>`<li style="display:flex;align-items:center;gap:10px;font-size:14px;color:#ccc"><span style="color:#ff7043">✦</span>${f}</li>`).join('')}
-          </ul>
-          <button class="btn btn-primary" style="width:100%" onclick="UpgradeModal.activate()">
-            Start 7-Day Free Trial
-          </button>
-          <button onclick="UpgradeModal.hide()" style="background:none;border:none;color:#555;font-size:13px;margin-top:14px;cursor:pointer;display:block;width:100%">
-            Maybe later
-          </button>
+
+        <!-- Coming Soon Badge -->
+        <div class="ucs-badge">🚀 Coming Soon</div>
+
+        <!-- Icon + Title -->
+        <div class="ucs-icon">⚡</div>
+        <h3 class="ucs-title">
+          ${reason || "You've used your free prompts"}
+        </h3>
+        <p class="ucs-sub">
+          Clarix Pro is almost here — unlimited AI enhancements, priority processing, and full Expert Breakdown.
+        </p>
+
+        <!-- Pricing card -->
+        <div class="ucs-price-card">
+          <div class="ucs-price">₹299<span class="ucs-per">/month</span></div>
+          <div class="ucs-price-note">7-day free trial · Cancel anytime</div>
         </div>
+
+        <!-- Features list -->
+        <ul class="ucs-features">
+          ${[
+            '✦ Unlimited AI enhancements daily',
+            '✦ Full Expert Breakdown mode',
+            '✦ All platforms + language support',
+            '✦ Priority AI processing',
+            '✦ Prompt history & library'
+          ].map(f => `<li>${f}</li>`).join('')}
+        </ul>
+
+        <!-- Notify CTA -->
+        <div class="ucs-notify-wrap" id="ucsNotifyWrap">
+          <button class="btn btn-primary ucs-notify-btn" id="ucsNotifyBtn" onclick="UpgradeModal.notifyMe()">
+            🔔 Notify Me When Pro Launches
+          </button>
+          <div class="ucs-notify-input-row hidden" id="ucsInputRow">
+            <input type="email" id="ucsEmailInput" class="ucs-email-input"
+              placeholder="Your email address..."
+              onkeydown="if(event.key==='Enter') UpgradeModal.submitNotify()">
+            <button class="btn btn-primary ucs-submit-btn" onclick="UpgradeModal.submitNotify()">Notify Me</button>
+          </div>
+          <div class="ucs-success hidden" id="ucsSuccess">
+            ✅ You're on the list! We'll notify you at launch.
+          </div>
+        </div>
+
+        <button onclick="UpgradeModal.hide()" class="ucs-later-btn">
+          Continue with Free Tier
+        </button>
       </div>`;
+
     document.body.appendChild(el);
     requestAnimationFrame(() => el.classList.add('open'));
     el.addEventListener('click', (e) => { if (e.target === el) UpgradeModal.hide(); });
   },
+
   hide() {
     const el = document.getElementById('upgrade-modal-overlay');
     if (el) { el.classList.remove('open'); setTimeout(() => el.remove(), 300); }
   },
-  activate() {
-    if (typeof Razorpay === 'undefined') {
-      Toast.show('⏳ Loading payment gateway...', 'info', 2000);
-      return;
+
+  notifyMe() {
+    document.getElementById('ucsNotifyBtn')?.classList.add('hidden');
+    document.getElementById('ucsInputRow')?.classList.remove('hidden');
+    setTimeout(() => document.getElementById('ucsEmailInput')?.focus(), 100);
+  },
+
+  submitNotify() {
+    const email = document.getElementById('ucsEmailInput')?.value?.trim();
+    if (!email || !email.includes('@')) {
+      Toast.show('Please enter a valid email', 'error'); return;
     }
-    const options = {
-      key: CLARIX_CONFIG.razorpayKeyId,
-      amount: CLARIX_CONFIG.proPriceAmount,
-      currency: 'INR',
-      name: 'Clarix',
-      description: 'Clarix Pro — Unlimited AI Prompts',
-      image: 'https://clarix.digital/icons/icon-192.png',
-      handler: function(response) {
-        // Payment successful — activate Pro
-        ClarixState.isPro = true;
-        UpgradeModal.hide();
-        updateUsageCounter();
-        if (typeof Sidebar !== 'undefined') Sidebar.refresh();
-        Toast.show('🎉 Welcome to Clarix Pro! Enjoy unlimited access.', 'success', 5000);
-      },
-      prefill: { email: '', contact: '' },
-      theme: { color: '#ff7043' },
-      modal: { ondismiss: () => Toast.show('Payment cancelled.', 'error', 2000) }
-    };
-    const rzp = new Razorpay(options);
-    rzp.open();
+    /* Save to localStorage as waitlist entry */
+    const waitlist = JSON.parse(localStorage.getItem('clarix_waitlist') || '[]');
+    if (!waitlist.includes(email)) {
+      waitlist.push(email);
+      localStorage.setItem('clarix_waitlist', JSON.stringify(waitlist));
+    }
+    /* Also save to Firestore if user is signed in */
+    if (typeof ClarixAuth !== 'undefined' && ClarixAuth.currentUser) {
+      ClarixAuth.saveField('proWaitlistEmail', email);
+      ClarixAuth.saveField('proWaitlist', true);
+    }
+    document.getElementById('ucsInputRow')?.classList.add('hidden');
+    document.getElementById('ucsSuccess')?.classList.remove('hidden');
+    Toast.show('🎉 You\'re on the Pro waitlist!', 'success', 4000);
+  },
+
+  /* ── Called when Razorpay is ready (swap this in Phase 5) ── */
+  activate() {
+    /* PAYMENT NOT YET LIVE — show coming soon instead */
+    this.notifyMe();
   }
 };
 
