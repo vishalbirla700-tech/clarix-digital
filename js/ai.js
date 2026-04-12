@@ -569,6 +569,14 @@ async function enhancePrompt(text, platform, mode, langCode, langName, socialPla
         return null;
       } else {
         console.warn('[Clarix] Server returned', resp.status, '— falling back to local');
+        /* Show the user WHY it failed */
+        try {
+          var errBody = await resp.json();
+          console.error('[Clarix] Server error detail:', errBody);
+          Toast.show('⚠️ AI server error: ' + (errBody.error || 'unknown') + ' — using basic mode', 'warning', 5000);
+        } catch(parseErr) {
+          Toast.show('⚠️ AI server unavailable — using basic mode', 'warning', 4000);
+        }
       }
     } catch(e) {
       console.warn('[Clarix] Server proxy failed — using local fallback:', e.message);
@@ -580,7 +588,12 @@ async function enhancePrompt(text, platform, mode, langCode, langName, socialPla
     console.warn('[Clarix] Using local fallback engine');
     result = localEnhance(text, platform, mode, langCode, langName, intent);
     engineUsed = 'Local';
-    /* Usage is tracked by the caller (handleEnhance) — not here */
+    /* Warn user clearly that AI isn't connected */
+    if (langCode !== 'en' && langCode !== 'hi' && langCode !== 'hi-en') {
+      Toast.show('⚠️ AI server not connected — ' + langName + ' translation requires AI. Output is basic.', 'warning', 6000);
+    } else {
+      Toast.show('⚠️ Using basic mode — AI server not connected', 'warning', 4000);
+    }
   }
 
   result.intent  = intent;
