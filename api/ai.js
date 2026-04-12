@@ -126,7 +126,7 @@ async function callClaude(systemPrompt, userMsg) {
     method: 'POST',
     headers: { 'x-api-key': key, 'anthropic-version': '2023-06-01', 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      model: 'claude-3-5-sonnet-20241022',
+      model: 'claude-3-haiku-20240307',
       max_tokens: 2048,
       system: systemPrompt,
       messages: [{ role: 'user', content: userMsg }]
@@ -283,8 +283,8 @@ STRICT RULES:
     const engineErrors = {};
 
     const engines = [
-      { name: 'Gemini', fn: () => callGemini(systemPrompt, userMsg) },
       { name: 'Groq',   fn: () => callGroq(systemPrompt, userMsg) },
+      { name: 'Gemini', fn: () => callGemini(systemPrompt, userMsg) },
       { name: 'Claude', fn: () => callClaude(systemPrompt, userMsg) }
     ];
 
