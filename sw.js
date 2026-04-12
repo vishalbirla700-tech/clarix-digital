@@ -3,7 +3,7 @@
    Handles: offline cache + instant update notifications
 ═══════════════════════════════════════════════ */
 
-const CACHE_VERSION = 'clarix-v20260413a';
+const CACHE_VERSION = 'clarix-v20260413b';
 const STATIC_CACHE  = CACHE_VERSION + '-static';
 
 /* Assets to pre-cache for offline */
@@ -46,12 +46,8 @@ self.addEventListener('activate', function(e) {
       return self.clients.claim();
     })
   );
-  /* Notify all open tabs that a new version is active */
-  self.clients.matchAll({ type: 'window' }).then(function(clients) {
-    clients.forEach(function(client) {
-      client.postMessage({ type: 'SW_UPDATED', version: CACHE_VERSION });
-    });
-  });
+  /* SW_UPDATED postMessage removed — pwa.js checkVersion() handles
+     update notification via localStorage version comparison instead. */
 });
 
 /* ── SKIP_WAITING: allow pwa.js to activate this SW immediately on mobile ── */
@@ -63,6 +59,9 @@ self.addEventListener('message', function(e) {
 
 /* ── Fetch: Network-first for HTML, Cache-first for assets ── */
 self.addEventListener('fetch', function(e) {
+  /* Only handle GET requests — POST/PUT cannot be cached */
+  if (e.request.method !== 'GET') return;
+
   var url = new URL(e.request.url);
 
   /* Always fetch HTML fresh from network (no-cache) */

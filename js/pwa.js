@@ -96,41 +96,14 @@ const ClarixPWA = (() => {
 
   function listenForSWUpdates() {
     if (!navigator.serviceWorker) return;
-
-    /* Listen for SW_UPDATED message (sent by sw.js on activation) */
-    navigator.serviceWorker.addEventListener('message', (e) => {
-      if (e.data?.type === 'SW_UPDATED') {
-        _showUpdateBanner('✦ Clarix updated! Tap to reload.');
-      }
-    });
-
-    /* Force SW to poll for a new version on each page load */
-    navigator.serviceWorker.ready.then((reg) => {
-      reg.update().catch(() => {});
-
-      /* A SW is already waiting — store ref so _applyUpdate can use it */
-      if (reg.waiting) {
-        _waitingSW = reg.waiting;
-        _showUpdateBanner('🆕 Clarix has new features! Tap to reload.');
-      }
-
-      /* Watch for new SW installs in this session */
-      reg.addEventListener('updatefound', () => {
-        const newSW = reg.installing;
-        if (!newSW) return;
-        newSW.addEventListener('statechange', () => {
-          if (newSW.state === 'installed' && navigator.serviceWorker.controller) {
-            _waitingSW = newSW;
-            _showUpdateBanner('🆕 Clarix has new features! Tap to reload.');
-          }
-        });
-      });
-    }).catch(() => {});
-
-    /* NOTE: We do NOT use a controllerchange listener here.
-       controllerchange also fires when SW claims a brand-new page client
-       (via clients.claim()), which would cause an infinite reload loop.
-       Instead, _applyUpdate() navigates directly after posting SKIP_WAITING. */
+    /* Just trigger a background SW update check on each page load.
+       We do NOT hook SW_UPDATED messages or reg.waiting here —
+       checkVersion() is the single source of truth for banner display.
+       Multiple banner triggers (SW message + version check) caused
+       the banner to appear on every page after an update. */
+    navigator.serviceWorker.ready
+      .then((reg) => reg.update())
+      .catch(() => {});
   }
 
   /* ════════════════════════════════════════════
