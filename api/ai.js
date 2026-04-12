@@ -17,11 +17,18 @@ const { getFirestore } = require('firebase-admin/firestore');
 /* ── Firebase Admin init (singleton) ── */
 function getFirebaseAdmin() {
   if (getApps().length === 0) {
+    /* Handle multiple possible formats of FIREBASE_PRIVATE_KEY */
+    let privateKey = process.env.FIREBASE_PRIVATE_KEY || '';
+    /* Vercel may store literal \n as the chars \ and n */
+    privateKey = privateKey.replace(/\\n/g, '\n');
+    /* Also handle double-escaped */
+    privateKey = privateKey.replace(/\\\\n/g, '\n');
+    
     initializeApp({
       credential: cert({
         projectId:    process.env.FIREBASE_PROJECT_ID,
         clientEmail:  process.env.FIREBASE_CLIENT_EMAIL,
-        privateKey:   process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n')
+        privateKey:   privateKey
       })
     });
   }
@@ -167,7 +174,22 @@ module.exports = async function handler(req, res) {
   setCORSHeaders(res);
   if (req.method === 'OPTIONS') { res.status(200).end(); return; }
 
-  /* Only POST allowed */
+  /* Only POST allowed — but add GET health check */
+  if (req.method === 'GET') {
+    /* Health check: show which env vars are configured (values hidden) */
+    return res.status(200).json({
+      status: 'Clarix API is running',
+      env: {
+        GEMINI_API_KEY: !!process.env.GEMINI_API_KEY,
+        GROQ_API_KEY: !!process.env.GROQ_API_KEY,
+        CLAUDE_API_KEY: !!process.env.CLAUDE_API_KEY,
+        FIREBASE_PROJECT_ID: !!process.env.FIREBASE_PROJECT_ID,
+        FIREBASE_CLIENT_EMAIL: !!process.env.FIREBASE_CLIENT_EMAIL,
+        FIREBASE_PRIVATE_KEY: !!process.env.FIREBASE_PRIVATE_KEY,
+        FIREBASE_PRIVATE_KEY_LENGTH: (process.env.FIREBASE_PRIVATE_KEY || '').length
+      }
+    });
+  }
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
@@ -186,7 +208,14 @@ module.exports = async function handler(req, res) {
       const decoded = await auth.verifyIdToken(idToken);
       uid = decoded.uid;
     } catch (authErr) {
-      return res.status(401).json({ error: 'Invalid authentication token' });
+      console.error('[ClarixAPI] Auth verification failed:', authErr.message);
+      return res.status(401).json({ 
+        error: 'Invalid authentication token', 
+        detail: authErr.message.substring(0, 100),
+        hasProjectId: !!process.env.FIREBASE_PROJECT_ID,
+        hasClientEmail: !!process.env.FIREBASE_CLIENT_EMAIL,
+        hasPrivateKey: !!process.env.FIREBASE_PRIVATE_KEY
+      });
     }
 
     /* 2. Rate limit check */
