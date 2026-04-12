@@ -12,15 +12,15 @@
   <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Expert Breakdown — Clarix</title>
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%23ff7043'/><text x='50%' y='55%' font-size='18' text-anchor='middle' dominant-baseline='middle' fill='white'>✦</text></svg>">
-  <link rel="stylesheet" href="css/design.css?v=20260412m">
-  <link rel="stylesheet" href="css/components.css?v=20260412m">
-  <link rel="stylesheet" href="css/pages/breakdown.css?v=20260412m">
+  <link rel="stylesheet" href="css/design.css?v=20260412n">
+  <link rel="stylesheet" href="css/components.css?v=20260412n">
+  <link rel="stylesheet" href="css/pages/breakdown.css?v=20260412n">
   <!-- Firebase SDKs -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
   <!-- Clarix Auth CSS -->
-  <link rel="stylesheet" href="/css/auth.css?v=20260412m"></head>
+  <link rel="stylesheet" href="/css/auth.css?v=20260412n"></head>
 <body class="theme-dark">
   <nav class="topnav dark" style="position:sticky;top:0;z-index:100">
     <div class="nav-left" style="display:flex;align-items:center;gap:12px">
@@ -41,9 +41,9 @@
     <div class="bd-empty" id="bdEmpty">⚡ Loading breakdown...</div>
   </div>
 
-  <script src="config.js?v=20260412m"></script>
-  <script src="js/languages.js?v=20260412m"></script>
-  <script src="js/core.js?v=20260412m"></script>
+  <script src="config.js?v=20260412n"></script>
+  <script src="js/languages.js?v=20260412n"></script>
+  <script src="js/core.js?v=20260412n"></script>
   <script>
   document.addEventListener('DOMContentLoaded', () => {
     const raw = localStorage.getItem('clarix_breakdown_data');
@@ -235,7 +235,7 @@
   }
   </script>
     <!-- Clarix Firebase Auth -->
-  <script src="/js/firebase-auth.js?v=20260412m"></script>
+  <script src="/js/firebase-auth.js?v=20260412n"></script>
   <script>
     document.addEventListener('DOMContentLoaded', function() {
       ClarixAuth.init();
@@ -269,6 +269,6 @@
     b.onclick = function() { window.location.reload(true); };
     document.body.appendChild(b);
   }
-  </script>  <script src="js/pwa.js?v=20260412m"></script>
+  </script>  <script src="js/pwa.js?v=20260412n"></script>
 </body>
 </html>

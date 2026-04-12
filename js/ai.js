@@ -574,7 +574,10 @@ async function enhancePrompt(text, platform, mode, langCode, langName, socialPla
         console.info('[Clarix] Server API ✅ engine:', engineUsed, 'remaining:', result.remaining);
         /* Show engine errors if server fell back to local */
         if (engineUsed === 'Local' && result._engineErrors) {
-          console.error('[Clarix] ⚠️ ALL AI engines failed on server:', result._engineErrors);
+          var e = result._engineErrors;
+          console.error('[Clarix] Gemini error:', e.Gemini || 'none');
+          console.error('[Clarix] Groq error:  ', e.Groq   || 'none');
+          console.error('[Clarix] Claude error:', e.Claude  || 'none');
         }
       } else if (resp.status === 403) {
         /* Trial limit enforced server-side */
