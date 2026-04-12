@@ -26,3 +26,4 @@ build/
 .cache/
 
 .vercel
+.env*.local

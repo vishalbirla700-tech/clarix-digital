@@ -53,6 +53,29 @@ const LANG_PLACEHOLDERS = {
   'en':    'Type your idea here... e.g. Write a sick leave email to my manager',
 };
 
+/* ─── NATIVE "RE-ENHANCE" BUTTON LABELS ──────── */
+const LANG_ENHANCE_LABELS = {
+  'hi':    '⚡ हिंदी में पुनः सुधारें',
+  'hi-en': '⚡ Hinglish mein re-enhance karo',
+  'mr':    '⚡ मराठीत पुन्हा सुधारा',
+  'bn':    '⚡ বাংলায় পুনরায় উন্নত করুন',
+  'te':    '⚡ తెలుగులో మళ్ళీ మెరుగుపరచండి',
+  'ta':    '⚡ தமிழில் மீண்டும் மேம்படுத்துங்கள்',
+  'gu':    '⚡ ગુજરાતીમાં ફરી સુધારો',
+  'kn':    '⚡ ಕನ್ನಡದಲ್ಲಿ ಮರು-ವರ್ಧಿಸಿ',
+  'ml':    '⚡ മലയാളത്തിൽ വീണ്ടും മെച്ചപ്പെടുത്തുക',
+  'pa':    '⚡ ਪੰਜਾਬੀ ਵਿੱਚ ਦੁਬਾਰਾ ਸੁਧਾਰੋ',
+  'ur':    '⚡ اردو میں دوبارہ بہتر بنائیں',
+  'ar':    '⚡ إعادة التحسين بالعربية',
+  'ja':    '⚡ 日本語で再強化',
+  'zh':    '⚡ 用中文重新优化',
+  'ko':    '⚡ 한국어로 다시 향상',
+  'es':    '⚡ Re-mejorar en Español',
+  'fr':    '⚡ Ré-améliorer en Français',
+  'de':    '⚡ Erneut auf Deutsch verbessern',
+  'en':    '⚡ Re-enhance in English',
+};
+
 /* ─── PROFANITY LIST (common Hindi + English) ─── */
 const PROFANITY_WORDS = [
   'bc','mc','bkl','chutiya','madarchod','bhenchod','gandu','harami','randi',
@@ -183,22 +206,15 @@ function onLangChange(sel) {
   updateLangUI(flag, name, code);
   setStep(2);
 
-  // Always restore the Enhance button when language changes
-  var enhBtn = document.getElementById('enhanceBtn');
-  if (enhBtn) {
-    enhBtn.style.opacity = '';
-    enhBtn.style.transform = '';
-    enhBtn.dataset.state = '';
-    if (enhBtn.innerHTML.includes('Enhanced') || enhBtn.innerHTML.includes('Again')) {
-      enhBtn.innerHTML = '\u26A1 Re-enhance in ' + name;
-    }
-  }
-
   // If results are already showing, warn the user and prompt re-enhance
+  // Only show re-enhance nudge in the RESULTS panel (right side) — NOT on the main enhance button
   if (currentResult) {
     // Update the language pill in the score row
     const scorePills = document.querySelectorAll('#scoresRow .score-pill.orange');
     if (scorePills.length) scorePills[0].textContent = flag + ' ' + name;
+
+    // Native-language label for the re-enhance button
+    var nativeLabel = LANG_ENHANCE_LABELS[code] || ('⚡ Re-enhance in ' + name);
 
     // Show re-enhance nudge if not already there
     let nudge = document.getElementById('langChangeNudge');
@@ -207,11 +223,13 @@ function onLangChange(sel) {
       nudge.id = 'langChangeNudge';
       nudge.style.cssText = 'background:rgba(255,152,0,0.06);border:1px solid rgba(255,152,0,0.25);border-radius:12px;padding:12px 16px;font-size:13px;color:#cc5500;margin-bottom:10px;animation:fadeUp 0.3s ease both';
       nudge.innerHTML = '<div style="margin-bottom:8px">🌐 Language changed to <strong>' + name + '</strong>. Tap to get output in the new language.</div>' +
-        '<button class="btn btn-primary btn-sm" style="width:100%;padding:10px" onclick="handleEnhance();document.getElementById(\'langChangeNudge\')?.remove()">⚡ Re-enhance in ' + name + '</button>';
+        '<button class="btn btn-primary btn-sm" style="width:100%;padding:10px" onclick="handleEnhance();document.getElementById(\'langChangeNudge\')?.remove()">' + nativeLabel + '</button>';
       const scoresRow = document.getElementById('scoresRow');
       if (scoresRow) scoresRow.insertAdjacentElement('afterend', nudge);
     } else {
       nudge.querySelector('strong').textContent = name;
+      var nudgeBtn = nudge.querySelector('button');
+      if (nudgeBtn) nudgeBtn.textContent = nativeLabel;
     }
   }
 }
