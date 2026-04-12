@@ -294,19 +294,18 @@ var ClarixAuth = {
   },
 
   /* ── Google Sign-In ── */
-  /* Mobile: use redirect (popup is blocked by mobile browsers)
-     Desktop: use popup for instant UX */
+  /* Always use redirect — avoids Cross-Origin-Opener-Policy errors
+     that block popup communication in modern Chrome/incognito */
   signInWithGoogle: function() {
     var self = this;
     var provider = new firebase.auth.GoogleAuthProvider();
     provider.addScope('email');
     provider.addScope('profile');
-    /* Always add hint so Google shows account chooser, not email input */
+    /* Always show account chooser */
     provider.setCustomParameters({ prompt: 'select_account' });
 
-    if (self._isMobile()) {
-      /* Redirect flow — page will reload after sign-in */
-      return self._auth.signInWithRedirect(provider).catch(function(e) {
+    /* Use redirect on ALL devices — no popup COOP issues */
+    return self._auth.signInWithRedirect(provider).catch(function(e) {
         console.error('Redirect sign-in error:', e);
         var btn = document.getElementById('clarixGoogleSignIn');
         if (btn) {
@@ -315,17 +314,6 @@ var ClarixAuth = {
         }
         if (typeof Toast !== 'undefined') Toast.show('Sign-in failed. Please try again.', 'error');
       });
-    } else {
-      /* Desktop popup flow */
-      return self._auth.signInWithPopup(provider).catch(function(e) {
-        var btn = document.getElementById('clarixGoogleSignIn');
-        if (btn) {
-          btn.disabled = false;
-          btn.innerHTML = '<img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="G" style="width:20px;height:20px;margin-right:10px;">Continue with Google';
-        }
-        if (typeof Toast !== 'undefined') Toast.show('Sign-in failed. Please try again.', 'error');
-      });
-    }
   },
 
   signOut: function() {
