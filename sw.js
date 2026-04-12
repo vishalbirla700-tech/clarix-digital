@@ -1,9 +1,9 @@
 /* ═══════════════════════════════════════════════
-   CLARIX SERVICE WORKER v20260412b
+   CLARIX SERVICE WORKER v20260413a
    Handles: offline cache + instant update notifications
 ═══════════════════════════════════════════════ */
 
-const CACHE_VERSION = 'clarix-v20260412b';
+const CACHE_VERSION = 'clarix-v20260413a';
 const STATIC_CACHE  = CACHE_VERSION + '-static';
 
 /* Assets to pre-cache for offline */
@@ -52,6 +52,13 @@ self.addEventListener('activate', function(e) {
       client.postMessage({ type: 'SW_UPDATED', version: CACHE_VERSION });
     });
   });
+});
+
+/* ── SKIP_WAITING: allow pwa.js to activate this SW immediately on mobile ── */
+self.addEventListener('message', function(e) {
+  if (e.data && e.data.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
 });
 
 /* ── Fetch: Network-first for HTML, Cache-first for assets ── */

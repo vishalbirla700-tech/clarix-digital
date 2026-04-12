@@ -5,7 +5,7 @@
 ═══════════════════════════════════════════════ */
 
 /* ── BUMP THIS every deployment to notify existing users ── */
-const CLARIX_APP_VERSION = '20260412b';
+const CLARIX_APP_VERSION = '20260413a';
 
 const ClarixPWA = (() => {
 
@@ -36,10 +36,13 @@ const ClarixPWA = (() => {
   function checkVersion() {
     const stored = localStorage.getItem('clarix_version');
     if (stored && stored !== CLARIX_APP_VERSION) {
-      /* User has an older version cached — show update prompt */
+      /* User has an older version cached — show update prompt.
+         NOTE: Do NOT stamp new version yet — only stamp after user taps Update */
       _showUpdateBanner('🆕 Clarix has new features! Tap to reload.');
+    } else {
+      /* First visit or already up-to-date — stamp now */
+      localStorage.setItem('clarix_version', CLARIX_APP_VERSION);
     }
-    localStorage.setItem('clarix_version', CLARIX_APP_VERSION);
   }
 
   /* ── Update Available Banner ── */
@@ -65,7 +68,7 @@ const ClarixPWA = (() => {
         <div style="font-size:11px;color:rgba(255,255,255,0.75);margin-top:3px;">Tap Update Now for the latest version</div>
       </div>
       <button
-        onclick="localStorage.setItem('clarix_version','${CLARIX_APP_VERSION}');location.reload(true)"
+        onclick="ClarixPWA._applyUpdate()"
         style="background:rgba(255,255,255,0.22);border:1.5px solid rgba(255,255,255,0.5);
                color:#fff;padding:9px 14px;border-radius:10px;font-size:12px;
                font-weight:800;cursor:pointer;white-space:nowrap;flex-shrink:0">
@@ -87,20 +90,50 @@ const ClarixPWA = (() => {
      2. SERVICE WORKER UPDATE LISTENER
         SW posts SW_UPDATED — we show the banner
   ════════════════════════════════════════════ */
+
+  /* Stored reference to a waiting SW so we can tell it to skip waiting */
+  let _waitingSW = null;
+
   function listenForSWUpdates() {
     if (!navigator.serviceWorker) return;
 
-    /* Listen for update messages from sw.js */
+    /* Listen for update messages from sw.js (already activated) */
     navigator.serviceWorker.addEventListener('message', (e) => {
       if (e.data?.type === 'SW_UPDATED') {
-        _showUpdateBanner('✦ Clarix updated in background! Tap to reload.');
+        _showUpdateBanner('✦ Clarix updated! Tap to reload.');
       }
     });
 
     /* Force SW to check for a fresh version on every page load */
     navigator.serviceWorker.ready.then((reg) => {
       reg.update().catch(() => {});
+
+      /* Detect a SW waiting to activate (the most reliable update path) */
+      if (reg.waiting) {
+        _waitingSW = reg.waiting;
+        _showUpdateBanner('🆕 Clarix has new features! Tap to reload.');
+      }
+
+      /* Also watch for future state changes */
+      reg.addEventListener('updatefound', () => {
+        const newSW = reg.installing;
+        if (!newSW) return;
+        newSW.addEventListener('statechange', () => {
+          if (newSW.state === 'installed' && navigator.serviceWorker.controller) {
+            _waitingSW = newSW;
+            _showUpdateBanner('🆕 Clarix has new features! Tap to reload.');
+          }
+        });
+      });
     }).catch(() => {});
+
+    /* When the controller changes (new SW took over), reload cleanly */
+    let refreshing = false;
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      if (refreshing) return;
+      refreshing = true;
+      window.location.href = window.location.href.split('?')[0] + '?_cb=' + Date.now();
+    });
   }
 
   /* ════════════════════════════════════════════
@@ -232,6 +265,21 @@ const ClarixPWA = (() => {
     });
   }
 
+  /* ── Apply update: tell waiting SW to skip waiting, then navigate fresh ── */
+  function _applyUpdate() {
+    /* Stamp new version so banner won't reappear */
+    localStorage.setItem('clarix_version', CLARIX_APP_VERSION);
+
+    if (_waitingSW) {
+      /* Tell the waiting SW to activate — controllerchange listener will reload */
+      _waitingSW.postMessage({ type: 'SKIP_WAITING' });
+    } else {
+      /* Fallback: navigate to a cache-busted URL (works on all mobile browsers) */
+      const url = window.location.href.split('?')[0];
+      window.location.replace(url + '?_cb=' + Date.now());
+    }
+  }
+
   /* ════════════════════════════════════════════
      PUBLIC API
   ════════════════════════════════════════════ */
@@ -242,6 +290,7 @@ const ClarixPWA = (() => {
       interceptInstall();
     },
     triggerInstall,
+    _applyUpdate,
     showUpdateBanner: _showUpdateBanner
   };
 
