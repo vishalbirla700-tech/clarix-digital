@@ -208,6 +208,18 @@ var ClarixAuth = {
         /* Sync isPro to localStorage for ClarixState */
         localStorage.setItem('clarix_pro', self.userProfile.isPro ? 'true' : 'false');
         localStorage.setItem('clarix_username', self.userProfile.name || user.displayName || 'Creator');
+
+        /* ── Admin: reset inflated trialUsed immediately (before canEnhance is checked) ── */
+        var ADMIN_EMAILS = ['vishalbirla700@gmail.com'];
+        var loadedEmail = (self.userProfile.email || user.email || '').toLowerCase();
+        if (ADMIN_EMAILS.indexOf(loadedEmail) !== -1 && (self.userProfile.trialUsed || 0) > 10) {
+          self.userProfile.trialUsed = 0;
+          self.userProfile.dailyUsage = { date: '', count: 0 };
+          ref.update({ trialUsed: 0, dailyUsage: { date: '', count: 0 } });
+          localStorage.setItem('clarix_trial_used', '0');
+          console.log('[Clarix] Admin account detected — trial count reset to 0');
+        }
+
         /* Sync trial count FROM Firestore → localStorage (source of truth is Firestore) */
         if (typeof self.userProfile.trialUsed === 'number') {
           localStorage.setItem('clarix_trial_used', self.userProfile.trialUsed);
