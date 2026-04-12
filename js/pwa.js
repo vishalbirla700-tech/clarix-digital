@@ -36,11 +36,11 @@ const ClarixPWA = (() => {
   function checkVersion() {
     const stored = localStorage.getItem('clarix_version');
     if (stored && stored !== CLARIX_APP_VERSION) {
-      /* User has an older version cached — show update prompt.
-         NOTE: Do NOT stamp new version yet — only stamp after user taps Update */
+      /* Show banner ONCE — stamp new version immediately so it never shows
+         again on the next page, whether or not user taps Update Now */
+      localStorage.setItem('clarix_version', CLARIX_APP_VERSION);
       _showUpdateBanner('🆕 Clarix has new features! Tap to reload.');
     } else {
-      /* First visit or already up-to-date — stamp now */
       localStorage.setItem('clarix_version', CLARIX_APP_VERSION);
     }
   }
@@ -97,24 +97,24 @@ const ClarixPWA = (() => {
   function listenForSWUpdates() {
     if (!navigator.serviceWorker) return;
 
-    /* Listen for update messages from sw.js (already activated) */
+    /* Listen for SW_UPDATED message (sent by sw.js on activation) */
     navigator.serviceWorker.addEventListener('message', (e) => {
       if (e.data?.type === 'SW_UPDATED') {
         _showUpdateBanner('✦ Clarix updated! Tap to reload.');
       }
     });
 
-    /* Force SW to check for a fresh version on every page load */
+    /* Force SW to poll for a new version on each page load */
     navigator.serviceWorker.ready.then((reg) => {
       reg.update().catch(() => {});
 
-      /* Detect a SW waiting to activate (the most reliable update path) */
+      /* A SW is already waiting — store ref so _applyUpdate can use it */
       if (reg.waiting) {
         _waitingSW = reg.waiting;
         _showUpdateBanner('🆕 Clarix has new features! Tap to reload.');
       }
 
-      /* Also watch for future state changes */
+      /* Watch for new SW installs in this session */
       reg.addEventListener('updatefound', () => {
         const newSW = reg.installing;
         if (!newSW) return;
@@ -127,13 +127,10 @@ const ClarixPWA = (() => {
       });
     }).catch(() => {});
 
-    /* When the controller changes (new SW took over), reload cleanly */
-    let refreshing = false;
-    navigator.serviceWorker.addEventListener('controllerchange', () => {
-      if (refreshing) return;
-      refreshing = true;
-      window.location.href = window.location.href.split('?')[0] + '?_cb=' + Date.now();
-    });
+    /* NOTE: We do NOT use a controllerchange listener here.
+       controllerchange also fires when SW claims a brand-new page client
+       (via clients.claim()), which would cause an infinite reload loop.
+       Instead, _applyUpdate() navigates directly after posting SKIP_WAITING. */
   }
 
   /* ════════════════════════════════════════════
@@ -265,18 +262,21 @@ const ClarixPWA = (() => {
     });
   }
 
-  /* ── Apply update: tell waiting SW to skip waiting, then navigate fresh ── */
+  /* ── Apply update: skip waiting SW then navigate to a fresh cache-busted URL ── */
   function _applyUpdate() {
-    /* Stamp new version so banner won't reappear */
-    localStorage.setItem('clarix_version', CLARIX_APP_VERSION);
+    /* Version already stamped in checkVersion() — nothing more to do there */
+    const cleanUrl = window.location.href.split('?')[0] + '?_cb=' + Date.now();
 
     if (_waitingSW) {
-      /* Tell the waiting SW to activate — controllerchange listener will reload */
+      /* Ask the waiting SW to activate, then navigate ourselves.
+         We do NOT rely on controllerchange to trigger the reload because
+         that event also fires on first SW claim and would cause a loop. */
       _waitingSW.postMessage({ type: 'SKIP_WAITING' });
+      /* Small delay so SW can activate before navigation */
+      setTimeout(() => window.location.replace(cleanUrl), 150);
     } else {
-      /* Fallback: navigate to a cache-busted URL (works on all mobile browsers) */
-      const url = window.location.href.split('?')[0];
-      window.location.replace(url + '?_cb=' + Date.now());
+      /* No waiting SW (e.g. version-check banner path) — just hard-navigate */
+      window.location.replace(cleanUrl);
     }
   }
 
