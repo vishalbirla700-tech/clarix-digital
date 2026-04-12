@@ -245,7 +245,9 @@ var ClarixAuth = {
       }
     }).catch(function(e) {
       console.error('Firestore load error:', e);
-      self.userProfile = { name: user.displayName || 'Creator', onboarded: true, isPro: false, trialUsed: 0, countryCode: 'IN' };
+      /* Use localStorage trial count as fallback — NEVER reset to 0 */
+      var localTrialUsed = parseInt(localStorage.getItem('clarix_trial_used') || '0');
+      self.userProfile = { name: user.displayName || 'Creator', onboarded: true, isPro: false, trialUsed: localTrialUsed, countryCode: 'IN' };
       done();
     });
   },
@@ -337,13 +339,16 @@ var ClarixAuth = {
     /* Also sync localStorage for backward compat */
     localStorage.setItem('clarix_trial_used', newTrialUsed);
 
-    /* Debounced Firestore write */
-    clearTimeout(this._usageSaveTimer);
+    /* Write to Firestore IMMEDIATELY (no debounce) — prevents lost writes if user closes tab */
     var self = this;
-    this._usageSaveTimer = setTimeout(function() {
-      self.saveField('trialUsed', newTrialUsed);
-      self.saveField('dailyUsage', { date: today, count: dailyCount });
-    }, 2000);
+    if (self.currentUser) {
+      self._db.collection('users').doc(self.currentUser.uid).update({
+        trialUsed: newTrialUsed,
+        dailyUsage: { date: today, count: dailyCount }
+      }).catch(function(e) {
+        console.warn('Firestore usage write failed:', e);
+      });
+    }
   },
 
   canEnhance: function() {

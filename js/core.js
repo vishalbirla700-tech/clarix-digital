@@ -63,10 +63,15 @@ const ClarixState = {
 
   canEnhance() {
     /* Prefer Firebase cross-device tracking */
-    if (typeof ClarixAuth !== 'undefined' && ClarixAuth.currentUser) {
-      return ClarixAuth.canEnhance();
+    if (typeof ClarixAuth !== 'undefined') {
+      if (ClarixAuth.currentUser) {
+        return ClarixAuth.canEnhance();
+      }
+      /* Auth exists but user not loaded yet — block until auth resolves.
+         This prevents unauthenticated usage via localStorage manipulation. */
+      return false;
     }
-    /* Fallback: localStorage */
+    /* Fallback: localStorage (only if Firebase SDK not loaded at all) */
     if (this.isPro) return true;
     const u = this.getUsage();
     if (u.lifetime < CLARIX_CONFIG.freeTrialLimit) return true;
