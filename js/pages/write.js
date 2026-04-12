@@ -660,6 +660,9 @@ async function aiRewriteSelected() {
       currentResult.enhanced = result.enhanced;
       document.getElementById('selectedText').textContent = result.enhanced;
       document.querySelector('#vc-0 .variation-card-text').textContent = result.enhanced;
+      ClarixState.incUsage();
+      ClarixState.inc();
+      updateUsageCounter();
       Toast.show('🔄 AI rewrite done!', 'success');
     }
   } catch(e) {

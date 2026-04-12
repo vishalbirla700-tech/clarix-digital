@@ -580,8 +580,7 @@ async function enhancePrompt(text, platform, mode, langCode, langName, socialPla
     console.warn('[Clarix] Using local fallback engine');
     result = localEnhance(text, platform, mode, langCode, langName, intent);
     engineUsed = 'Local';
-    /* Still deduct usage locally */
-    ClarixState.incUsage();
+    /* Usage is tracked by the caller (handleEnhance) — not here */
   }
 
   result.intent  = intent;
@@ -591,7 +590,8 @@ async function enhancePrompt(text, platform, mode, langCode, langName, socialPla
     Toast.show('✦ Enhanced by Clarix AI', 'success', 2000);
   }
 
-  ClarixState.inc();
-  updateUsageCounter();
+  /* NOTE: Do NOT call ClarixState.inc/incUsage here —
+     the callers (handleEnhance, aiRewriteSelected, etc.) handle that.
+     Having it in both places caused double-counting (trials consumed 2x as fast). */
   return result;
 }

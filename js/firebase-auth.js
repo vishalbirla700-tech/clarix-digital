@@ -208,6 +208,10 @@ var ClarixAuth = {
         /* Sync isPro to localStorage for ClarixState */
         localStorage.setItem('clarix_pro', self.userProfile.isPro ? 'true' : 'false');
         localStorage.setItem('clarix_username', self.userProfile.name || user.displayName || 'Creator');
+        /* Sync trial count FROM Firestore → localStorage (source of truth is Firestore) */
+        if (typeof self.userProfile.trialUsed === 'number') {
+          localStorage.setItem('clarix_trial_used', self.userProfile.trialUsed);
+        }
         done();
       } else {
         /* NEW USER — create profile */
