@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <!-- Google Analytics GA4 -->
@@ -11,26 +11,26 @@
   </script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>InspireMe Gallery â€” Clarix AI</title>
+  <title>InspireMe Gallery — Clarix AI</title>
   <meta name="description" content="Browse 22+ curated cinematic images. Upload your own for Gemini Vision analysis. Creative prompt gallery for filmmakers, designers, and AI artists.">
   <meta name="keywords" content="AI image prompts, Midjourney gallery, cinematic prompts, Gemini Vision, prompt inspiration">
   <meta name="robots" content="index, follow">
   <link rel="canonical" href="https://clarix.digital/inspire.html">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://clarix.digital/inspire.html">
-  <meta property="og:title" content="InspireMe Gallery â€” Clarix AI">
+  <meta property="og:title" content="InspireMe Gallery — Clarix AI">
   <meta property="og:description" content="22+ curated cinematic images to spark your AI creativity. Click any to get a powerful prompt instantly.">
   <meta property="og:image" content="https://clarix.digital/icons/og-image.png">
   <meta property="og:site_name" content="Clarix AI">
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="InspireMe Gallery â€” Clarix AI">
+  <meta name="twitter:title" content="InspireMe Gallery — Clarix AI">
   <meta name="twitter:image" content="https://clarix.digital/icons/og-image.png">
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#ff7043">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="Clarix">
   <link rel="apple-touch-icon" href="icons/icon-192.png">
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%23ff7043'/><text x='50%' y='55%' font-size='18' text-anchor='middle' dominant-baseline='middle' fill='white'>âœ¦</text></svg>">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%23ff7043'/><text x='50%' y='55%' font-size='18' text-anchor='middle' dominant-baseline='middle' fill='white'>✦</text></svg>">
   <link rel="stylesheet" href="css/design.css?v=20260412b">
   <link rel="stylesheet" href="css/components.css?v=20260412b">
   <link rel="stylesheet" href="css/sidebar.css?v=20260412b">
@@ -52,7 +52,7 @@
       <button class="sidebar-toggle-btn" onclick="Sidebar.toggle()" aria-label="Menu">
         <span></span><span></span><span></span>
       </button>
-      <div class="nav-logo" onclick="location.href='index.html'"><span class="nav-star">âœ¦</span> clarix</div>
+      <div class="nav-logo" onclick="location.href='index.html'"><span class="nav-star">✦</span> clarix</div>
     </div>
     <div class="nav-links">
       <a href="index.html" class="nav-link">Home</a>
@@ -73,7 +73,7 @@
   <!-- INSPIRE HEADER -->
   <div class="inspire-page-header">
     <div class="container">
-      <div class="ai-badge" style="margin-bottom:12px"><span class="badge-star">âœ¦</span> Creative Gallery</div>
+      <div class="ai-badge" style="margin-bottom:12px"><span class="badge-star">✦</span> Creative Gallery</div>
       <h1 class="display-md" style="margin-bottom:8px">InspireMe</h1>
       <p class="body-md" style="color:rgba(255,255,255,0.8)">Click any image to open the prompt editor. Upload your own photo for AI Vision analysis.</p>
     </div>
@@ -87,9 +87,9 @@
       ondrop="handleDrop(event)"
       onclick="document.getElementById('imgFileInput').click()">
       <input type="file" id="imgFileInput" accept="image/*" style="display:none" onchange="handleFileSelect(event)">
-      <span class="upload-icon">ðŸ“·</span>
+      <span class="upload-icon">📷</span>
       <span class="upload-text">
-        <strong>Tap to upload from gallery</strong> â€” or Drag &amp; drop<br>
+        <strong>Tap to upload from gallery</strong> — or Drag &amp; drop<br>
         <span style="font-size:11px;color:rgba(255,255,255,0.65)">Gemini Vision analyzes your photo and generates an accurate prompt</span>
       </span>
     </div>
@@ -99,12 +99,12 @@
   <div class="container" style="margin-bottom:24px">
     <div class="chip-group" id="categoryFilter">
       <div class="chip active" data-cat="all" onclick="filterCategory('all')">All</div>
-      <div class="chip" data-cat="cinematic" onclick="filterCategory('cinematic')">ðŸŽ¬ Cinematic</div>
-      <div class="chip" data-cat="fashion" onclick="filterCategory('fashion')">ðŸ‘— Fashion</div>
-      <div class="chip" data-cat="3d" onclick="filterCategory('3d')">ðŸŽ® 3D</div>
-      <div class="chip" data-cat="video" onclick="filterCategory('video')">ðŸ“¹ Video</div>
-      <div class="chip" data-cat="blog" onclick="filterCategory('blog')">ðŸ“ Blog</div>
-      <div class="chip" data-cat="nature" onclick="filterCategory('nature')">ðŸŒ¿ Nature</div>
+      <div class="chip" data-cat="cinematic" onclick="filterCategory('cinematic')">🎬 Cinematic</div>
+      <div class="chip" data-cat="fashion" onclick="filterCategory('fashion')">👗 Fashion</div>
+      <div class="chip" data-cat="3d" onclick="filterCategory('3d')">🎮 3D</div>
+      <div class="chip" data-cat="video" onclick="filterCategory('video')">📹 Video</div>
+      <div class="chip" data-cat="blog" onclick="filterCategory('blog')">📝 Blog</div>
+      <div class="chip" data-cat="nature" onclick="filterCategory('nature')">🌿 Nature</div>
     </div>
   </div>
 
@@ -121,8 +121,8 @@
         <div class="lightbox-info-title" id="lightboxTitle"></div>
         <div class="lightbox-info-cat" id="lightboxCat"></div>
       </div>
-      <button class="lightbox-close" onclick="closeLightbox()" title="Close">âœ•</button>
-      <button class="lightbox-open-editor" id="lightboxOpenEditor">Open Editor â†’</button>
+      <button class="lightbox-close" onclick="closeLightbox()" title="Close">✕</button>
+      <button class="lightbox-open-editor" id="lightboxOpenEditor">Open Editor →</button>
     </div>
   </div>
 
@@ -130,7 +130,7 @@
   <div class="editor-overlay" id="editorOverlay">
     <div class="editor-panel">
       <div class="editor-left">
-        <button class="editor-back" onclick="closeEditor()">â† Back</button>
+        <button class="editor-back" onclick="closeEditor()">← Back</button>
         <img class="editor-img" id="editorImg" src="" alt="Selected image">
         <div class="editor-img-meta" id="editorImgMeta"></div>
       </div>
@@ -143,25 +143,25 @@
           <div class="chip-group" id="editorChips"></div>
 
           <div class="editor-actions">
-            <button class="btn btn-secondary" style="color:#fff;border-color:rgba(255,255,255,0.2)" onclick="rewriteEditorPrompt()">ðŸ”„ AI Rewrite</button>
-            <button class="btn btn-primary" id="editorEnhanceBtn" onclick="enhanceEditorPrompt()">âš¡ Enhance</button>
+            <button class="btn btn-secondary" style="color:#fff;border-color:rgba(255,255,255,0.2)" onclick="rewriteEditorPrompt()">🔄 AI Rewrite</button>
+            <button class="btn btn-primary" id="editorEnhanceBtn" onclick="enhanceEditorPrompt()">⚡ Enhance</button>
           </div>
 
           <div class="editor-result" id="editorResult" style="display:none">
-            <div class="editor-result-label">âœ¨ Enhanced Prompt</div>
+            <div class="editor-result-label">✨ Enhanced Prompt</div>
             <div class="editor-result-text" id="editorResultText"></div>
           </div>
 
           <div class="editor-direction" id="editorDirection" style="display:none">
-            <div class="editor-result-label" style="color:#f59e0b">ðŸ§­ Creative Direction</div>
+            <div class="editor-result-label" style="color:#f59e0b">🧭 Creative Direction</div>
             <div class="editor-result-text" id="editorDirectionText"></div>
           </div>
 
           <div class="editor-export" id="editorExport" style="display:none">
-            <button class="btn btn-ghost btn-sm" onclick="copyEditorPrompt()">ðŸ“‹ Copy Prompt</button>
-            <button class="btn btn-ghost btn-sm" onclick="sendEditorToWrite()">âœï¸ Send to Write</button>
-            <button class="btn btn-ghost btn-sm" onclick="generateCreativeDirection()">ðŸ§­ Creative Direction</button>
-            <button class="btn btn-ghost btn-sm" onclick="exportEditorTXT()">ðŸ“„ Export TXT</button>
+            <button class="btn btn-ghost btn-sm" onclick="copyEditorPrompt()">📋 Copy Prompt</button>
+            <button class="btn btn-ghost btn-sm" onclick="sendEditorToWrite()">✍️ Send to Write</button>
+            <button class="btn btn-ghost btn-sm" onclick="generateCreativeDirection()">🧭 Creative Direction</button>
+            <button class="btn btn-ghost btn-sm" onclick="exportEditorTXT()">📄 Export TXT</button>
           </div>
         </div>
       </div>
@@ -171,11 +171,11 @@
   <!-- MOBILE BOTTOM NAV -->
   <nav class="mobile-nav">
     <div class="mnav-items">
-      <a href="index.html" class="mnav-item"><span class="mnav-icon">ðŸ </span>Home</a>
-      <a href="write.html" class="mnav-item"><span class="mnav-icon">âœï¸</span>Write</a>
-      <a href="inspire.html" class="mnav-item active"><span class="mnav-icon">ðŸŽ¨</span>Inspire</a>
-      <a href="history.html" class="mnav-item"><span class="mnav-icon">ðŸ“œ</span>History</a>
-      <a href="apps.html" class="mnav-item"><span class="mnav-icon">ðŸš€</span>Apps</a>
+      <a href="index.html" class="mnav-item"><span class="mnav-icon">🏠</span>Home</a>
+      <a href="write.html" class="mnav-item"><span class="mnav-icon">✍️</span>Write</a>
+      <a href="inspire.html" class="mnav-item active"><span class="mnav-icon">🎨</span>Inspire</a>
+      <a href="history.html" class="mnav-item"><span class="mnav-icon">📜</span>History</a>
+      <a href="apps.html" class="mnav-item"><span class="mnav-icon">🚀</span>Apps</a>
     </div>
   </nav>
 
@@ -211,7 +211,7 @@
       const b = document.createElement('div');
       b.id = 'clarix-update-banner';
       b.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:99999;background:#ff7043;color:#fff;text-align:center;padding:14px 20px;font-size:14px;font-weight:700;font-family:DM Sans,sans-serif;cursor:pointer;box-shadow:0 4px 20px rgba(255,112,67,.5)';
-      b.innerHTML = 'âœ¦ New version available! <u>Tap here to update</u>';
+      b.innerHTML = '✦ New version available! <u>Tap here to update</u>';
       b.onclick = () => { navigator.serviceWorker.controller?.postMessage('SKIP_WAITING'); window.location.reload(true); };
       document.body.prepend(b);
     }
@@ -219,4 +219,3 @@
   <script src="js/pwa.js?v=20260412b"></script>
 </body>
 </html>
-
