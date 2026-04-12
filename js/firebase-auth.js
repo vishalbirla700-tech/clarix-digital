@@ -363,13 +363,15 @@ var ClarixAuth = {
   },
 
   canEnhance: function() {
-    if (!this.userProfile) return false;
-    if (this.userProfile.isPro) return true;
-    /* Admin bypass — check BOTH sources for email reliability */
-    var profileEmail = (this.userProfile.email || '').toLowerCase();
-    var authEmail    = (this.currentUser && this.currentUser.email ? this.currentUser.email : '').toLowerCase();
+    /* Admin check FIRST — works even before Firestore profile loads */
     var ADMIN_EMAILS = ['vishalbirla700@gmail.com'];
-    if (ADMIN_EMAILS.indexOf(profileEmail) !== -1 || ADMIN_EMAILS.indexOf(authEmail) !== -1) return true;
+    var authEmail = (this.currentUser && this.currentUser.email ? this.currentUser.email : '').toLowerCase();
+    if (ADMIN_EMAILS.indexOf(authEmail) !== -1) return true;
+    /* Profile not loaded yet — allow through while loading */
+    if (!this.userProfile) return true;
+    if (this.userProfile.isPro) return true;
+    var profileEmail = (this.userProfile.email || '').toLowerCase();
+    if (ADMIN_EMAILS.indexOf(profileEmail) !== -1) return true;
     var config = (typeof CLARIX_CONFIG !== 'undefined') ? CLARIX_CONFIG : { freeTrialLimit: 25, freeDailyLimit: 5 };
     if ((this.userProfile.trialUsed || 0) < config.freeTrialLimit) return true;
     var today = new Date().toDateString();

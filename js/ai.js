@@ -530,11 +530,17 @@ async function enhancePrompt(text, platform, mode, langCode, langName, socialPla
 
   const intent = detectIntent(text);
 
-  /* ── Get Firebase Auth token for secure server call ── */
+  /* ── Get Firebase Auth token — try ClarixAuth first, then ClarixFirebase ── */
   let idToken = null;
   try {
+    /* ClarixAuth (compat SDK with Firestore profile) */
     if (typeof ClarixAuth !== 'undefined' && ClarixAuth.currentUser) {
-      idToken = await ClarixAuth.currentUser.getIdToken();
+      idToken = await ClarixAuth.currentUser.getIdToken(false);
+    }
+    /* Fallback: ClarixFirebase (modular SDK) */
+    if (!idToken && typeof ClarixFirebase !== 'undefined') {
+      const fbUser = ClarixFirebase.getUser();
+      if (fbUser) idToken = await fbUser.getIdToken(false);
     }
   } catch(e) {
     console.warn('[Clarix] Could not get auth token:', e.message);
