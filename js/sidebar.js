@@ -130,11 +130,14 @@ const Sidebar = {
   },
 
   refresh() {
+    /* Guard: if core dependencies aren't loaded yet, skip refresh silently */
+    if (typeof ClarixState === 'undefined') return;
+    const cfg        = (typeof CLARIX_CONFIG !== 'undefined') ? CLARIX_CONFIG : { freeTrialLimit: 25, freeDailyLimit: 5 };
     const name      = ClarixState.username;
     const isPro     = ClarixState.isPro;
-    const usage     = ClarixState.getUsage();
+    const usage     = ClarixState.getUsage ? ClarixState.getUsage() : { lifetime: 0, count: 0 };
     const isInTrial = ClarixState.isInTrial ? ClarixState.isInTrial() : false;
-    const limit     = isPro ? 1 : (isInTrial ? CLARIX_CONFIG.freeTrialLimit : CLARIX_CONFIG.freeDailyLimit);
+    const limit     = isPro ? 1 : (isInTrial ? cfg.freeTrialLimit : cfg.freeDailyLimit);
     const current   = isPro ? 0 : (isInTrial ? usage.lifetime : usage.count);
     const pct       = isPro ? 0 : Math.min(100, (current / limit) * 100);
 
@@ -144,7 +147,11 @@ const Sidebar = {
     const nameEl = document.getElementById('sb-name');
     if (nameEl) nameEl.textContent = (name && name !== 'undefined') ? name : 'Clarix User';
     const langEl = document.getElementById('sb-lang');
-    if (langEl) langEl.textContent = `${LangState.flag} ${LangState.name}`;
+    if (langEl) {
+      const langFlag = (typeof LangState !== 'undefined') ? LangState.flag : '🌐';
+      const langName = (typeof LangState !== 'undefined') ? LangState.name : 'English';
+      langEl.textContent = `${langFlag} ${langName}`;
+    }
     const badgeEl = document.getElementById('sb-badge');
     if (badgeEl) {
       badgeEl.textContent = isPro ? 'Pro ✦' : 'Free';
