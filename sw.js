@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════
-   CLARIX SERVICE WORKER v20260413a
+   CLARIX SERVICE WORKER v20260413b
    Handles: offline cache + instant update notifications
 ═══════════════════════════════════════════════ */
 
@@ -79,8 +79,14 @@ self.addEventListener('fetch', function(e) {
     return;
   }
 
-  /* For versioned JS/CSS (?v=...) — cache aggressively */
-  if (url.search.includes('v=')) {
+  /* Critical JS files that must ALWAYS be fresh (never serve stale from cache).
+     pwa.js contains CLARIX_APP_VERSION — if stale, wrong version triggers banners.
+     firebase-auth.js and config.js affect auth state across deployments. */
+  var NEVER_CACHE = ['pwa.js', 'firebase-auth.js', 'config.js'];
+  var isCritical = NEVER_CACHE.some(function(f) { return url.pathname.includes(f); });
+
+  /* For versioned JS/CSS (?v=...) — cache aggressively, EXCEPT critical files */
+  if (url.search.includes('v=') && !isCritical) {
     e.respondWith(
       caches.match(e.request).then(function(cached) {
         return cached || fetch(e.request).then(function(res) {
