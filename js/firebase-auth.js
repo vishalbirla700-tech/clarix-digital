@@ -371,10 +371,12 @@ var ClarixAuth = {
   canEnhance: function() {
     if (!this.userProfile) return false;
     if (this.userProfile.isPro) return true;
-    /* Admin bypass — owner gets unlimited usage for testing */
-    var email = (this.userProfile.email || '').toLowerCase();
-    if (email === 'vishalbirla700@gmail.com') return true;
-    var config = (typeof CLARIX_CONFIG !== 'undefined') ? CLARIX_CONFIG : { freeTrialLimit: 25, freeDailyLimit: 3 };
+    /* Admin bypass — check BOTH sources for email reliability */
+    var profileEmail = (this.userProfile.email || '').toLowerCase();
+    var authEmail    = (this.currentUser && this.currentUser.email ? this.currentUser.email : '').toLowerCase();
+    var ADMIN_EMAILS = ['vishalbirla700@gmail.com'];
+    if (ADMIN_EMAILS.indexOf(profileEmail) !== -1 || ADMIN_EMAILS.indexOf(authEmail) !== -1) return true;
+    var config = (typeof CLARIX_CONFIG !== 'undefined') ? CLARIX_CONFIG : { freeTrialLimit: 25, freeDailyLimit: 5 };
     if ((this.userProfile.trialUsed || 0) < config.freeTrialLimit) return true;
     var today = new Date().toDateString();
     var daily = this.userProfile.dailyUsage || { date: '', count: 0 };
