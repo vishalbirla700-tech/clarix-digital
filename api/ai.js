@@ -300,6 +300,7 @@ STRICT RULES:
     /* 6. Try AI engines in order: Gemini → Groq → Claude */
     let result = null;
     let engineUsed = 'Local';
+    const engineErrors = {};
 
     const engines = [
       { name: 'Gemini', fn: () => callGemini(systemPrompt, userMsg) },
@@ -315,12 +316,14 @@ STRICT RULES:
         engineUsed = eng;
         break;
       } catch (e) {
+        engineErrors[engine.name] = e.message;
         console.warn(`[ClarixAPI] ${engine.name} failed:`, e.message);
       }
     }
 
     /* Local fallback */
     if (!result) {
+      console.error('[ClarixAPI] ALL engines failed:', JSON.stringify(engineErrors));
       result = {
         enhanced: text + '.',
         score: 70,
@@ -328,7 +331,8 @@ STRICT RULES:
         platformTip: 'Keep it specific and purposeful.',
         variations: [text + ' (version 1)', text + ' (version 2)', text + ' (version 3)'],
         socialCaption: text.substring(0, 100),
-        _engine: 'Local'
+        _engine: 'Local',
+        _engineErrors: engineErrors
       };
       engineUsed = 'Local';
     }

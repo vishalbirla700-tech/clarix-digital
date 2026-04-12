@@ -572,6 +572,10 @@ async function enhancePrompt(text, platform, mode, langCode, langName, socialPla
           localStorage.setItem('clarix_trial_used', serverTrialUsed);
         }
         console.info('[Clarix] Server API ✅ engine:', engineUsed, 'remaining:', result.remaining);
+        /* Show engine errors if server fell back to local */
+        if (engineUsed === 'Local' && result._engineErrors) {
+          console.error('[Clarix] ⚠️ ALL AI engines failed on server:', result._engineErrors);
+        }
       } else if (resp.status === 403) {
         /* Trial limit enforced server-side */
         const err = await resp.json().catch(() => ({}));
