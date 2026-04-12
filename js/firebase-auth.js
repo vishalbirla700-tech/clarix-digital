@@ -140,8 +140,12 @@ var ClarixAuth = {
   _setup: function() {
     var self = this;
     try {
+      /* Use CLARIX_FIREBASE_CONFIG (defined in firebase.js) — FIREBASE_CONFIG was undefined */
+      var fbConfig = (typeof CLARIX_FIREBASE_CONFIG !== 'undefined') ? CLARIX_FIREBASE_CONFIG :
+        (typeof FIREBASE_CONFIG !== 'undefined') ? FIREBASE_CONFIG : null;
+      if (!fbConfig) { console.error('[ClarixAuth] No Firebase config found!'); return; }
       if (!firebase.apps.length) {
-        firebase.initializeApp(FIREBASE_CONFIG);
+        firebase.initializeApp(fbConfig);
       }
       self._auth = firebase.auth();
       self._db   = firebase.firestore();
