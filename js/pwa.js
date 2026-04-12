@@ -235,21 +235,20 @@ const ClarixPWA = (() => {
     });
   }
 
-  /* ── Apply update: skip waiting SW then navigate to a fresh cache-busted URL ── */
+  /* ── Apply update: activate waiting SW then reload cleanly ── */
   function _applyUpdate() {
-    /* Version already stamped in checkVersion() — nothing more to do there */
-    const cleanUrl = window.location.href.split('?')[0] + '?_cb=' + Date.now();
-
     if (_waitingSW) {
-      /* Ask the waiting SW to activate, then navigate ourselves.
-         We do NOT rely on controllerchange to trigger the reload because
-         that event also fires on first SW claim and would cause a loop. */
+      /* Tell the waiting SW to activate, then do a clean reload.
+         We use location.reload() instead of ?_cb= navigation because:
+         1. location.reload() preserves the PWA standalone mode URL
+         2. ?_cb= URLs can break PWA scope and exit standalone mode on mobile
+         3. The SW already fetches ALL HTML with cache:'no-store' so reload
+            always gets the freshest HTML regardless of caching */
       _waitingSW.postMessage({ type: 'SKIP_WAITING' });
-      /* Small delay so SW can activate before navigation */
-      setTimeout(() => window.location.replace(cleanUrl), 150);
+      setTimeout(() => window.location.reload(), 200);
     } else {
-      /* No waiting SW (e.g. version-check banner path) — just hard-navigate */
-      window.location.replace(cleanUrl);
+      /* No waiting SW — just reload; SW serves HTML fresh from network */
+      window.location.reload();
     }
   }
 
