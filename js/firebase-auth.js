@@ -594,3 +594,8 @@ var ClarixAuth = {
     if (typeof Sidebar !== 'undefined') Sidebar.refresh();
   }
 };
+
+/* ── AUTO-INIT ── Call ClarixAuth.init() when DOM is ready */
+document.addEventListener('DOMContentLoaded', function() {
+  ClarixAuth.init();
+});
