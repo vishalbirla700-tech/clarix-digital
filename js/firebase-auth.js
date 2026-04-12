@@ -170,6 +170,8 @@ var ClarixAuth = {
             self._ready = true;
             self._readyCallbacks.forEach(function(cb) { cb(user); });
             self._readyCallbacks = [];
+            /* Refresh usage counter NOW that we have real Firestore data (isPro, trialUsed) */
+            if (typeof updateUsageCounter === 'function') updateUsageCounter();
             /* Hide login modal if open */
             var modal = document.getElementById('clarix-login-modal');
             if (modal) modal.remove();
