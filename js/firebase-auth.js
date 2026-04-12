@@ -209,22 +209,27 @@ var ClarixAuth = {
         localStorage.setItem('clarix_pro', self.userProfile.isPro ? 'true' : 'false');
         localStorage.setItem('clarix_username', self.userProfile.name || user.displayName || 'Creator');
 
-        /* ── Admin: reset inflated trialUsed immediately (before canEnhance is checked) ── */
+        /* ── Admin: reset inflated trialUsed BEFORE done() is called ── */
         var ADMIN_EMAILS = ['vishalbirla700@gmail.com'];
         var loadedEmail = (self.userProfile.email || user.email || '').toLowerCase();
         if (ADMIN_EMAILS.indexOf(loadedEmail) !== -1 && (self.userProfile.trialUsed || 0) > 10) {
           self.userProfile.trialUsed = 0;
           self.userProfile.dailyUsage = { date: '', count: 0 };
-          ref.update({ trialUsed: 0, dailyUsage: { date: '', count: 0 } });
           localStorage.setItem('clarix_trial_used', '0');
-          console.log('[Clarix] Admin account detected — trial count reset to 0');
+          console.log('[Clarix] Admin account — resetting inflated trial count to 0');
+          /* Write to Firestore, then call done() so UI sees 0 not the old value */
+          ref.update({ trialUsed: 0, dailyUsage: { date: '', count: 0 } }).then(function() {
+            done();
+          }).catch(function() {
+            done(); /* still proceed even if write fails */
+          });
+        } else {
+          /* Sync trial count FROM Firestore → localStorage */
+          if (typeof self.userProfile.trialUsed === 'number') {
+            localStorage.setItem('clarix_trial_used', self.userProfile.trialUsed);
+          }
+          done();
         }
-
-        /* Sync trial count FROM Firestore → localStorage (source of truth is Firestore) */
-        if (typeof self.userProfile.trialUsed === 'number') {
-          localStorage.setItem('clarix_trial_used', self.userProfile.trialUsed);
-        }
-        done();
       } else {
         /* NEW USER — create profile */
         var profile = {
