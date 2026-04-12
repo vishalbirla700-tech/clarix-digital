@@ -9,7 +9,6 @@
    - CORS protected
 ═══════════════════════════════════════════════ */
 
-const https = require('https');
 const { initializeApp, cert, getApps } = require('firebase-admin/app');
 const { getAuth } = require('firebase-admin/auth');
 const { getFirestore } = require('firebase-admin/firestore');
@@ -72,45 +71,24 @@ function setCORSHeaders(res) {
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
 }
 
-/* ── HTTPS fetch helper ── */
-function httpsPost(hostname, path, headers, body) {
-  return new Promise((resolve, reject) => {
-    const data = JSON.stringify(body);
-    const req = https.request({
-      hostname, path,
-      method: 'POST',
-      headers: { ...headers, 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(data) }
-    }, (res) => {
-      let raw = '';
-      res.on('data', chunk => raw += chunk);
-      res.on('end', () => {
-        if (res.statusCode >= 200 && res.statusCode < 300) {
-          try { resolve(JSON.parse(raw)); } catch { resolve(raw); }
-        } else {
-          reject(new Error(`HTTP ${res.statusCode}: ${raw.substring(0, 200)}`));
-        }
-      });
-    });
-    req.on('error', reject);
-    req.write(data);
-    req.end();
-  });
-}
-
 /* ── Call Gemini ── */
 async function callGemini(systemPrompt, userMsg) {
-  const key = process.env.GEMINI_API_KEY;
+  const key = (process.env.GEMINI_API_KEY || '').trim();
   if (!key) throw new Error('Gemini key not configured');
-  const data = await httpsPost(
-    'generativelanguage.googleapis.com',
-    `/v1beta/models/gemini-2.0-flash:generateContent?key=${key}`,
-    {},
+  const res = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${key}`,
     {
-      system_instruction: { parts: [{ text: systemPrompt }] },
-      contents: [{ role: 'user', parts: [{ text: userMsg }] }],
-      generationConfig: { maxOutputTokens: 2048, temperature: 0.7 }
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        system_instruction: { parts: [{ text: systemPrompt }] },
+        contents: [{ role: 'user', parts: [{ text: userMsg }] }],
+        generationConfig: { maxOutputTokens: 2048, temperature: 0.7 }
+      })
     }
   );
+  const data = await res.json();
+  if (!res.ok) throw new Error(`Gemini HTTP ${res.status}: ${JSON.stringify(data?.error || data).substring(0,150)}`);
   const raw = data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
   if (!raw) throw new Error('Gemini empty response');
   return { raw, engine: 'Gemini' };
@@ -118,13 +96,12 @@ async function callGemini(systemPrompt, userMsg) {
 
 /* ── Call Groq ── */
 async function callGroq(systemPrompt, userMsg) {
-  const key = process.env.GROQ_API_KEY;
+  const key = (process.env.GROQ_API_KEY || '').trim();
   if (!key) throw new Error('Groq key not configured');
-  const data = await httpsPost(
-    'api.groq.com',
-    '/openai/v1/chat/completions',
-    { 'Authorization': `Bearer ${key}` },
-    {
+  const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+    method: 'POST',
+    headers: { 'Authorization': `Bearer ${key}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({
       model: 'llama-3.3-70b-versatile',
       messages: [
         { role: 'system', content: systemPrompt },
@@ -132,8 +109,10 @@ async function callGroq(systemPrompt, userMsg) {
       ],
       max_tokens: 2048,
       temperature: 0.7
-    }
-  );
+    })
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(`Groq HTTP ${res.status}: ${JSON.stringify(data?.error || data).substring(0,150)}`);
   const raw = data?.choices?.[0]?.message?.content || '';
   if (!raw) throw new Error('Groq empty response');
   return { raw, engine: 'Groq' };
@@ -141,19 +120,20 @@ async function callGroq(systemPrompt, userMsg) {
 
 /* ── Call Claude ── */
 async function callClaude(systemPrompt, userMsg) {
-  const key = process.env.CLAUDE_API_KEY;
+  const key = (process.env.CLAUDE_API_KEY || '').trim();
   if (!key) throw new Error('Claude key not configured');
-  const data = await httpsPost(
-    'api.anthropic.com',
-    '/v1/messages',
-    { 'x-api-key': key, 'anthropic-version': '2023-06-01' },
-    {
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: { 'x-api-key': key, 'anthropic-version': '2023-06-01', 'Content-Type': 'application/json' },
+    body: JSON.stringify({
       model: 'claude-3-5-sonnet-20241022',
       max_tokens: 2048,
       system: systemPrompt,
       messages: [{ role: 'user', content: userMsg }]
-    }
-  );
+    })
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(`Claude HTTP ${res.status}: ${JSON.stringify(data?.error || data).substring(0,150)}`);
   const raw = data?.content?.[0]?.text || '';
   if (!raw) throw new Error('Claude empty response');
   return { raw, engine: 'Claude' };
