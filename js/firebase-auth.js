@@ -383,12 +383,13 @@ var ClarixAuth = {
   remainingToday: function() {
     if (!this.userProfile) return 0;
     if (this.userProfile.isPro) return Infinity;
-    var config = (typeof CLARIX_CONFIG !== 'undefined') ? CLARIX_CONFIG : { freeTrialLimit: 25, freeDailyLimit: 3 };
+    var config = (typeof CLARIX_CONFIG !== 'undefined') ? CLARIX_CONFIG : { freeTrialLimit: 25, freeDailyLimit: 5 };
     if ((this.userProfile.trialUsed || 0) < config.freeTrialLimit) {
       return config.freeTrialLimit - (this.userProfile.trialUsed || 0);
     }
     var today = new Date().toDateString();
     var daily = this.userProfile.dailyUsage || { date: '', count: 0 };
+    /* Reset count if it's a new day */
     var count = (daily.date === today) ? daily.count : 0;
     return Math.max(0, config.freeDailyLimit - count);
   },
