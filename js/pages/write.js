@@ -478,8 +478,11 @@ async function handleEnhance() {
     if (typeof ProfileAnalytics !== 'undefined') {
       ProfileAnalytics.track(activePlatform, langName);
     }
-    ClarixState.incUsage();
-    ClarixState.inc();
+    /* Only count usage client-side if server didn't already count it */
+    if (!result._serverCounted) {
+      ClarixState.incUsage();
+      ClarixState.inc();
+    }
     updateUsageCounter();
     if (window.innerWidth <= 900)
       document.getElementById('resultsPanel').scrollIntoView({ behavior: 'smooth' });
@@ -660,8 +663,10 @@ async function aiRewriteSelected() {
       currentResult.enhanced = result.enhanced;
       document.getElementById('selectedText').textContent = result.enhanced;
       document.querySelector('#vc-0 .variation-card-text').textContent = result.enhanced;
-      ClarixState.incUsage();
-      ClarixState.inc();
+      if (!result._serverCounted) {
+        ClarixState.incUsage();
+        ClarixState.inc();
+      }
       updateUsageCounter();
       Toast.show('🔄 AI rewrite done!', 'success');
     }

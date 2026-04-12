@@ -205,8 +205,10 @@ async function enhanceEditorPrompt() {
     document.getElementById('editorResult').style.display = 'block';
     document.getElementById('editorExport').style.display = 'flex';
     Toast.show('⚡ Prompt enhanced!', 'success');
-    ClarixState.incUsage();
-    ClarixState.inc();
+    if (!result._serverCounted) {
+      ClarixState.incUsage();
+      ClarixState.inc();
+    }
     updateUsageCounter();
     // Scroll to result
     setTimeout(() => {
@@ -246,8 +248,10 @@ async function rewriteEditorPrompt() {
       resultText.style.opacity = '1';
       document.getElementById('editorExport').style.display = 'flex';
       Toast.show('🔄 Prompt rewritten with fresh perspective!', 'success');
-      ClarixState.incUsage();
-      ClarixState.inc();
+      if (!result._serverCounted) {
+        ClarixState.incUsage();
+        ClarixState.inc();
+      }
       updateUsageCounter();
     } else {
       // Fallback to local

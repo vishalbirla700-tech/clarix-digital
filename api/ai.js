@@ -250,7 +250,18 @@ module.exports = async function handler(req, res) {
     const dailyCount = dailyUsage.date === today ? dailyUsage.count : 0;
     const isPro = userData.isPro === true;
 
-    if (!isPro) {
+    /* Admin bypass — owner gets unlimited usage for testing */
+    const ADMIN_EMAILS = ['vishalbirla700@gmail.com'];
+    const userEmail = userData.email || '';
+    const isAdmin = ADMIN_EMAILS.includes(userEmail.toLowerCase());
+
+    /* If admin's trials were inflated by bugs, reset them */
+    if (isAdmin && trialUsed > 10) {
+      await userRef.update({ trialUsed: 0, dailyUsage: { date: '', count: 0 } });
+      console.log('[ClarixAPI] Admin trial reset for:', userEmail);
+    }
+
+    if (!isPro && !isAdmin) {
       if (trialUsed >= FREE_TRIAL_LIMIT && dailyCount >= FREE_DAILY_LIMIT) {
         return res.status(403).json({ error: 'Trial limit reached. Please upgrade to Pro.' });
       }

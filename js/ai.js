@@ -558,7 +558,14 @@ async function enhancePrompt(text, platform, mode, langCode, langName, socialPla
       if (resp.ok) {
         result = await resp.json();
         engineUsed = result._engine || 'Server';
-        console.info('[Clarix] Server API ✅ engine:', engineUsed);
+        /* Server already incremented trialUsed — sync it to client so we don't double-count */
+        result._serverCounted = true;
+        if (typeof ClarixAuth !== 'undefined' && ClarixAuth.userProfile && typeof result.remaining === 'number') {
+          var serverTrialUsed = CLARIX_CONFIG.freeTrialLimit - result.remaining;
+          ClarixAuth.userProfile.trialUsed = serverTrialUsed;
+          localStorage.setItem('clarix_trial_used', serverTrialUsed);
+        }
+        console.info('[Clarix] Server API ✅ engine:', engineUsed, 'remaining:', result.remaining);
       } else if (resp.status === 403) {
         /* Trial limit enforced server-side */
         const err = await resp.json().catch(() => ({}));
