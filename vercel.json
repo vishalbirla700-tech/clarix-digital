@@ -35,11 +35,12 @@
     {
       "source": "/(.*)\\.html",
       "headers": [
-        { "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate" },
-        { "key": "Pragma",        "value": "no-cache" },
-        { "key": "Expires",       "value": "0" },
-        { "key": "X-Content-Type-Options", "value": "nosniff" },
-        { "key": "X-Frame-Options",        "value": "SAMEORIGIN" }
+        { "key": "Cache-Control",                "value": "no-cache, no-store, must-revalidate" },
+        { "key": "Pragma",                       "value": "no-cache" },
+        { "key": "Expires",                      "value": "0" },
+        { "key": "X-Content-Type-Options",       "value": "nosniff" },
+        { "key": "X-Frame-Options",              "value": "SAMEORIGIN" },
+        { "key": "Cross-Origin-Opener-Policy",   "value": "same-origin-allow-popups" }
       ]
     },
     {
