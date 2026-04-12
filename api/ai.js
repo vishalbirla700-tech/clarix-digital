@@ -237,7 +237,7 @@ module.exports = async function handler(req, res) {
 
     /* If admin's trials were inflated by bugs, reset them */
     if (isAdmin && trialUsed > 10) {
-      await userRef.update({ trialUsed: 0, dailyUsage: { date: '', count: 0 } });
+      await userRef.set({ trialUsed: 0, dailyUsage: { date: '', count: 0 } }, { merge: true });
       console.log('[ClarixAPI] Admin trial reset for:', userEmail);
     }
 
@@ -320,10 +320,10 @@ STRICT RULES:
     /* 7. Increment usage in Firestore (server-side — tamper-proof) */
     const newTrialUsed = Math.min(trialUsed + 1, FREE_TRIAL_LIMIT + 100);
     const newDailyCount = dailyCount + 1;
-    await userRef.update({
+    await userRef.set({
       trialUsed:  newTrialUsed,
       dailyUsage: { date: today, count: newDailyCount }
-    });
+    }, { merge: true });
 
     /* 8. Return result */
     result.remaining = isPro ? 9999 : Math.max(0, FREE_TRIAL_LIMIT - newTrialUsed);

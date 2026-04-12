@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -8,7 +8,7 @@
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#ff7043">
   <link rel="apple-touch-icon" href="icons/icon-192.png">
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%23ff7043'/><text x='50%' y='55%' font-size='18' text-anchor='middle' dominant-baseline='middle' fill='white'>✦</text></svg>">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%23ff7043'/><text x='50%' y='55%' font-size='18' text-anchor='middle' dominant-baseline='middle' fill='white'>âœ¦</text></svg>">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/design.css?v=20260413a">
   <link rel="stylesheet" href="css/components.css?v=20260413a">
@@ -50,7 +50,7 @@
       <button class="sidebar-toggle-btn" onclick="Sidebar.toggle()" aria-label="Menu">
         <span></span><span></span><span></span>
       </button>
-      <div class="nav-logo" onclick="location.href='index.html'"><span class="nav-star">✦</span> clarix</div>
+      <div class="nav-logo" onclick="location.href='index.html'"><span class="nav-star">âœ¦</span> clarix</div>
     </div>
     <div class="nav-links">
       <a href="index.html" class="nav-link">Home</a>
@@ -60,7 +60,7 @@
       <a href="apps.html" class="nav-link">Apps</a>
     </div>
     <div class="nav-right">
-      <a href="write.html" class="btn btn-primary btn-sm">Try Free ✦</a>
+      <a href="write.html" class="btn btn-primary btn-sm">Try Free âœ¦</a>
     </div>
   </nav>
 
@@ -68,14 +68,14 @@
     <div class="profile-card" id="profileCard">
       <div class="profile-avatar" id="profileAvatar">C</div>
       <div class="profile-name" id="profileName">Clarix User</div>
-      <div class="profile-email" id="profileEmail">—</div>
+      <div class="profile-email" id="profileEmail">â€”</div>
       <div class="profile-stat-row">
         <div class="profile-stat">
-          <div class="profile-stat-val" id="statPrompts">—</div>
+          <div class="profile-stat-val" id="statPrompts">â€”</div>
           <div class="profile-stat-lbl">Prompts Used</div>
         </div>
         <div class="profile-stat">
-          <div class="profile-stat-val" id="statRemaining">—</div>
+          <div class="profile-stat-val" id="statRemaining">â€”</div>
           <div class="profile-stat-lbl">Remaining</div>
         </div>
         <div class="profile-stat">
@@ -84,9 +84,9 @@
         </div>
       </div>
       <div class="profile-actions">
-        <a href="write.html" class="btn btn-primary">✍️ Write Prompts</a>
-        <a href="history.html" class="btn btn-secondary">📚 History</a>
-        <button class="btn btn-ghost" onclick="if(typeof ClarixAuth!=='undefined')ClarixAuth.signOut()">🚪 Logout</button>
+        <a href="write.html" class="btn btn-primary">âœï¸ Write Prompts</a>
+        <a href="history.html" class="btn btn-secondary">ðŸ“š History</a>
+        <button class="btn btn-ghost" onclick="if(typeof ClarixAuth!=='undefined')ClarixAuth.signOut()">ðŸšª Logout</button>
       </div>
     </div>
   </div>
@@ -94,11 +94,11 @@
   <!-- MOBILE BOTTOM NAV -->
   <nav class="mobile-nav">
     <div class="mnav-items">
-      <a href="index.html" class="mnav-item"><span class="mnav-icon">🏠</span>Home</a>
-      <a href="write.html" class="mnav-item"><span class="mnav-icon">✍️</span>Write</a>
-      <a href="inspire.html" class="mnav-item"><span class="mnav-icon">✨</span>Inspire</a>
-      <a href="history.html" class="mnav-item"><span class="mnav-icon">📚</span>History</a>
-      <a href="apps.html" class="mnav-item"><span class="mnav-icon">🎨</span>Apps</a>
+      <a href="index.html" class="mnav-item"><span class="mnav-icon">ðŸ </span>Home</a>
+      <a href="write.html" class="mnav-item"><span class="mnav-icon">âœï¸</span>Write</a>
+      <a href="inspire.html" class="mnav-item"><span class="mnav-icon">âœ¨</span>Inspire</a>
+      <a href="history.html" class="mnav-item"><span class="mnav-icon">ðŸ“š</span>History</a>
+      <a href="apps.html" class="mnav-item"><span class="mnav-icon">ðŸŽ¨</span>Apps</a>
     </div>
   </nav>
 
@@ -121,7 +121,7 @@
           document.getElementById('profileEmail').textContent = p.email || user.email || '';
           document.getElementById('statPrompts').textContent = p.trialUsed || 0;
           document.getElementById('statRemaining').textContent = ClarixAuth.remainingToday();
-          document.getElementById('statPlan').textContent = p.isPro ? '⚡ Pro' : 'Free';
+          document.getElementById('statPlan').textContent = p.isPro ? 'âš¡ Pro' : 'Free';
         });
       }
     });

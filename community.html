@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -9,7 +9,7 @@
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#ff7043">
   <link rel="apple-touch-icon" href="icons/icon-192.png">
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%23ff7043'/><text x='50%' y='55%' font-size='18' text-anchor='middle' dominant-baseline='middle' fill='white'>✦</text></svg>">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%23ff7043'/><text x='50%' y='55%' font-size='18' text-anchor='middle' dominant-baseline='middle' fill='white'>âœ¦</text></svg>">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/design.css?v=20260413a">
   <link rel="stylesheet" href="css/components.css?v=20260413a">
@@ -59,7 +59,7 @@
       <button class="sidebar-toggle-btn" onclick="Sidebar.toggle()" aria-label="Menu">
         <span></span><span></span><span></span>
       </button>
-      <div class="nav-logo" onclick="location.href='index.html'"><span class="nav-star">✦</span> clarix</div>
+      <div class="nav-logo" onclick="location.href='index.html'"><span class="nav-star">âœ¦</span> clarix</div>
     </div>
     <div class="nav-links">
       <a href="index.html" class="nav-link">Home</a>
@@ -71,45 +71,45 @@
     </div>
     <div class="nav-right">
       <button class="btn btn-ghost btn-sm" id="authNavBtn" onclick="AuthModal.show()">Login</button>
-      <a href="write.html" class="btn btn-primary btn-sm">Try Free ✦</a>
+      <a href="write.html" class="btn btn-primary btn-sm">Try Free âœ¦</a>
     </div>
   </nav>
 
   <!-- HERO -->
   <section class="comm-hero">
     <div class="ai-badge" style="display:inline-flex;margin-bottom:20px">
-      <span class="badge-star">✦</span> India's Creator Community
+      <span class="badge-star">âœ¦</span> India's Creator Community
     </div>
     <h1>Share. <em>Inspire.</em> Create.</h1>
     <p>Discover amazing AI prompts created by Indian creators. Share your best work and inspire thousands.</p>
     <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
-      <a href="write.html" class="btn btn-primary">✍️ Create a Prompt</a>
-      <a href="library.html" class="btn btn-secondary">📚 Browse Library</a>
+      <a href="write.html" class="btn btn-primary">âœï¸ Create a Prompt</a>
+      <a href="library.html" class="btn btn-secondary">ðŸ“š Browse Library</a>
     </div>
   </section>
 
   <!-- FEATURED PROMPTS -->
   <section class="comm-section">
-    <div class="comm-section-title">🔥 Trending Prompts This Week</div>
+    <div class="comm-section-title">ðŸ”¥ Trending Prompts This Week</div>
     <div class="comm-grid" id="commGrid"></div>
   </section>
 
   <!-- COMING SOON -->
   <div class="comm-coming-soon">
-    <div class="cs-icon">🚀</div>
-    <h3>Full Community Hub — Coming Soon</h3>
+    <div class="cs-icon">ðŸš€</div>
+    <h3>Full Community Hub â€” Coming Soon</h3>
     <p>We're building a space where Indian creators can share prompts, vote on the best ones, and collaborate. Be among the first to know!</p>
-    <a href="feedback.html" class="btn btn-primary">⭐ Give Feedback &amp; Suggestions</a>
+    <a href="feedback.html" class="btn btn-primary">â­ Give Feedback &amp; Suggestions</a>
   </div>
 
   <!-- MOBILE BOTTOM NAV -->
   <nav class="mobile-nav">
     <div class="mnav-items">
-      <a href="index.html" class="mnav-item"><span class="mnav-icon">🏠</span>Home</a>
-      <a href="write.html" class="mnav-item"><span class="mnav-icon">✍️</span>Write</a>
-      <a href="inspire.html" class="mnav-item"><span class="mnav-icon">✨</span>Inspire</a>
-      <a href="history.html" class="mnav-item"><span class="mnav-icon">📚</span>History</a>
-      <a href="apps.html" class="mnav-item"><span class="mnav-icon">🎨</span>Apps</a>
+      <a href="index.html" class="mnav-item"><span class="mnav-icon">ðŸ </span>Home</a>
+      <a href="write.html" class="mnav-item"><span class="mnav-icon">âœï¸</span>Write</a>
+      <a href="inspire.html" class="mnav-item"><span class="mnav-icon">âœ¨</span>Inspire</a>
+      <a href="history.html" class="mnav-item"><span class="mnav-icon">ðŸ“š</span>History</a>
+      <a href="apps.html" class="mnav-item"><span class="mnav-icon">ðŸŽ¨</span>Apps</a>
     </div>
   </nav>
 
@@ -122,12 +122,12 @@
 
   <script>
     const COMM_PROMPTS = [
-      { icon:'🪔', title:'Diwali Night Scene', text:'Cinematic aerial view of a Indian city during Diwali — thousands of diyas and fireworks, golden light, 8K', meta:'Festival Cards · 142 uses' },
-      { icon:'🎨', title:'Bollywood Poster', text:'Vintage Bollywood movie poster style portrait, dramatic lighting, Hindi text overlay, rich colors, cinematic', meta:'Image Prompts · 98 uses' },
-      { icon:'🍛', title:'Indian Street Food', text:'Close-up of pav bhaji on a Mumbai street cart at golden hour, steam rising, photorealistic, 4K food photography', meta:'Photography · 87 uses' },
-      { icon:'🏙️', title:'Mumbai Monsoon', text:'Cinematic shot of Marine Drive Mumbai in monsoon rain, reflections on wet road, dramatic clouds, IMAX quality', meta:'Cityscapes · 76 uses' },
-      { icon:'💼', title:'Startup LinkedIn Post', text:'Write a compelling LinkedIn post about my D2C startup journey — from idea to first 1000 customers, authentic tone', meta:'Corporate · 65 uses' },
-      { icon:'🎬', title:'Wedding Reel Script', text:'30-second Instagram Reel script for a traditional South Indian wedding — emotional, cinematic, hook-first', meta:'Video Scripts · 54 uses' },
+      { icon:'ðŸª”', title:'Diwali Night Scene', text:'Cinematic aerial view of a Indian city during Diwali â€” thousands of diyas and fireworks, golden light, 8K', meta:'Festival Cards Â· 142 uses' },
+      { icon:'ðŸŽ¨', title:'Bollywood Poster', text:'Vintage Bollywood movie poster style portrait, dramatic lighting, Hindi text overlay, rich colors, cinematic', meta:'Image Prompts Â· 98 uses' },
+      { icon:'ðŸ›', title:'Indian Street Food', text:'Close-up of pav bhaji on a Mumbai street cart at golden hour, steam rising, photorealistic, 4K food photography', meta:'Photography Â· 87 uses' },
+      { icon:'ðŸ™ï¸', title:'Mumbai Monsoon', text:'Cinematic shot of Marine Drive Mumbai in monsoon rain, reflections on wet road, dramatic clouds, IMAX quality', meta:'Cityscapes Â· 76 uses' },
+      { icon:'ðŸ’¼', title:'Startup LinkedIn Post', text:'Write a compelling LinkedIn post about my D2C startup journey â€” from idea to first 1000 customers, authentic tone', meta:'Corporate Â· 65 uses' },
+      { icon:'ðŸŽ¬', title:'Wedding Reel Script', text:'30-second Instagram Reel script for a traditional South Indian wedding â€” emotional, cinematic, hook-first', meta:'Video Scripts Â· 54 uses' },
     ];
 
     document.getElementById('commGrid').innerHTML = COMM_PROMPTS.map(p => `
