@@ -9,267 +9,238 @@
     gtag('js', new Date());
     gtag('config', 'G-YZJ8P58KTJ');
   </script>
-  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Expert Breakdown Ã¢&#8377;&#10084; Clarix</title>
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%23ff7043'/><text x='50%' y='55%' font-size='18' text-anchor='middle' dominant-baseline='middle' fill='white'>Ã¢Å“Â¦</text></svg>">
-  <link rel="stylesheet" href="css/design.css?v=20260413j">
-  <link rel="stylesheet" href="css/components.css?v=20260413j">
-  <link rel="stylesheet" href="css/pages/breakdown.css?v=20260413j">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Expert Breakdown &#10022; Clarix</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%23ff7043'/><text x='50%' y='55%' font-size='18' text-anchor='middle' dominant-baseline='middle' fill='white'>&#10022;</text></svg>">
+  <link rel="stylesheet" href="css/design.css?v=20260413P">
+  <link rel="stylesheet" href="css/components.css?v=20260413P">
+  <link rel="stylesheet" href="css/pages/breakdown.css?v=20260413P">
+  <link rel="stylesheet" href="/css/auth.css?v=20260413P">
   <!-- Firebase SDKs -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-  <!-- Clarix Auth CSS -->
-  <link rel="stylesheet" href="/css/auth.css?v=20260413j"></head>
+</head>
 <body class="theme-dark">
+
   <nav class="topnav dark" style="position:sticky;top:0;z-index:100">
     <div class="nav-left" style="display:flex;align-items:center;gap:12px">
-      <button class="btn btn-ghost btn-sm" onclick="goBack()" title="Back to Write" style="display:flex;align-items:center;gap:6px;font-size:13px">
-        Ã¢&#10147;Â Back
+      <button class="btn btn-ghost btn-sm" onclick="goBack()" title="Back to Write"
+        style="display:flex;align-items:center;gap:6px;font-size:13px">
+        &#10094; Back
       </button>
-      <div class="nav-logo" style="cursor:default"><span class="nav-star">Ã¢Å“Â¦</span> clarix</div>
+      <div class="nav-logo" style="cursor:default">
+        <span class="nav-star">&#10022;</span> clarix
+      </div>
     </div>
     <div style="font-size:13px;color:#555;flex:1;text-align:center">Expert Breakdown</div>
     <div class="nav-right">
-      <button class="btn btn-ghost btn-sm" onclick="copyAll()">Ã°Å¸"â€¹ Copy All</button>
-      <button class="btn btn-ghost btn-sm" onclick="exportTXT()">Ã°Å¸"" Export</button>
-      <button class="btn btn-primary btn-sm" onclick="openPlatform()">Open in AI Ã¢&#10147;'</button>
+      <button class="btn btn-ghost btn-sm" onclick="copyAll()">&#128203; Copy All</button>
+      <button class="btn btn-ghost btn-sm" onclick="exportTXT()">&#128228; Export</button>
+      <button class="btn btn-primary btn-sm" onclick="openPlatform()">Open in AI &#10148;</button>
     </div>
   </nav>
 
   <div class="breakdown-page container-lg" id="breakdownPage">
-    <div class="bd-empty" id="bdEmpty">Ã¢Å¡Â¡ Loading breakdown...</div>
+    <div class="bd-empty" id="bdEmpty">&#9203; Loading breakdown...</div>
   </div>
 
-  <script src="config.js?v=20260413j"></script>
-  <script src="js/languages.js?v=20260413j"></script>
-  <script src="js/core.js?v=20260413j"></script>
+  <script src="config.js?v=20260413P"></script>
+  <script src="js/languages.js?v=20260413P"></script>
+  <script src="js/core.js?v=20260413P"></script>
+
   <script>
-  document.addEventListener('DOMContentLoaded', () => {
-    const raw = localStorage.getItem('clarix_breakdown_data');
-    if (!raw) { document.getElementById('bdEmpty').textContent = 'Ã¢ÂÅ’ No breakdown data found. Please generate from the Write page.'; return; }
-    const d = JSON.parse(raw);
+  document.addEventListener('DOMContentLoaded', function() {
+    var raw = localStorage.getItem('clarix_breakdown_data');
+    if (!raw) {
+      document.getElementById('bdEmpty').textContent = '\u26A0 No breakdown data found. Go to Write page and generate first.';
+      return;
+    }
+    var d = JSON.parse(raw);
     render(d);
   });
 
   function goBack() {
-    // window.opener is the Write tab that opened this breakdown tab
     if (window.opener && !window.opener.closed) {
-      window.opener.focus(); // bring Write tab to front
-      window.close();        // close this breakdown tab
+      window.opener.focus();
+      window.close();
     } else {
-      // Fallback: navigate in same tab (no opener available)
       window.location.href = 'write.html';
     }
   }
 
   function render(d) {
-    const bd = d.breakdown || {};
-    const s  = bd.settings || {};
-    const page = document.getElementById('breakdownPage');
+    var bd = d.breakdown || {};
+    var s  = bd.settings || {};
+    var page = document.getElementById('breakdownPage');
 
-    // ChatGPT-Pro style full output
-    page.innerHTML = `
-      <!-- HEADER -->
-      <div class="bd-header">
-        <div class="bd-header-left">
-          <div class="ai-badge"><span class="badge-star">Ã¢Å“Â¦</span> Expert Breakdown</div>
-          <h1 class="display-md" style="margin-top:10px">Full Analysis</h1>
-          <div class="bd-meta-row">
-            <span class="bd-meta">${d.langFlag||'Ã°Å¸Å’Â'} ${d.lang||'English'}</span>
-            <span class="bd-meta">${d.platform ? 'Ã¢&#10147;' ' + d.platform : ''}</span>
-            <span class="bd-meta">Model: ${d.model||'Claude'}</span>
-            <span class="bd-meta score">Ã¢Â­Â Score: ${d.score||0}/100</span>
-          </div>
-        </div>
-      </div>
+    var settingsHtml = [
+      ['&#127912; Style',    s.style],
+      ['&#128161; Lighting', s.lighting],
+      ['&#128247; Camera',   s.camera],
+      ['&#10024; Quality',   s.quality]
+    ].map(function(pair) {
+      var k = pair[0], v = pair[1];
+      return v ? '<div class="bd-setting-card"><div class="bd-setting-key">' + k + '</div><div class="bd-setting-val">' + esc(v) + '</div></div>' : '';
+    }).join('');
 
-      <!-- ORIGINAL INPUT -->
-      <div class="bd-section">
-        <div class="bd-section-label">Ã°Å¸"Â Original Input</div>
-        <div class="bd-block muted">${esc(d.text)}</div>
-      </div>
+    var variationsHtml = (d.variations || []).map(function(v, i) {
+      return '<div class="bd-variation"><div class="bd-var-num">V' + (i+1) + '</div><div class="bd-var-text">' + esc(v) + '</div><button class="btn-copy-inline" onclick="copyText(\'' + escJ(v) + '\')">&#128203;</button></div>';
+    }).join('');
 
-      <!-- ENHANCED PROMPT -->
-      <div class="bd-section">
-        <div class="bd-section-header">
-          <div class="bd-section-label">Ã¢Å¡Â¡ Enhanced Prompt</div>
-          <button class="btn-copy-inline" onclick="copyText('${escJ(d.enhanced)}')">Ã°Å¸"â€¹ Copy</button>
-        </div>
-        <div class="bd-block highlight">${esc(d.enhanced)}</div>
-      </div>
+    var defaultPlatforms = [
+      {name:'ChatGPT',   match:92, reason:'Best for text generation and roleplay'},
+      {name:'Claude',    match:95, reason:'Ideal for nuanced, detailed prompts'},
+      {name:'Gemini',    match:88, reason:'Great for visual descriptions'},
+      {name:'Midjourney',match:97, reason:'Optimised for image generation'},
+      {name:'DALL-E',    match:85, reason:'Good for photo-realistic outputs'}
+    ];
+    var platformIcons = {
+      'ChatGPT':'&#129302;','Claude':'&#129302;','Gemini':'&#11088;',
+      'Midjourney':'&#127912;','DALL-E':'&#128444;','Grok':'&#9889;',
+      'Perplexity':'&#128269;','DeepSeek':'&#128640;','Copilot':'&#129351;','Meta AI':'&#129302;'
+    };
+    var platforms = (bd.platforms || defaultPlatforms).slice().sort(function(a,b){ return b.match - a.match; });
+    var platformsHtml = platforms.map(function(p, i) {
+      var icon  = platformIcons[p.name] || '&#129302;';
+      var color = p.match >= 90 ? '#22c55e' : p.match >= 80 ? '#ff9800' : '#ef4444';
+      var topBadge = i === 0 ? '<span class="bd-top-badge">&#11088; TOP PICK</span>' : '';
+      return '<div class="bd-chart-row">'
+        + '<div class="bd-chart-label"><span class="bd-chart-icon">' + icon + '</span><span class="bd-chart-name">' + p.name + '</span>' + topBadge + '</div>'
+        + '<div class="bd-chart-bar-wrap"><div class="bd-chart-bar-track"><div class="bd-chart-bar-fill" data-width="' + p.match + '" style="width:0%;background:' + color + '"></div></div>'
+        + '<span class="bd-chart-pct" style="color:' + color + '">' + p.match + '%</span></div>'
+        + '<div class="bd-chart-reason">' + (p.reason || '') + '</div>'
+        + '</div>';
+    }).join('');
 
-      <!-- PHOTOGRAPHY SETTINGS (ChatGPT-Pro style grid) -->
-      <div class="bd-section">
-        <div class="bd-section-label">Ã°Å¸"Â· Technical Settings</div>
-        <div class="bd-settings-grid">
-          ${[['Ã°Å¸Å½Â¨ Style', s.style],['Ã°Å¸'Â¡ Lighting', s.lighting],['Ã°Å¸"Â· Camera', s.camera],['Ã¢Å“Â¨ Quality', s.quality]].map(([k,v])=>v?`
-            <div class="bd-setting-card">
-              <div class="bd-setting-key">${k}</div>
-              <div class="bd-setting-val">${esc(v)}</div>
-            </div>`:'').join('')}
-        </div>
-      </div>
+    var socialHtml = d.socialCaption ? (
+      '<div class="bd-section">'
+      + '<div class="bd-section-header">'
+      + '<div class="bd-section-label">&#128227; Social Caption</div>'
+      + '<div style="display:flex;gap:8px">'
+      + '<button class="btn-copy-inline" onclick="copyText(\'' + escJ(d.socialCaption) + '\')">&#128203; Copy</button>'
+      + '<button class="btn btn-primary btn-sm" onclick="openPlatform()">Open in AI &#10148;</button>'
+      + '</div></div>'
+      + '<div class="bd-block">' + esc(d.socialCaption) + '</div>'
+      + '</div>'
+    ) : '';
 
-      <!-- 3 VARIATIONS -->
-      <div class="bd-section">
-        <div class="bd-section-label">Ã°Å¸&#10084;&#8377; 3 Variations</div>
-        ${(d.variations||[]).map((v,i)=>`
-          <div class="bd-variation">
-            <div class="bd-var-num">V${i+1}</div>
-            <div class="bd-var-text">${esc(v)}</div>
-            <button class="btn-copy-inline" onclick="copyText('${escJ(v)}')">Ã°Å¸"â€¹</button>
-          </div>`).join('')}
-      </div>
+    page.innerHTML =
+      '<!-- HEADER -->'
+      + '<div class="bd-header"><div class="bd-header-left">'
+      + '<div class="ai-badge"><span class="badge-star">&#10022;</span> Expert Breakdown</div>'
+      + '<h1 class="display-md" style="margin-top:10px">Full Analysis</h1>'
+      + '<div class="bd-meta-row">'
+      + '<span class="bd-meta">' + (d.langFlag || '&#127988;') + ' ' + (d.lang || 'English') + '</span>'
+      + (d.platform ? '<span class="bd-meta">&#10148; ' + d.platform + '</span>' : '')
+      + '<span class="bd-meta">Model: ' + (d.model || 'Groq') + '</span>'
+      + '<span class="bd-meta score">&#11088; Score: ' + (d.score || 0) + '/100</span>'
+      + '</div></div></div>'
 
-      <!-- PRO UPGRADE PROMPT -->
-      <div class="bd-section">
-        <div class="bd-section-header">
-          <div class="bd-section-label">Ã°Å¸Å¡&#8377; Pro Upgrade Prompt</div>
-          <div style="display:flex;gap:8px">
-            <button class="btn-copy-inline" onclick="copyText('${escJ(bd.proPrompt||d.enhanced)}')">Ã°Å¸"â€¹ Copy</button>
-            <button class="btn btn-primary btn-sm" onclick="openPlatform()">Open in ${d.platform||'AI'} Ã¢&#10147;'</button>
-          </div>
-        </div>
-        <div class="bd-block pro-block">${esc(bd.proPrompt || '[ADVANCED] ' + d.enhanced + ', hyperdetailed, award-winning, trending on ArtStation')}</div>
-      </div>
+      + '<!-- ORIGINAL INPUT -->'
+      + '<div class="bd-section"><div class="bd-section-label">&#128196; Original Input</div>'
+      + '<div class="bd-block muted">' + esc(d.text) + '</div></div>'
 
-      <!-- PLATFORM MATCH SCORES Ã¢&#8377;&#10084; Visual Chart -->
-      <div class="bd-section">
-        <div class="bd-section-label">Ã°Å¸"Å  Platform Fit Scores</div>
-        <div class="bd-platform-chart">
-          ${(bd.platforms||[
-            {name:'ChatGPT',match:92,reason:'Best for text generation and roleplay'},
-            {name:'Claude',match:95,reason:'Ideal for nuanced, detailed prompts'},
-            {name:'Gemini',match:88,reason:'Great for visual descriptions'},
-            {name:'Midjourney',match:97,reason:'Optimised for image generation'},
-            {name:'DALL-E',match:85,reason:'Good for photo-realistic outputs'},
-          ]).sort((a,b)=>b.match-a.match).map((p,i)=>{
-            const icons = {ChatGPT:'Ã°Å¸Â¤&ndash;',Claude:'Ã°Å¸Â§Â ',Gemini:'Ã¢Å ',Midjourney:'Ã°Å¸Å½Â¨','DALL-E':'Ã°Å¸Å’"',Grok:'Ã¢Å¡Â¡',Perplexity:'Ã°Å¸&#10084;Â',DeepSeek:'Ã°Å¸Å’Å ',Copilot:'Ã°Å¸ÂªÅ¸','Meta AI':'Ã°Å¸Â¤Â³'};
-            const color = p.match >= 90 ? '#22c55e' : p.match >= 80 ? '#ff9800' : '#ef4444';
-            const isTop = i === 0;
-            return `
-            <div class="bd-chart-row">
-              <div class="bd-chart-label">
-                <span class="bd-chart-icon">${icons[p.name]||'Ã°Å¸Â¤&ndash;'}</span>
-                <span class="bd-chart-name">${p.name}</span>
-                ${isTop ? '<span class="bd-top-badge">Ã¢Â­Â TOP PICK</span>' : ''}
-              </div>
-              <div class="bd-chart-bar-wrap">
-                <div class="bd-chart-bar-track">
-                  <div class="bd-chart-bar-fill" data-width="${p.match}" style="width:0%;background:${color}"></div>
-                </div>
-                <span class="bd-chart-pct" style="color:${color}">${p.match}%</span>
-              </div>
-              <div class="bd-chart-reason">${p.reason||''}</div>
-            </div>`;
-          }).join('')}
-        </div>
-      </div>
+      + '<!-- ENHANCED PROMPT -->'
+      + '<div class="bd-section"><div class="bd-section-header">'
+      + '<div class="bd-section-label">&#9889; Enhanced Prompt</div>'
+      + '<button class="btn-copy-inline" onclick="copyText(\'' + escJ(d.enhanced) + '\')">&#128203; Copy</button>'
+      + '</div><div class="bd-block highlight">' + esc(d.enhanced) + '</div></div>'
 
-      <!-- SOCIAL CAPTION -->
+      + '<!-- TECHNICAL SETTINGS -->'
+      + '<div class="bd-section"><div class="bd-section-label">&#128247; Technical Settings</div>'
+      + '<div class="bd-settings-grid">' + settingsHtml + '</div></div>'
 
-      ${d.socialCaption ? `
-      <div class="bd-section">
-        <div class="bd-section-header">
-          <div class="bd-section-label">Ã°Å¸"Â£ Social Caption</div>
-          <div style="display:flex;gap:8px">
-            <button class="btn-copy-inline" onclick="copyText('${escJ(d.socialCaption)}')">Ã°Å¸"â€¹ Copy</button>
-            <button class="btn btn-primary btn-sm" onclick="openPlatform()">Open in AI Ã¢&#10147;'</button>
-          </div>
-        </div>
-        <div class="bd-block">${esc(d.socialCaption)}</div>
-      </div>` : ''}
+      + '<!-- 3 VARIATIONS -->'
+      + '<div class="bd-section"><div class="bd-section-label">&#127381; 3 Variations</div>'
+      + variationsHtml + '</div>'
 
-      <!-- EXPORT FOOTER -->
-      <div class="bd-footer">
-        <button class="btn btn-ghost btn-sm" onclick="copyAll()">Ã°Å¸"â€¹ Copy All</button>
-        <button class="btn btn-ghost btn-sm" onclick="exportTXT()">Ã°Å¸"" Export TXT</button>
-        <button class="btn btn-primary btn-sm" onclick="openPlatform()">Open in ${d.platform||'AI'} Ã¢&#10147;'</button>
-      </div>
-    `;
-    // Animate new chart bars using data-width
-    setTimeout(() => {
-      document.querySelectorAll('.bd-chart-bar-fill[data-width]').forEach(el => {
+      + '<!-- PRO UPGRADE PROMPT -->'
+      + '<div class="bd-section"><div class="bd-section-header">'
+      + '<div class="bd-section-label">&#9889; Pro Upgrade Prompt</div>'
+      + '<div style="display:flex;gap:8px">'
+      + '<button class="btn-copy-inline" onclick="copyText(\'' + escJ(bd.proPrompt || d.enhanced) + '\')">&#128203; Copy</button>'
+      + '<button class="btn btn-primary btn-sm" onclick="openPlatform()">Open in ' + (d.platform || 'AI') + ' &#10148;</button>'
+      + '</div></div>'
+      + '<div class="bd-block pro-block">' + esc(bd.proPrompt || '[ADVANCED] ' + d.enhanced + ', hyperdetailed, award-winning, trending on ArtStation') + '</div></div>'
+
+      + '<!-- PLATFORM FIT SCORES -->'
+      + '<div class="bd-section"><div class="bd-section-label">&#128270; Platform Fit Scores</div>'
+      + '<div class="bd-platform-chart">' + platformsHtml + '</div></div>'
+
+      + socialHtml
+
+      + '<!-- EXPORT FOOTER -->'
+      + '<div class="bd-footer">'
+      + '<button class="btn btn-ghost btn-sm" onclick="copyAll()">&#128203; Copy All</button>'
+      + '<button class="btn btn-ghost btn-sm" onclick="exportTXT()">&#128228; Export TXT</button>'
+      + '<button class="btn btn-primary btn-sm" onclick="openPlatform()">Open in ' + (d.platform || 'AI') + ' &#10148;</button>'
+      + '</div>';
+
+    /* Animate chart bars */
+    setTimeout(function() {
+      document.querySelectorAll('.bd-chart-bar-fill[data-width]').forEach(function(el) {
         el.style.transition = 'width 0.9s cubic-bezier(0.4,0,0.2,1)';
         el.style.width = el.getAttribute('data-width') + '%';
       });
     }, 120);
   }
 
-  function esc(s) { return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;'); }
-  function escJ(s) { return (s||'').replace(/'/g,"\\'").replace(/\n/g,' ').slice(0,500); }
+  function esc(s)  { return (s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;'); }
+  function escJ(s) { return (s || '').replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/\n/g,' ').slice(0, 500); }
 
   function copyAll() {
-    const d = JSON.parse(localStorage.getItem('clarix_breakdown_data') || '{}');
-    const all = [
-      'CLARIX EXPERT BREAKDOWN', '='.repeat(50),
-      `Original: ${d.text}`,
-      `Enhanced: ${d.enhanced}`,
-      d.variations?.length ? `Variations:\n${d.variations.map((v,i)=>`${i+1}. ${v}`).join('\n')}` : '',
-      `Social Caption: ${d.socialCaption||'Ã¢&#8377;&#10084;'}`,
-      '='.repeat(50), 'Generated by Clarix Ã¢Å“Â¦'
+    var d = JSON.parse(localStorage.getItem('clarix_breakdown_data') || '{}');
+    var lines = [
+      'CLARIX EXPERT BREAKDOWN',
+      '='.repeat(50),
+      'Original:\n' + (d.text || ''),
+      'Enhanced:\n' + (d.enhanced || ''),
+      (d.variations && d.variations.length) ? 'Variations:\n' + d.variations.map(function(v,i){ return (i+1) + '. ' + v; }).join('\n') : '',
+      'Social Caption:\n' + (d.socialCaption || ''),
+      '='.repeat(50),
+      'Generated by Clarix'
     ].filter(Boolean).join('\n\n');
-    copyText(all);
+    copyText(lines);
   }
 
   function exportTXT() {
-    const d = JSON.parse(localStorage.getItem('clarix_breakdown_data') || '{}');
-    const content = `CLARIX EXPERT BREAKDOWN\n${'='.repeat(50)}\n\nOriginal:\n${d.text}\n\nEnhanced:\n${d.enhanced}\n\nVariations:\n${(d.variations||[]).map((v,i)=>`${i+1}. ${v}`).join('\n')}\n\nSocial Caption:\n${d.socialCaption||'Ã¢&#8377;&#10084;'}\n\n${'='.repeat(50)}\nGenerated by Clarix Ã¢Å“Â¦`;
+    var d = JSON.parse(localStorage.getItem('clarix_breakdown_data') || '{}');
+    var content = 'CLARIX EXPERT BREAKDOWN\n' + '='.repeat(50) + '\n\n'
+      + 'Original:\n' + (d.text || '') + '\n\n'
+      + 'Enhanced:\n' + (d.enhanced || '') + '\n\n'
+      + 'Variations:\n' + (d.variations || []).map(function(v,i){ return (i+1) + '. ' + v; }).join('\n') + '\n\n'
+      + 'Social Caption:\n' + (d.socialCaption || '') + '\n\n'
+      + '='.repeat(50) + '\nGenerated by Clarix';
     downloadFile('clarix-breakdown.txt', content);
     Toast.show('Exported!', 'success');
   }
 
   function openPlatform() {
-    const d = JSON.parse(localStorage.getItem('clarix_breakdown_data') || '{}');
-    const platforms = [
-      {name:'ChatGPT',url:'https://chat.openai.com'},{name:'Claude',url:'https://claude.ai'},
-      {name:'Gemini',url:'https://gemini.google.com'},{name:'Midjourney',url:'https://midjourney.com'},
-      {name:'Grok',url:'https://grok.x.ai'},
+    var d = JSON.parse(localStorage.getItem('clarix_breakdown_data') || '{}');
+    var platforms = [
+      {name:'ChatGPT',    url:'https://chat.openai.com'},
+      {name:'Claude',     url:'https://claude.ai'},
+      {name:'Gemini',     url:'https://gemini.google.com'},
+      {name:'Midjourney', url:'https://midjourney.com'},
+      {name:'Grok',       url:'https://grok.x.ai'}
     ];
-    const p = platforms.find(pl => pl.name === d.platform);
-    const pro = d.breakdown?.proPrompt || d.enhanced;
-    copyText(pro, null, false);
-    setTimeout(() => window.open(p ? p.url : 'https://chat.openai.com', '_blank'), 400);
-    Toast.show('Pro prompt copied! Opening ' + (d.platform||'AI') + '...', 'success');
+    var p = platforms.find(function(pl){ return pl.name === d.platform; });
+    var pro = (d.breakdown && d.breakdown.proPrompt) ? d.breakdown.proPrompt : (d.enhanced || '');
+    copyText(pro, null);
+    setTimeout(function(){ window.open(p ? p.url : 'https://chat.openai.com', '_blank'); }, 400);
+    Toast.show('Pro prompt copied! Opening ' + (d.platform || 'AI') + '...', 'success');
   }
   </script>
-    <!-- Clarix Firebase Auth -->
-  <script src="/js/firebase-auth.js?v=20260413j"></script>
+
+  <!-- Clarix Firebase Auth -->
+  <script src="/js/firebase-auth.js?v=20260413P"></script>
   <script>
     document.addEventListener('DOMContentLoaded', function() {
-      ClarixAuth.init();
+      if (typeof ClarixAuth !== 'undefined') ClarixAuth.init();
     });
-  </script><!-- Service Worker + Auto-Update Banner -->
-  <script>
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('/sw.js').then(function(reg) {
-      reg.addEventListener('updatefound', function() {
-        var newSW = reg.installing;
-        newSW.addEventListener('statechange', function() {
-          if (newSW.state === 'installed' && navigator.serviceWorker.controller) {
-            showUpdateBanner();
-          }
-        });
-      });
-    });
-    navigator.serviceWorker.addEventListener('message', function(e) {
-      if (e.data && e.data.type === 'SW_UPDATED') { showUpdateBanner(); }
-    });
-  }
-  function showUpdateBanner() {
-    if (document.getElementById('clarix-update-banner')) return;
-    var b = document.createElement('div');
-    b.id = 'clarix-update-banner';
-    b.innerHTML = 'Ã°Å¸&#10084;" New update available! <strong>Tap to refresh</strong>';
-    b.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);z-index:99999;'
-      + 'background:#ff7043;color:#fff;padding:14px 24px;border-radius:32px;'
-      + 'font-size:14px;font-weight:700;cursor:pointer;box-shadow:0 8px 30px rgba(255,112,67,0.5);'
-      + 'white-space:nowrap;animation:fadeUp .4s ease;font-family:sans-serif;';
-    b.onclick = function() { window.location.reload(true); };
-    document.body.appendChild(b);
-  }
-  </script>  <script src="js/pwa.js?v=20260413j"></script>
+  </script>
+  <script src="js/pwa.js?v=20260413P"></script>
 </body>
 </html>
-
