@@ -142,7 +142,6 @@ var ClarixAuth = {
   _setup: function() {
     var self = this;
     try {
-      /* Use CLARIX_FIREBASE_CONFIG (defined in firebase.js) — FIREBASE_CONFIG was undefined */
       var fbConfig = (typeof CLARIX_FIREBASE_CONFIG !== 'undefined') ? CLARIX_FIREBASE_CONFIG :
         (typeof FIREBASE_CONFIG !== 'undefined') ? FIREBASE_CONFIG : null;
       if (!fbConfig) { console.error('[ClarixAuth] No Firebase config found!'); return; }
@@ -152,30 +151,46 @@ var ClarixAuth = {
       self._auth = firebase.auth();
       self._db   = firebase.firestore();
 
-      /* ── Handle redirect result first (mobile sign-in flow) ── */
-      /* CRITICAL: Set _pendingRedirect = true BEFORE onAuthStateChanged fires.
-         This prevents _showLoginModal() from running during the brief
-         window between page load and the redirect result resolving,
-         which caused the infinite Google sign-in redirect loop. */
-      self._pendingRedirect = true;
+      /* ── MOBILE REDIRECT LOOP FIX ──────────────────────────────────────
+         Problem: signInWithRedirect() navigates the page away and back.
+         On reload, _pendingRedirect resets to false (in-memory), so
+         onAuthStateChanged(null) fires BEFORE getRedirectResult() resolves,
+         showing the login modal, which triggers another redirect — infinite loop.
+
+         Fix: use sessionStorage which SURVIVES the page navigation.
+         signInWithGoogle() sets 'clarix_signin_pending' BEFORE redirect.
+         _setup() checks this flag and sets _pendingRedirect=true immediately.
+         getRedirectResult() clears the flag on success OR failure.
+         The login modal is suppressed while either flag is true.
+      ─────────────────────────────────────────────────────────────────── */
+      if (sessionStorage.getItem('clarix_signin_pending')) {
+        self._pendingRedirect = true;
+        console.log('[ClarixAuth] Redirect return detected via sessionStorage');
+      } else {
+        self._pendingRedirect = true;  /* always suppress modal until getRedirectResult resolves */
+      }
 
       self._auth.getRedirectResult().then(function(result) {
+        sessionStorage.removeItem('clarix_signin_pending');
         self._pendingRedirect = false;
         self._redirectResolved = true;
         if (result && result.user) {
           console.log('[Clarix] redirect sign-in success:', result.user.email);
-          /* onAuthStateChanged will fire automatically — no action needed here */
+          /* onAuthStateChanged will fire automatically */
         }
       }).catch(function(e) {
+        sessionStorage.removeItem('clarix_signin_pending');
         self._pendingRedirect = false;
         self._redirectResolved = true;
-        console.error('[Clarix] Redirect result error:', e);
-        /* Reset any stuck button state */
+        console.error('[Clarix] Redirect result error:', e.code, e.message);
+        /* Reset button if visible */
         var btn = document.getElementById('clarixGoogleSignIn');
         if (btn) {
           btn.disabled = false;
           btn.innerHTML = '<img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="G" style="width:20px;height:20px;margin-right:10px;">Continue with Google';
         }
+        /* Show modal now that we know there is no pending redirect */
+        if (!self.currentUser) self._showLoginModal();
       });
 
       self._auth.onAuthStateChanged(function(user) {
@@ -311,19 +326,22 @@ var ClarixAuth = {
   },
 
   /* ── Google Sign-In ── */
-  /* Always use redirect — avoids Cross-Origin-Opener-Policy errors
-     that block popup communication in modern Chrome/incognito */
   signInWithGoogle: function() {
     var self = this;
     var provider = new firebase.auth.GoogleAuthProvider();
     provider.addScope('email');
     provider.addScope('profile');
-    /* Always show account chooser */
     provider.setCustomParameters({ prompt: 'select_account' });
 
-    /* Use redirect on ALL devices — no popup COOP issues */
+    /* CRITICAL: Set sessionStorage flag BEFORE signInWithRedirect.
+       This flag survives the page navigation to Google and back,
+       so _setup() can detect we're returning from a redirect and
+       suppress the login modal until getRedirectResult() resolves. */
+    sessionStorage.setItem('clarix_signin_pending', '1');
+
     return self._auth.signInWithRedirect(provider).catch(function(e) {
-        console.error('Redirect sign-in error:', e);
+        sessionStorage.removeItem('clarix_signin_pending');
+        console.error('[Clarix] Redirect sign-in error:', e);
         var btn = document.getElementById('clarixGoogleSignIn');
         if (btn) {
           btn.disabled = false;

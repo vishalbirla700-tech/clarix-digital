@@ -175,7 +175,13 @@ const Onboarding = {
   nextStep() {
     if (this.currentStep === 1) {
       const name = document.getElementById('ob-name-input')?.value?.trim() || 'Creator';
-      ClarixState.username = name;
+      /* Guard: ClarixState may not be defined on all pages — always save to localStorage */
+      localStorage.setItem('clarix_username', name);
+      if (typeof ClarixState !== 'undefined') ClarixState.username = name;
+      /* Update Firebase profile name if signed in */
+      if (name !== 'Creator' && typeof ClarixAuth !== 'undefined' && ClarixAuth.currentUser) {
+        ClarixAuth.saveField('name', name);
+      }
     }
     if (this.currentStep < this.totalSteps) {
       this.goToStep(this.currentStep + 1);
