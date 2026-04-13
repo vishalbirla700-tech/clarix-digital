@@ -115,6 +115,8 @@ var ClarixAuth = {
   userProfile: null,  /* { uid, email, name, photo, country, countryCode, language, trialUsed, isPro } */
   _ready: false,
   _readyCallbacks: [],
+  _pendingRedirect: false,  /* true while getRedirectResult() is in-flight — suppresses login modal */
+  _redirectResolved: false, /* true once getRedirectResult() has returned */
 
   /* Detect mobile browsers — popup is blocked on mobile, use redirect */
   _isMobile: function() {
@@ -151,14 +153,23 @@ var ClarixAuth = {
       self._db   = firebase.firestore();
 
       /* ── Handle redirect result first (mobile sign-in flow) ── */
+      /* CRITICAL: Set _pendingRedirect = true BEFORE onAuthStateChanged fires.
+         This prevents _showLoginModal() from running during the brief
+         window between page load and the redirect result resolving,
+         which caused the infinite Google sign-in redirect loop. */
+      self._pendingRedirect = true;
+
       self._auth.getRedirectResult().then(function(result) {
-        /* result.user is null if no redirect happened — that's fine */
+        self._pendingRedirect = false;
+        self._redirectResolved = true;
         if (result && result.user) {
-          /* Auth state listener below will pick this up automatically */
-          console.log('Clarix: redirect sign-in success', result.user.email);
+          console.log('[Clarix] redirect sign-in success:', result.user.email);
+          /* onAuthStateChanged will fire automatically — no action needed here */
         }
       }).catch(function(e) {
-        console.error('Redirect result error:', e);
+        self._pendingRedirect = false;
+        self._redirectResolved = true;
+        console.error('[Clarix] Redirect result error:', e);
         /* Reset any stuck button state */
         var btn = document.getElementById('clarixGoogleSignIn');
         if (btn) {
@@ -169,6 +180,7 @@ var ClarixAuth = {
 
       self._auth.onAuthStateChanged(function(user) {
         if (user) {
+          self._pendingRedirect = false; /* user resolved — no longer pending */
           self.currentUser = user;
           self._loadProfile(user, function() {
             self._ready = true;
@@ -191,7 +203,12 @@ var ClarixAuth = {
           self.currentUser = null;
           self.userProfile = null;
           self._ready = false;
-          self._showLoginModal();
+          /* GUARD: Do NOT show login modal while redirect result is in-flight.
+             Firebase fires onAuthStateChanged(null) BEFORE getRedirectResult()
+             resolves, which caused the infinite redirect loop. */
+          if (!self._pendingRedirect) {
+            self._showLoginModal();
+          }
         }
       });
     } catch(e) {
