@@ -14,18 +14,18 @@
   <title>Prompt History â€” Clarix</title>
   <meta name="description" content="Your complete prompt history â€” search, filter, re-use, favourite, and export all your Clarix prompts.">
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%23ff7043'/><text x='50%' y='55%' font-size='18' text-anchor='middle' dominant-baseline='middle' fill='white'>âœ¦</text></svg>">
-  <link rel="stylesheet" href="css/design.css?v=20260413d">
-  <link rel="stylesheet" href="css/components.css?v=20260413d">
-  <link rel="stylesheet" href="css/sidebar.css?v=20260413d">
-  <link rel="stylesheet" href="css/pages/history.css?v=20260413d">
-  <link rel="stylesheet" href="css/auth.css?v=20260413d">
+  <link rel="stylesheet" href="css/design.css?v=20260413e">
+  <link rel="stylesheet" href="css/components.css?v=20260413e">
+  <link rel="stylesheet" href="css/sidebar.css?v=20260413e">
+  <link rel="stylesheet" href="css/pages/history.css?v=20260413e">
+  <link rel="stylesheet" href="css/auth.css?v=20260413e">
   <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
   <!-- Firebase SDKs -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
   <!-- Clarix Auth CSS -->
-  <link rel="stylesheet" href="/css/auth.css?v=20260413d"></head>
+  <link rel="stylesheet" href="/css/auth.css?v=20260413e"></head>
 <body class="theme-dark">
 
   <!-- TOP NAV -->
@@ -62,8 +62,8 @@
         <p class="body-md text-muted" style="margin-top:6px">Every prompt you've created â€” search, remix, favourite, export.</p>
       </div>
       <div class="history-header-actions">
-        <button class="btn btn-ghost btn-sm" onclick="HistoryPage.exportAll()">ðŸ“„ Export All</button>
-        <button class="btn btn-secondary btn-sm" onclick="HistoryPage.clearAll()" style="color:#f87171;border-color:rgba(248,113,113,0.3)">ðŸ—‘ Clear All</button>
+        <button class="btn btn-ghost btn-sm" onclick="HistoryPage.exportAll()">&#128196; Export All</button>
+        <button class="btn btn-secondary btn-sm" onclick="HistoryPage.clearAll()" style="color:#f87171;border-color:rgba(248,113,113,0.3)">&#128172; Clear All</button>
       </div>
     </div>
 
@@ -73,7 +73,7 @@
     <!-- SEARCH + FILTERS -->
     <div class="history-controls">
       <div class="history-search-wrap">
-        <span class="history-search-icon">ðŸ”</span>
+        <span class="history-search-icon">&#128269;</span>
         <input type="text" class="history-search" id="historySearch"
           placeholder="Search your prompts..."
           oninput="HistoryPage.search(this.value)">
@@ -103,10 +103,10 @@
 
     <!-- EMPTY STATE -->
     <div class="history-empty hidden" id="historyEmpty">
-      <div class="history-empty-icon">ðŸ“œ</div>
+      <div class="history-empty-icon">&#128220;</div>
       <div class="history-empty-title">No prompts yet</div>
       <div class="history-empty-sub">Start creating in the Write page â€” everything gets saved here automatically.</div>
-      <a href="write.html" class="btn btn-primary" style="margin-top:20px">âœï¸ Start Writing</a>
+      <a href="write.html" class="btn btn-primary" style="margin-top:20px">&#9997;&#65039; Start Writing</a>
     </div>
 
   </div>
@@ -114,24 +114,24 @@
   <!-- MOBILE BOTTOM NAV -->
   <nav class="mobile-nav">
     <div class="mnav-items">
-      <a href="index.html" class="mnav-item"><span class="mnav-icon">ðŸ </span>Home</a>
-      <a href="write.html" class="mnav-item"><span class="mnav-icon">âœï¸</span>Write</a>
-      <a href="inspire.html" class="mnav-item"><span class="mnav-icon">ðŸŽ¨</span>Inspire</a>
-      <a href="history.html" class="mnav-item active"><span class="mnav-icon">ðŸ“œ</span>History</a>
-      <a href="apps.html" class="mnav-item"><span class="mnav-icon">ðŸš€</span>Apps</a>
+      <a href="index.html" class="mnav-item"><span class="mnav-icon">&#127968;</span>Home</a>
+      <a href="write.html" class="mnav-item"><span class="mnav-icon">&#9997;&#65039;</span>Write</a>
+      <a href="inspire.html" class="mnav-item"><span class="mnav-icon">&#10024;</span>Inspire</a>
+      <a href="history.html" class="mnav-item active"><span class="mnav-icon">&#128220;</span>History</a>
+      <a href="apps.html" class="mnav-item"><span class="mnav-icon">&#128640;</span>Apps</a>
     </div>
   </nav>
 
-  <script src="config.js?v=20260413d"></script>
-  <script src="js/languages.js?v=20260413d"></script>
-  <script src="js/core.js?v=20260413d"></script>
-  <script src="js/ai.js?v=20260413d"></script>
-  <script src="js/voice.js?v=20260413d"></script>
-  <script src="js/sidebar.js?v=20260413d"></script>
-  <script src="js/firebase.js?v=20260413d"></script>
-  <script src="js/pages/history.js?v=20260413d"></script>
+  <script src="config.js?v=20260413e"></script>
+  <script src="js/languages.js?v=20260413e"></script>
+  <script src="js/core.js?v=20260413e"></script>
+  <script src="js/ai.js?v=20260413e"></script>
+  <script src="js/voice.js?v=20260413e"></script>
+  <script src="js/sidebar.js?v=20260413e"></script>
+  <script src="js/firebase.js?v=20260413e"></script>
+  <script src="js/pages/history.js?v=20260413e"></script>
     <!-- Clarix Firebase Auth -->
-  <script src="/js/firebase-auth.js?v=20260413d"></script>
+  <script src="/js/firebase-auth.js?v=20260413e"></script>
   <script>
     document.addEventListener('DOMContentLoaded', function() {
       ClarixAuth.init();
@@ -142,6 +142,6 @@
     navigator.serviceWorker.register('/sw.js').catch(() => {});
   }
   document.addEventListener('DOMContentLoaded', () => { if (window.Sidebar) Sidebar.init(); });
-</script>  <script src="js/pwa.js?v=20260413d"></script>
+</script>  <script src="js/pwa.js?v=20260413e"></script>
 </body>
 </html>

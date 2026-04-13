@@ -31,19 +31,19 @@
   <meta name="apple-mobile-web-app-title" content="Clarix">
   <link rel="apple-touch-icon" href="icons/icon-192.png">
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%23ff7043'/><text x='50%' y='55%' font-size='18' text-anchor='middle' dominant-baseline='middle' fill='white'>âœ¦</text></svg>">
-  <link rel="stylesheet" href="css/design.css?v=20260413d">
-  <link rel="stylesheet" href="css/components.css?v=20260413d">
-  <link rel="stylesheet" href="css/sidebar.css?v=20260413d">
-  <link rel="stylesheet" href="css/onboarding.css?v=20260413d">
-  <link rel="stylesheet" href="css/pages/inspire.css?v=20260413d">
-  <link rel="stylesheet" href="css/auth.css?v=20260413d">
+  <link rel="stylesheet" href="css/design.css?v=20260413e">
+  <link rel="stylesheet" href="css/components.css?v=20260413e">
+  <link rel="stylesheet" href="css/sidebar.css?v=20260413e">
+  <link rel="stylesheet" href="css/onboarding.css?v=20260413e">
+  <link rel="stylesheet" href="css/pages/inspire.css?v=20260413e">
+  <link rel="stylesheet" href="css/auth.css?v=20260413e">
   <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
   <!-- Firebase SDKs -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
   <!-- Clarix Auth CSS -->
-  <link rel="stylesheet" href="/css/auth.css?v=20260413d"></head>
+  <link rel="stylesheet" href="/css/auth.css?v=20260413e"></head>
 <body class="theme-dark">
 
   <!-- TOP NAV -->
@@ -87,7 +87,7 @@
       ondrop="handleDrop(event)"
       onclick="document.getElementById('imgFileInput').click()">
       <input type="file" id="imgFileInput" accept="image/*" style="display:none" onchange="handleFileSelect(event)">
-      <span class="upload-icon">ðŸ“·</span>
+      <span class="upload-icon">&#128247;</span>
       <span class="upload-text">
         <strong>Tap to upload from gallery</strong> â€” or Drag &amp; drop<br>
         <span style="font-size:11px;color:rgba(255,255,255,0.65)">Gemini Vision analyzes your photo and generates an accurate prompt</span>
@@ -99,12 +99,12 @@
   <div class="container" style="margin-bottom:24px">
     <div class="chip-group" id="categoryFilter">
       <div class="chip active" data-cat="all" onclick="filterCategory('all')">All</div>
-      <div class="chip" data-cat="cinematic" onclick="filterCategory('cinematic')">ðŸŽ¬ Cinematic</div>
-      <div class="chip" data-cat="fashion" onclick="filterCategory('fashion')">ðŸ‘— Fashion</div>
-      <div class="chip" data-cat="3d" onclick="filterCategory('3d')">ðŸŽ® 3D</div>
-      <div class="chip" data-cat="video" onclick="filterCategory('video')">ðŸ“¹ Video</div>
-      <div class="chip" data-cat="blog" onclick="filterCategory('blog')">ðŸ“ Blog</div>
-      <div class="chip" data-cat="nature" onclick="filterCategory('nature')">ðŸŒ¿ Nature</div>
+      <div class="chip" data-cat="cinematic" onclick="filterCategory('cinematic')">&#127916; Cinematic</div>
+      <div class="chip" data-cat="fashion" onclick="filterCategory('fashion')">&#128143; Fashion</div>
+      <div class="chip" data-cat="3d" onclick="filterCategory('3d')">&#127922; 3D</div>
+      <div class="chip" data-cat="video" onclick="filterCategory('video')">&#127909; Video</div>
+      <div class="chip" data-cat="blog" onclick="filterCategory('blog')">&#128221; Blog</div>
+      <div class="chip" data-cat="nature" onclick="filterCategory('nature')">&#127807; Nature</div>
     </div>
   </div>
 
@@ -122,7 +122,7 @@
         <div class="lightbox-info-cat" id="lightboxCat"></div>
       </div>
       <button class="lightbox-close" onclick="closeLightbox()" title="Close">âœ•</button>
-      <button class="lightbox-open-editor" id="lightboxOpenEditor">Open Editor â†’</button>
+      <button class="lightbox-open-editor" id="lightboxOpenEditor">Open Editor &#8594;</button>
     </div>
   </div>
 
@@ -143,7 +143,7 @@
           <div class="chip-group" id="editorChips"></div>
 
           <div class="editor-actions">
-            <button class="btn btn-secondary" style="color:#fff;border-color:rgba(255,255,255,0.2)" onclick="rewriteEditorPrompt()">ðŸ”„ AI Rewrite</button>
+            <button class="btn btn-secondary" style="color:#fff;border-color:rgba(255,255,255,0.2)" onclick="rewriteEditorPrompt()">&#127760; AI Rewrite</button>
             <button class="btn btn-primary" id="editorEnhanceBtn" onclick="enhanceEditorPrompt()">âš¡ Enhance</button>
           </div>
 
@@ -153,15 +153,15 @@
           </div>
 
           <div class="editor-direction" id="editorDirection" style="display:none">
-            <div class="editor-result-label" style="color:#f59e0b">ðŸ§­ Creative Direction</div>
+            <div class="editor-result-label" style="color:#f59e0b">&#127775; Creative Direction</div>
             <div class="editor-result-text" id="editorDirectionText"></div>
           </div>
 
           <div class="editor-export" id="editorExport" style="display:none">
-            <button class="btn btn-ghost btn-sm" onclick="copyEditorPrompt()">ðŸ“‹ Copy Prompt</button>
-            <button class="btn btn-ghost btn-sm" onclick="sendEditorToWrite()">âœï¸ Send to Write</button>
-            <button class="btn btn-ghost btn-sm" onclick="generateCreativeDirection()">ðŸ§­ Creative Direction</button>
-            <button class="btn btn-ghost btn-sm" onclick="exportEditorTXT()">ðŸ“„ Export TXT</button>
+            <button class="btn btn-ghost btn-sm" onclick="copyEditorPrompt()">&#128220; Copy Prompt</button>
+            <button class="btn btn-ghost btn-sm" onclick="sendEditorToWrite()">&#9997;&#65039; Send to Write</button>
+            <button class="btn btn-ghost btn-sm" onclick="generateCreativeDirection()">&#127775; Creative Direction</button>
+            <button class="btn btn-ghost btn-sm" onclick="exportEditorTXT()">&#128196; Export TXT</button>
           </div>
         </div>
       </div>
@@ -171,24 +171,24 @@
   <!-- MOBILE BOTTOM NAV -->
   <nav class="mobile-nav">
     <div class="mnav-items">
-      <a href="index.html" class="mnav-item"><span class="mnav-icon">ðŸ </span>Home</a>
-      <a href="write.html" class="mnav-item"><span class="mnav-icon">âœï¸</span>Write</a>
-      <a href="inspire.html" class="mnav-item active"><span class="mnav-icon">ðŸŽ¨</span>Inspire</a>
-      <a href="history.html" class="mnav-item"><span class="mnav-icon">ðŸ“œ</span>History</a>
-      <a href="apps.html" class="mnav-item"><span class="mnav-icon">ðŸš€</span>Apps</a>
+      <a href="index.html" class="mnav-item"><span class="mnav-icon">&#127968;</span>Home</a>
+      <a href="write.html" class="mnav-item"><span class="mnav-icon">&#9997;&#65039;</span>Write</a>
+      <a href="inspire.html" class="mnav-item active"><span class="mnav-icon">&#10024;</span>Inspire</a>
+      <a href="history.html" class="mnav-item"><span class="mnav-icon">&#128220;</span>History</a>
+      <a href="apps.html" class="mnav-item"><span class="mnav-icon">&#128640;</span>Apps</a>
     </div>
   </nav>
 
-  <script src="config.js?v=20260413d"></script>
-  <script src="js/languages.js?v=20260413d"></script>
-  <script src="js/core.js?v=20260413d"></script>
-  <script src="js/ai.js?v=20260413d"></script>
-  <script src="js/voice.js?v=20260413d"></script>
-  <script src="js/share.js?v=20260413d"></script>
-  <script src="js/onboarding.js?v=20260413d"></script>
-  <script src="js/sidebar.js?v=20260413d"></script>
-  <script src="js/firebase.js?v=20260413d"></script>
-  <script src="js/pages/inspire.js?v=20260413d"></script>
+  <script src="config.js?v=20260413e"></script>
+  <script src="js/languages.js?v=20260413e"></script>
+  <script src="js/core.js?v=20260413e"></script>
+  <script src="js/ai.js?v=20260413e"></script>
+  <script src="js/voice.js?v=20260413e"></script>
+  <script src="js/share.js?v=20260413e"></script>
+  <script src="js/onboarding.js?v=20260413e"></script>
+  <script src="js/sidebar.js?v=20260413e"></script>
+  <script src="js/firebase.js?v=20260413e"></script>
+  <script src="js/pages/inspire.js?v=20260413e"></script>
   <script>
     document.addEventListener('DOMContentLoaded', () => {
       Sidebar.init();
@@ -216,6 +216,6 @@
       document.body.prepend(b);
     }
   </script>
-  <script src="js/pwa.js?v=20260413d"></script>
+  <script src="js/pwa.js?v=20260413e"></script>
 </body>
 </html>

@@ -5,7 +5,7 @@
 ═══════════════════════════════════════════════ */
 
 /* ── BUMP THIS every deployment to notify existing users ── */
-const CLARIX_APP_VERSION = '20260413d';
+const CLARIX_APP_VERSION = '20260413e';
 
 const ClarixPWA = (() => {
 

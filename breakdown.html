@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <!-- Google Analytics GA4 -->
@@ -33,7 +33,7 @@
     <div class="nav-right">
       <button class="btn btn-ghost btn-sm" onclick="copyAll()">Ã°Å¸â€œâ€¹ Copy All</button>
       <button class="btn btn-ghost btn-sm" onclick="exportTXT()">Ã°Å¸â€œâ€ž Export</button>
-      <button class="btn btn-primary btn-sm" onclick="openPlatform()">Open in AI Ã¢â€ â€™</button>
+      <button class="btn btn-primary btn-sm" onclick="openPlatform()">Open in AI Ã¢â€ '</button>
     </div>
   </nav>
 
@@ -77,7 +77,7 @@
           <h1 class="display-md" style="margin-top:10px">Full Analysis</h1>
           <div class="bd-meta-row">
             <span class="bd-meta">${d.langFlag||'Ã°Å¸Å’Â'} ${d.lang||'English'}</span>
-            <span class="bd-meta">${d.platform ? 'Ã¢â€ â€™ ' + d.platform : ''}</span>
+            <span class="bd-meta">${d.platform ? 'Ã¢â€ ' ' + d.platform : ''}</span>
             <span class="bd-meta">Model: ${d.model||'Claude'}</span>
             <span class="bd-meta score">Ã¢Â­Â Score: ${d.score||0}/100</span>
           </div>
@@ -103,7 +103,7 @@
       <div class="bd-section">
         <div class="bd-section-label">Ã°Å¸â€œÂ· Technical Settings</div>
         <div class="bd-settings-grid">
-          ${[['Ã°Å¸Å½Â¨ Style', s.style],['Ã°Å¸â€™Â¡ Lighting', s.lighting],['Ã°Å¸â€œÂ· Camera', s.camera],['Ã¢Å“Â¨ Quality', s.quality]].map(([k,v])=>v?`
+          ${[['Ã°Å¸Å½Â¨ Style', s.style],['Ã°Å¸'Â¡ Lighting', s.lighting],['Ã°Å¸â€œÂ· Camera', s.camera],['Ã¢Å“Â¨ Quality', s.quality]].map(([k,v])=>v?`
             <div class="bd-setting-card">
               <div class="bd-setting-key">${k}</div>
               <div class="bd-setting-val">${esc(v)}</div>
@@ -128,7 +128,7 @@
           <div class="bd-section-label">Ã°Å¸Å¡â‚¬ Pro Upgrade Prompt</div>
           <div style="display:flex;gap:8px">
             <button class="btn-copy-inline" onclick="copyText('${escJ(bd.proPrompt||d.enhanced)}')">Ã°Å¸â€œâ€¹ Copy</button>
-            <button class="btn btn-primary btn-sm" onclick="openPlatform()">Open in ${d.platform||'AI'} Ã¢â€ â€™</button>
+            <button class="btn btn-primary btn-sm" onclick="openPlatform()">Open in ${d.platform||'AI'} Ã¢â€ '</button>
           </div>
         </div>
         <div class="bd-block pro-block">${esc(bd.proPrompt || '[ADVANCED] ' + d.enhanced + ', hyperdetailed, award-winning, trending on ArtStation')}</div>
@@ -175,7 +175,7 @@
           <div class="bd-section-label">Ã°Å¸â€œÂ£ Social Caption</div>
           <div style="display:flex;gap:8px">
             <button class="btn-copy-inline" onclick="copyText('${escJ(d.socialCaption)}')">Ã°Å¸â€œâ€¹ Copy</button>
-            <button class="btn btn-primary btn-sm" onclick="openPlatform()">Open in AI Ã¢â€ â€™</button>
+            <button class="btn btn-primary btn-sm" onclick="openPlatform()">Open in AI Ã¢â€ '</button>
           </div>
         </div>
         <div class="bd-block">${esc(d.socialCaption)}</div>
@@ -185,7 +185,7 @@
       <div class="bd-footer">
         <button class="btn btn-ghost btn-sm" onclick="copyAll()">Ã°Å¸â€œâ€¹ Copy All</button>
         <button class="btn btn-ghost btn-sm" onclick="exportTXT()">Ã°Å¸â€œâ€ž Export TXT</button>
-        <button class="btn btn-primary btn-sm" onclick="openPlatform()">Open in ${d.platform||'AI'} Ã¢â€ â€™</button>
+        <button class="btn btn-primary btn-sm" onclick="openPlatform()">Open in ${d.platform||'AI'} Ã¢â€ '</button>
       </div>
     `;
     // Animate new chart bars using data-width
