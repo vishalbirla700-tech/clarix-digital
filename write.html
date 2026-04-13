@@ -11,26 +11,26 @@
   </script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Write â€” AI Prompt Studio | Clarix</title>
+  <title>Write &mdash; AI Prompt Studio | Clarix</title>
   <meta name="description" content="Transform your rough ideas into powerful AI prompts with Claude AI. Supports Hindi, Hinglish, English & 20+ languages. Free for ChatGPT, Midjourney, Claude & 25+ platforms.">
   <meta name="keywords" content="AI prompt writer, ChatGPT prompts, Hindi AI prompts, prompt enhancer, Clarix Write">
   <meta name="robots" content="index, follow">
   <link rel="canonical" href="https://clarix.in/write.html">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://clarix.in/write.html">
-  <meta property="og:title" content="Write Better AI Prompts â€” Clarix">
+  <meta property="og:title" content="Write Better AI Prompts &mdash; Clarix">
   <meta property="og:description" content="AI-powered prompt enhancer. Type in Hindi, Hinglish, or English and get a stunning prompt in seconds.">
   <meta property="og:image" content="https://clarix.in/icons/og-image.png">
   <meta property="og:site_name" content="Clarix AI">
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Write Better AI Prompts â€” Clarix">
+  <meta name="twitter:title" content="Write Better AI Prompts &mdash; Clarix">
   <meta name="twitter:image" content="https://clarix.in/icons/og-image.png">
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#ff7043">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="Clarix">
   <link rel="apple-touch-icon" href="icons/icon-192.png">
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%23ff7043'/><text x='50%' y='55%' font-size='18' text-anchor='middle' dominant-baseline='middle' fill='white'>âœ¦</text></svg>">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%23ff7043'/><text x='50%' y='55%' font-size='18' text-anchor='middle' dominant-baseline='middle' fill='white'>&#10022;</text></svg>">
   <link rel="stylesheet" href="css/design.css?v=20260413f">
   <link rel="stylesheet" href="css/components.css?v=20260413f">
   <link rel="stylesheet" href="css/sidebar.css?v=20260413f">
@@ -52,7 +52,7 @@
       <button class="sidebar-toggle-btn" onclick="Sidebar.toggle()" aria-label="Menu">
         <span></span><span></span><span></span>
       </button>
-      <div class="nav-logo" onclick="location.href='index.html'"><span class="nav-star">âœ¦</span> clarix</div>
+      <div class="nav-logo" onclick="location.href='index.html'"><span class="nav-star">&#10022;</span> clarix</div>
     </div>
     <div class="nav-links">
       <a href="index.html" class="nav-link">Home</a>
@@ -75,23 +75,23 @@
     <div class="ws-step active" data-step="1">
       <span class="ws-num">1</span><span class="ws-label">Language</span>
     </div>
-    <div class="ws-arrow">â€º</div>
+    <div class="ws-arrow">&#8250;</div>
     <div class="ws-step" data-step="2">
       <span class="ws-num">2</span><span class="ws-label">Platform</span>
     </div>
-    <div class="ws-arrow">â€º</div>
+    <div class="ws-arrow">&#8250;</div>
     <div class="ws-step" data-step="3">
       <span class="ws-num">3</span><span class="ws-label">Write</span>
     </div>
-    <div class="ws-arrow">â€º</div>
+    <div class="ws-arrow">&#8250;</div>
     <div class="ws-step" data-step="4">
       <span class="ws-num">4</span><span class="ws-label">Enhance</span>
     </div>
-    <div class="ws-arrow">â€º</div>
+    <div class="ws-arrow">&#8250;</div>
     <div class="ws-step" data-step="5">
       <span class="ws-num">5</span><span class="ws-label">Output</span>
     </div>
-    <div class="ws-arrow">â€º</div>
+    <div class="ws-arrow">&#8250;</div>
     <div class="ws-step" data-step="6">
       <span class="ws-num">6</span><span class="ws-label">Breakdown</span>
     </div>
@@ -102,32 +102,32 @@
     <!-- LEFT: INPUT PANEL -->
     <div class="write-input-panel">
 
-      <!-- â‘  LANGUAGE SELECTOR -->
+      <!--  LANGUAGE SELECTOR -->
       <div class="write-section-block" id="langBlock">
-        <div class="write-block-label">â‘  Choose Language</div>
+        <div class="write-block-label"> Choose Language</div>
         <div class="write-lang-row">
           <div class="write-lang-flag" id="writeLangFlag">&#9889;</div>
           <select class="write-lang-select" id="writeLangSelect" onchange="onLangChange(this)">
             <optgroup label="&#127470;&#127475; Indian Languages">
               <option value="en|English|&#9889;|English">&#9889; English</option>
               <option value="hi-en|Hinglish|&#127470;&#127475;|Hinglish">&#127470;&#127475; Hinglish</option>
-              <option value="hi|Hindi|&#127470;&#127475;|à¤¹à¤¿à¤‚à¤¦à¥€">&#127470;&#127475; Hindi â€” à¤¹à¤¿à¤‚à¤¦à¥€</option>
-              <option value="bn|Bengali|&#127470;&#127475;|à¦¬à¦¾à¦‚à¦²à¦¾">&#127470;&#127475; Bengali â€” à¦¬à¦¾à¦‚à¦²à¦¾</option>
-              <option value="te|Telugu|&#127470;&#127475;|à°¤à±†à°²à±à°—à±">&#127470;&#127475; Telugu â€” à°¤à±†à°²à±à°—à±</option>
-              <option value="mr|Marathi|&#127470;&#127475;|à¤®à¤°à¤¾à¤ à¥€">&#127470;&#127475; Marathi â€” à¤®à¤°à¤¾à¤ à¥€</option>
-              <option value="ta|Tamil|&#127470;&#127475;|à®¤à®®à®¿à®´à¯">&#127470;&#127475; Tamil â€” à®¤à®®à®¿à®´à¯</option>
-              <option value="gu|Gujarati|&#127470;&#127475;|àª—à«àªœàª°àª¾àª¤à«€">&#127470;&#127475; Gujarati â€” àª—à«àªœàª°àª¾àª¤à«€</option>
-              <option value="kn|Kannada|&#127470;&#127475;|à²•à²¨à³à²¨à²¡">&#127470;&#127475; Kannada â€” à²•à²¨à³à²¨à²¡</option>
-              <option value="ml|Malayalam|&#127470;&#127475;|à´®à´²à´¯à´¾à´³à´‚">&#127470;&#127475; Malayalam â€” à´®à´²à´¯à´¾à´³à´‚</option>
-              <option value="pa|Punjabi|&#127470;&#127475;|à¨ªà©°à¨œà¨¾à¨¬à©€">&#127470;&#127475; Punjabi â€” à¨ªà©°à¨œà¨¾à¨¬à©€</option>
-              <option value="ur|Urdu|&#127470;&#127475;|Ø§Ø±Ø¯Ùˆ">&#127470;&#127475; Urdu â€” Ø§Ø±Ø¯Ùˆ</option>
-              <option value="or|Odia|&#127470;&#127475;|à¬“à¬¡à¬¼à¬¿à¬†">&#127470;&#127475; Odia â€” à¬“à¬¡à¬¼à¬¿à¬†</option>
-              <option value="as|Assamese|&#127470;&#127475;|à¦…à¦¸à¦®à§€à¦¯à¦¼à¦¾">&#127470;&#127475; Assamese â€” à¦…à¦¸à¦®à§€à¦¯à¦¼à¦¾</option>
-              <option value="mai|Maithili|&#127470;&#127475;|à¤®à¥ˆà¤¥à¤¿à¤²à¥€">&#127470;&#127475; Maithili â€” à¤®à¥ˆà¤¥à¤¿à¤²à¥€</option>
-              <option value="kok|Konkani|&#127470;&#127475;|à¤•à¥‹à¤‚à¤•à¤£à¥€">&#127470;&#127475; Konkani â€” à¤•à¥‹à¤‚à¤•à¤£à¥€</option>
-              <option value="doi|Dogri|&#127470;&#127475;|à¤¡à¥‹à¤—à¤°à¥€">&#127470;&#127475; Dogri â€” à¤¡à¥‹à¤—à¤°à¥€</option>
-              <option value="ks|Kashmiri|&#127470;&#127475;|Ú©Ù²Ø´ÙØ±">&#127470;&#127475; Kashmiri â€” Ú©Ù²Ø´ÙØ±</option>
-              <option value="sa|Sanskrit|&#127470;&#127475;|à¤¸à¤‚à¤¸à¥à¤•à¥ƒà¤¤">&#127470;&#127475; Sanskrit â€” à¤¸à¤‚à¤¸à¥à¤•à¥ƒà¤¤</option>
+              <option value="hi|Hindi|&#127470;&#127475;|à¤¹à¤¿à¤‚à¤¦à¥€">&#127470;&#127475; Hindi &mdash; à¤¹à¤¿à¤‚à¤¦à¥€</option>
+              <option value="bn|Bengali|&#127470;&#127475;|à¦¬à¦¾à¦‚à¦²à¦¾">&#127470;&#127475; Bengali &mdash; à¦¬à¦¾à¦‚à¦²à¦¾</option>
+              <option value="te|Telugu|&#127470;&#127475;|à°¤à±†à°²à±à°—à±">&#127470;&#127475; Telugu &mdash; à°¤à±†à°²à±à°—à±</option>
+              <option value="mr|Marathi|&#127470;&#127475;|à¤®à¤°à¤¾à¤ à¥€">&#127470;&#127475; Marathi &mdash; à¤®à¤°à¤¾à¤ à¥€</option>
+              <option value="ta|Tamil|&#127470;&#127475;|à®¤à®®à®¿à®´à¯">&#127470;&#127475; Tamil &mdash; à®¤à®®à®¿à®´à¯</option>
+              <option value="gu|Gujarati|&#127470;&#127475;|àª—à«àªœàª°àª¾àª¤à«€">&#127470;&#127475; Gujarati &mdash; àª—à«àªœàª°àª¾àª¤à«€</option>
+              <option value="kn|Kannada|&#127470;&#127475;|à²•à²¨à³à²¨à²¡">&#127470;&#127475; Kannada &mdash; à²•à²¨à³à²¨à²¡</option>
+              <option value="ml|Malayalam|&#127470;&#127475;|à´®à´²à´¯à´¾à´³à´‚">&#127470;&#127475; Malayalam &mdash; à´®à´²à´¯à´¾à´³à´‚</option>
+              <option value="pa|Punjabi|&#127470;&#127475;|à¨ªà©°à¨œà¨¾à¨¬à©€">&#127470;&#127475; Punjabi &mdash; à¨ªà©°à¨œà¨¾à¨¬à©€</option>
+              <option value="ur|Urdu|&#127470;&#127475;|Ø§Ø±Ø¯Ùˆ">&#127470;&#127475; Urdu &mdash; Ø§Ø±Ø¯Ùˆ</option>
+              <option value="or|Odia|&#127470;&#127475;|à¬“à¬¡à¬¼à¬¿à¬†">&#127470;&#127475; Odia &mdash; à¬“à¬¡à¬¼à¬¿à¬†</option>
+              <option value="as|Assamese|&#127470;&#127475;|à¦…à¦¸à¦®à§€à¦¯à¦¼à¦¾">&#127470;&#127475; Assamese &mdash; à¦…à¦¸à¦®à§€à¦¯à¦¼à¦¾</option>
+              <option value="mai|Maithili|&#127470;&#127475;|à¤®à¥ˆà¤¥à¤¿à¤²à¥€">&#127470;&#127475; Maithili &mdash; à¤®à¥ˆà¤¥à¤¿à¤²à¥€</option>
+              <option value="kok|Konkani|&#127470;&#127475;|à¤•à¥‹à¤‚à¤•à¤£à¥€">&#127470;&#127475; Konkani &mdash; à¤•à¥‹à¤‚à¤•à¤£à¥€</option>
+              <option value="doi|Dogri|&#127470;&#127475;|à¤¡à¥‹à¤—à¤°à¥€">&#127470;&#127475; Dogri &mdash; à¤¡à¥‹à¤—à¤°à¥€</option>
+              <option value="ks|Kashmiri|&#127470;&#127475;|Ú©Ù²Ø´ÙØ±">&#127470;&#127475; Kashmiri &mdash; Ú©Ù²Ø´ÙØ±</option>
+              <option value="sa|Sanskrit|&#127470;&#127475;|à¤¸à¤‚à¤¸à¥à¤•à¥ƒà¤¤">&#127470;&#127475; Sanskrit &mdash; à¤¸à¤‚à¤¸à¥à¤•à¥ƒà¤¤</option>
             </optgroup>
             <optgroup label="&#9889; World Languages">
               <option value="es|Spanish|&#127466;&#127480;|EspaÃ±ol">&#127466;&#127480; Spanish</option>
@@ -151,13 +151,13 @@
         </div>
       </div>
 
-      <!-- â‘¡ MODE + PLATFORM -->
+      <!--  MODE + PLATFORM -->
       <div class="write-section-block">
-        <div class="write-block-label">â‘¡ Choose Platform</div>
+        <div class="write-block-label"> Choose Platform</div>
         <div class="mode-tabs" id="modeTabs">
           <button class="mode-tab active" data-mode="ai" onclick="setMode('ai')">&#128275; AI Tools</button>
           <button class="mode-tab" data-mode="social" onclick="setMode('social')">&#128178; Social</button>
-          <button class="mode-tab" data-mode="both" onclick="setMode('both')">âœ¦ Both</button>
+          <button class="mode-tab" data-mode="both" onclick="setMode('both')">&#10022; Both</button>
         </div>
         <!-- AI Platform row (always visible for AI / Both) -->
         <div class="platform-select-row" style="margin-top:10px" id="aiPlatformRow">
@@ -173,10 +173,10 @@
         </div>
       </div>
 
-      <!-- â‘¢ PROMPT -->
+      <!--  PROMPT -->
       <div class="write-section-block">
         <div class="write-block-header">
-          <div class="write-block-label">â‘¢ Your Prompt</div>
+          <div class="write-block-label"> Your Prompt</div>
           <div style="display:flex;gap:8px;align-items:center">
             <span class="lang-badge" id="langBadge">&#9889; English</span>
             <span class="char-counter" id="charCounter">0 / 2000</span>
@@ -184,7 +184,7 @@
         </div>
         <!-- Templates -->
         <div class="templates-wrap" id="templatesWrap" style="margin-bottom:8px">
-          <button class="btn btn-ghost btn-sm" id="templatesBtn" onclick="toggleTemplates()">&#128220; Templates â–¾</button>
+          <button class="btn btn-ghost btn-sm" id="templatesBtn" onclick="toggleTemplates()">&#128220; Templates &#8250;</button>
           <div class="templates-dropdown" id="templatesDropdown">
             <div class="templates-title">Quick Templates</div>
             <div class="templates-list" id="templatesList"></div>
@@ -192,7 +192,7 @@
         </div>
         <div class="prompt-textarea-wrap">
           <textarea id="promptInput" class="prompt-textarea"
-            placeholder="Type in your language â€” ek dragon ka cinematic photo chahiye..."
+            placeholder="Type in your language &mdash; ek dragon ka cinematic photo chahiye..."
             maxlength="2000" oninput="onPromptInput(this)" rows="7"></textarea>
           <button class="voice-btn" id="voiceBtn"
             onclick="Voice.start(document.getElementById('promptInput'), onVoiceFinal)"
@@ -202,10 +202,10 @@
         <div class="autosuggest-strip" id="autosuggestStrip"></div>
       </div>
 
-      <!-- â‘£ ACTIONS -->
+      <!--  ACTIONS -->
       <div class="action-buttons">
         <button class="btn btn-primary" id="enhanceBtn" onclick="handleEnhance()">
-          âš¡ Enhance with AI
+          &#10003; Enhance with AI
         </button>
         <button class="btn btn-secondary light btn-sm" onclick="clearWrite()" title="Clear">&#128172;</button>
       </div>
@@ -217,13 +217,13 @@
 
       <!-- Empty state -->
       <div class="results-empty" id="resultsEmpty">
-        <div class="empty-icon">âœ¦</div>
+        <div class="empty-icon">&#10022;</div>
         <div class="empty-title">Your enhanced prompt will appear here</div>
         <div class="empty-steps">
-          <div class="empty-step">â‘  Pick your language</div>
-          <div class="empty-step">â‘¡ Select a platform</div>
-          <div class="empty-step">â‘¢ Type your idea</div>
-          <div class="empty-step">â‘£ Hit Enhance &#8594;</div>
+          <div class="empty-step"> Pick your language</div>
+          <div class="empty-step"> Select a platform</div>
+          <div class="empty-step"> Type your idea</div>
+          <div class="empty-step"> Hit Enhance &#8594;</div>
         </div>
       </div>
 
@@ -235,7 +235,7 @@
 
         <!-- 3 VARIATIONS (selectable) -->
         <div class="result-section" id="variationsSection">
-          <div class="result-section-title">âš¡ Choose Your Best Prompt</div>
+          <div class="result-section-title">&#10003; Choose Your Best Prompt</div>
           <div class="result-sub">Select one to copy or open in your platform</div>
           <div id="variationsList"></div>
         </div>
@@ -248,7 +248,7 @@
           </div>
           <div class="prompt-action-btns">
             <button class="btn btn-primary" onclick="copySelected()">&#128220; Copy</button>
-            <button class="btn btn-secondary light" onclick="modifySelected()">âœï¸ Modify</button>
+            <button class="btn btn-secondary light" onclick="modifySelected()">&#9999;ï¸ Modify</button>
             <button class="btn btn-secondary light" id="aiRewriteBtn" onclick="aiRewriteSelected()">&#127760; AI Rewrite</button>
             <button class="btn btn-secondary light" onclick="saveSelected()">&#128640; Save</button>
             <button class="btn btn-secondary light" onclick="shareSelected()">&#128512; Share</button>
@@ -278,7 +278,7 @@
           <div class="breakdown-cta-left">
             <div class="breakdown-cta-title">&#128640; Expert Breakdown</div>
             <div class="breakdown-cta-sub">
-              Full analysis â€” settings, lighting, camera, platform fit scores, Pro prompt.
+              Full analysis &mdash; settings, lighting, camera, platform fit scores, Pro prompt.
               Opens in a new tab.
             </div>
           </div>

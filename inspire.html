@@ -11,26 +11,26 @@
   </script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>InspireMe Gallery â€” Clarix AI</title>
+  <title>InspireMe Gallery &mdash; Clarix AI</title>
   <meta name="description" content="Browse 22+ curated cinematic images. Upload your own for Gemini Vision analysis. Creative prompt gallery for filmmakers, designers, and AI artists.">
   <meta name="keywords" content="AI image prompts, Midjourney gallery, cinematic prompts, Gemini Vision, prompt inspiration">
   <meta name="robots" content="index, follow">
   <link rel="canonical" href="https://clarix.digital/inspire.html">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://clarix.digital/inspire.html">
-  <meta property="og:title" content="InspireMe Gallery â€” Clarix AI">
+  <meta property="og:title" content="InspireMe Gallery &mdash; Clarix AI">
   <meta property="og:description" content="22+ curated cinematic images to spark your AI creativity. Click any to get a powerful prompt instantly.">
   <meta property="og:image" content="https://clarix.digital/icons/og-image.png">
   <meta property="og:site_name" content="Clarix AI">
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="InspireMe Gallery â€” Clarix AI">
+  <meta name="twitter:title" content="InspireMe Gallery &mdash; Clarix AI">
   <meta name="twitter:image" content="https://clarix.digital/icons/og-image.png">
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#ff7043">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="Clarix">
   <link rel="apple-touch-icon" href="icons/icon-192.png">
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%23ff7043'/><text x='50%' y='55%' font-size='18' text-anchor='middle' dominant-baseline='middle' fill='white'>âœ¦</text></svg>">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%23ff7043'/><text x='50%' y='55%' font-size='18' text-anchor='middle' dominant-baseline='middle' fill='white'>&#10022;</text></svg>">
   <link rel="stylesheet" href="css/design.css?v=20260413f">
   <link rel="stylesheet" href="css/components.css?v=20260413f">
   <link rel="stylesheet" href="css/sidebar.css?v=20260413f">
@@ -52,7 +52,7 @@
       <button class="sidebar-toggle-btn" onclick="Sidebar.toggle()" aria-label="Menu">
         <span></span><span></span><span></span>
       </button>
-      <div class="nav-logo" onclick="location.href='index.html'"><span class="nav-star">âœ¦</span> clarix</div>
+      <div class="nav-logo" onclick="location.href='index.html'"><span class="nav-star">&#10022;</span> clarix</div>
     </div>
     <div class="nav-links">
       <a href="index.html" class="nav-link">Home</a>
@@ -73,7 +73,7 @@
   <!-- INSPIRE HEADER -->
   <div class="inspire-page-header">
     <div class="container">
-      <div class="ai-badge" style="margin-bottom:12px"><span class="badge-star">âœ¦</span> Creative Gallery</div>
+      <div class="ai-badge" style="margin-bottom:12px"><span class="badge-star">&#10022;</span> Creative Gallery</div>
       <h1 class="display-md" style="margin-bottom:8px">InspireMe</h1>
       <p class="body-md" style="color:rgba(255,255,255,0.8)">Click any image to open the prompt editor. Upload your own photo for AI Vision analysis.</p>
     </div>
@@ -89,7 +89,7 @@
       <input type="file" id="imgFileInput" accept="image/*" style="display:none" onchange="handleFileSelect(event)">
       <span class="upload-icon">&#128247;</span>
       <span class="upload-text">
-        <strong>Tap to upload from gallery</strong> â€” or Drag &amp; drop<br>
+        <strong>Tap to upload from gallery</strong> &mdash; or Drag &amp; drop<br>
         <span style="font-size:11px;color:rgba(255,255,255,0.65)">Gemini Vision analyzes your photo and generates an accurate prompt</span>
       </span>
     </div>
@@ -121,7 +121,7 @@
         <div class="lightbox-info-title" id="lightboxTitle"></div>
         <div class="lightbox-info-cat" id="lightboxCat"></div>
       </div>
-      <button class="lightbox-close" onclick="closeLightbox()" title="Close">âœ•</button>
+      <button class="lightbox-close" onclick="closeLightbox()" title="Close">&times;</button>
       <button class="lightbox-open-editor" id="lightboxOpenEditor">Open Editor &#8594;</button>
     </div>
   </div>
@@ -130,7 +130,7 @@
   <div class="editor-overlay" id="editorOverlay">
     <div class="editor-panel">
       <div class="editor-left">
-        <button class="editor-back" onclick="closeEditor()">â† Back</button>
+        <button class="editor-back" onclick="closeEditor()">&#8592; Back</button>
         <img class="editor-img" id="editorImg" src="" alt="Selected image">
         <div class="editor-img-meta" id="editorImgMeta"></div>
       </div>
@@ -144,11 +144,11 @@
 
           <div class="editor-actions">
             <button class="btn btn-secondary" style="color:#fff;border-color:rgba(255,255,255,0.2)" onclick="rewriteEditorPrompt()">&#127760; AI Rewrite</button>
-            <button class="btn btn-primary" id="editorEnhanceBtn" onclick="enhanceEditorPrompt()">âš¡ Enhance</button>
+            <button class="btn btn-primary" id="editorEnhanceBtn" onclick="enhanceEditorPrompt()">&#10003; Enhance</button>
           </div>
 
           <div class="editor-result" id="editorResult" style="display:none">
-            <div class="editor-result-label">âœ¨ Enhanced Prompt</div>
+            <div class="editor-result-label">&#128276; Enhanced Prompt</div>
             <div class="editor-result-text" id="editorResultText"></div>
           </div>
 
@@ -211,7 +211,7 @@
       const b = document.createElement('div');
       b.id = 'clarix-update-banner';
       b.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:99999;background:#ff7043;color:#fff;text-align:center;padding:14px 20px;font-size:14px;font-weight:700;font-family:DM Sans,sans-serif;cursor:pointer;box-shadow:0 4px 20px rgba(255,112,67,.5)';
-      b.innerHTML = 'âœ¦ New version available! <u>Tap here to update</u>';
+      b.innerHTML = '&#10022; New version available! <u>Tap here to update</u>';
       b.onclick = () => { navigator.serviceWorker.controller?.postMessage('SKIP_WAITING'); window.location.reload(true); };
       document.body.prepend(b);
     }

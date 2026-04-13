@@ -8,7 +8,7 @@
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#ff7043">
   <link rel="apple-touch-icon" href="icons/icon-192.png">
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%23ff7043'/><text x='50%' y='55%' font-size='18' text-anchor='middle' dominant-baseline='middle' fill='white'>âœ¦</text></svg>">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%23ff7043'/><text x='50%' y='55%' font-size='18' text-anchor='middle' dominant-baseline='middle' fill='white'>&#10022;</text></svg>">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/design.css?v=20260413f">
   <link rel="stylesheet" href="css/components.css?v=20260413f">
@@ -50,7 +50,7 @@
       <button class="sidebar-toggle-btn" onclick="Sidebar.toggle()" aria-label="Menu">
         <span></span><span></span><span></span>
       </button>
-      <div class="nav-logo" onclick="location.href='index.html'"><span class="nav-star">âœ¦</span> clarix</div>
+      <div class="nav-logo" onclick="location.href='index.html'"><span class="nav-star">&#10022;</span> clarix</div>
     </div>
     <div class="nav-links">
       <a href="index.html" class="nav-link">Home</a>
@@ -60,7 +60,7 @@
       <a href="apps.html" class="nav-link">Apps</a>
     </div>
     <div class="nav-right">
-      <a href="write.html" class="btn btn-primary btn-sm">Try Free âœ¦</a>
+      <a href="write.html" class="btn btn-primary btn-sm">Try Free &#10022;</a>
     </div>
   </nav>
 
@@ -68,14 +68,14 @@
     <div class="profile-card" id="profileCard">
       <div class="profile-avatar" id="profileAvatar">C</div>
       <div class="profile-name" id="profileName">Clarix User</div>
-      <div class="profile-email" id="profileEmail">â€”</div>
+      <div class="profile-email" id="profileEmail">&mdash;</div>
       <div class="profile-stat-row">
         <div class="profile-stat">
-          <div class="profile-stat-val" id="statPrompts">â€”</div>
+          <div class="profile-stat-val" id="statPrompts">&mdash;</div>
           <div class="profile-stat-lbl">Prompts Used</div>
         </div>
         <div class="profile-stat">
-          <div class="profile-stat-val" id="statRemaining">â€”</div>
+          <div class="profile-stat-val" id="statRemaining">&mdash;</div>
           <div class="profile-stat-lbl">Remaining</div>
         </div>
         <div class="profile-stat">
@@ -96,7 +96,7 @@
     <div class="mnav-items">
       <a href="index.html" class="mnav-item"><span class="mnav-icon">&#127968;</span>Home</a>
       <a href="write.html" class="mnav-item"><span class="mnav-icon">&#9997;&#65039;</span>Write</a>
-      <a href="inspire.html" class="mnav-item"><span class="mnav-icon">âœ¨</span>Inspire</a>
+      <a href="inspire.html" class="mnav-item"><span class="mnav-icon">&#128276;</span>Inspire</a>
       <a href="history.html" class="mnav-item"><span class="mnav-icon">ðŸ“š</span>History</a>
       <a href="apps.html" class="mnav-item"><span class="mnav-icon">&#10024;</span>Apps</a>
     </div>
@@ -121,7 +121,7 @@
           document.getElementById('profileEmail').textContent = p.email || user.email || '';
           document.getElementById('statPrompts').textContent = p.trialUsed || 0;
           document.getElementById('statRemaining').textContent = ClarixAuth.remainingToday();
-          document.getElementById('statPlan').textContent = p.isPro ? 'âš¡ Pro' : 'Free';
+          document.getElementById('statPlan').textContent = p.isPro ? '&#10003; Pro' : 'Free';
         });
       }
     });
