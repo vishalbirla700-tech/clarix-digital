@@ -3,7 +3,7 @@
    Handles: offline cache + instant update notifications
 ═══════════════════════════════════════════════ */
 
-const CACHE_VERSION = 'clarix-v20260413N';
+const CACHE_VERSION = 'clarix-v20260413O';
 const STATIC_CACHE  = CACHE_VERSION + '-static';
 
 /* Assets to pre-cache for offline */

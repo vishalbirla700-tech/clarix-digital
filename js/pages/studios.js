@@ -479,7 +479,7 @@ function buildStudioModal() {
       + '<div style="font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,0.35);padding:4px 8px 8px;border-bottom:1px solid rgba(255,255,255,0.06);margin-bottom:6px">Quick Templates</div>';
     for (var ti = 0; ti < tpls.length; ti++) {
       var tp = tpls[ti];
-      tplDropdown += '<div onclick="studioApplyTemplate(' + JSON.stringify(studioId) + ',' + ti + ')"'
+      tplDropdown += '<div onclick="studioApplyTemplate(\'' + studioId + '\',' + ti + ')"'
         + ' style="display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;cursor:pointer;transition:background .15s;font-size:13px;color:rgba(255,255,255,0.8)"'
         + ' onmouseover="this.style.background=\'rgba(255,112,67,0.1)\'" onmouseout="this.style.background=\'\'">'
         + '<span style="font-size:16px;width:22px;text-align:center;flex-shrink:0">' + tp.icon + '</span>'
