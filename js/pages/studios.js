@@ -694,8 +694,9 @@ async function runStudio() {
     return;
   }
 
-  /* In blank canvas mode, skip festival requirement */
-  if (s.hasFestivals && !selectedFestival && !blankCanvasMode) {
+  /* In blank canvas mode OR when template text is provided, skip festival requirement.
+     promptCultural() already defaults to 'Diwali' when selectedFestival is null. */
+  if (s.hasFestivals && !selectedFestival && !blankCanvasMode && !context) {
     Toast.show('Please select a festival first 🎉', 'error'); return;
   }
 
@@ -1453,19 +1454,30 @@ function wrapCanvasText(ctx, text, x, y, maxWidth, lineHeight) {
    GROQ PROMPT BUILDERS — via /api/studio proxy
 ════════════════════════════════════════════ */
 async function groqCall(base64, mime, prompt) {
-  /* Wait for Firebase auth to be ready (handles race condition on fast taps) */
+  /* Get Firebase auth token.
+     Priority: ClarixAuth (compat SDK — always resolved by the time user clicks)
+               → ClarixFirebase (modular SDK — async init, may be slower on mobile) */
   var user = null;
-  if (typeof ClarixFirebase !== 'undefined') {
+
+  /* 1. ClarixAuth (compat SDK) — fastest, already loaded synchronously */
+  if (typeof ClarixAuth !== 'undefined' && ClarixAuth.currentUser) {
+    user = ClarixAuth.currentUser;
+  }
+
+  /* 2. ClarixFirebase (modular SDK) — wait up to 5s if compat SDK not available */
+  if (!user && typeof ClarixFirebase !== 'undefined') {
     user = await new Promise(function(resolve) {
-      /* onAuthChange fires immediately if auth already resolved */
-      var timer = setTimeout(function() { resolve(ClarixFirebase.getUser()); }, 8000);
+      var timer = setTimeout(function() { resolve(ClarixFirebase.getUser()); }, 5000);
       ClarixFirebase.onAuthChange(function(u) { clearTimeout(timer); resolve(u); });
     });
   }
 
   var token = '';
   if (user && typeof user.getIdToken === 'function') {
-    try { token = await user.getIdToken(/* forceRefresh= */true); } catch(e) { token = ''; }
+    /* forceRefresh:false — use cached token (auto-refreshes when < 5 min left).
+       forceRefresh:true caused network round-trip on every Generate click,
+       which failed on slow mobile connections. */
+    try { token = await user.getIdToken(false); } catch(e) { token = ''; }
   }
   if (!token) {
     throw new Error('Please sign in to use Creative Studios.');
