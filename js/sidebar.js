@@ -3,7 +3,8 @@
    Left nav panel, auto-close, recent history
 ═══════════════════════════════════════════════ */
 
-const Sidebar = {
+if (typeof Sidebar === 'undefined') {
+window.Sidebar = {
   _open: false,
 
   init() {
@@ -214,6 +215,9 @@ const Sidebar = {
   }
 };
 
+} // end guard: if Sidebar not yet defined
+
+// Helpers always declared (function declarations are re-declaration safe)
 function escSB(str)     { return (str || '').replace(/'/g,"\\'").replace(/\n/g,' ').slice(0,200); }
 function escHtmlSB(str) { return (str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').slice(0,120); }
 function fmtTimeSB(iso) {
