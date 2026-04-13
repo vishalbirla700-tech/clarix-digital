@@ -333,15 +333,33 @@ var ClarixAuth = {
     provider.addScope('profile');
     provider.setCustomParameters({ prompt: 'select_account' });
 
-    /* CRITICAL: Set sessionStorage flag BEFORE signInWithRedirect.
-       This flag survives the page navigation to Google and back,
-       so _setup() can detect we're returning from a redirect and
-       suppress the login modal until getRedirectResult() resolves. */
-    sessionStorage.setItem('clarix_signin_pending', '1');
-
-    return self._auth.signInWithRedirect(provider).catch(function(e) {
+    /* Use signInWithPopup — works on desktop AND mobile Chrome.
+       Falls back to redirect ONLY if popup is blocked by browser. */
+    return self._auth.signInWithPopup(provider)
+      .then(function(result) {
+        /* Popup succeeded — onAuthStateChanged will handle the rest */
         sessionStorage.removeItem('clarix_signin_pending');
-        console.error('[Clarix] Redirect sign-in error:', e);
+        console.log('[Clarix] Popup sign-in success:', result.user.email);
+      })
+      .catch(function(e) {
+        console.warn('[Clarix] Popup sign-in error:', e.code);
+        if (e.code === 'auth/popup-blocked' ||
+            e.code === 'auth/popup-closed-by-user' ||
+            e.code === 'auth/cancelled-popup-request') {
+          /* Popup was blocked — fall back to redirect */
+          sessionStorage.setItem('clarix_signin_pending', '1');
+          return self._auth.signInWithRedirect(provider).catch(function(re) {
+            sessionStorage.removeItem('clarix_signin_pending');
+            console.error('[Clarix] Redirect fallback also failed:', re);
+            var btn = document.getElementById('clarixGoogleSignIn');
+            if (btn) {
+              btn.disabled = false;
+              btn.innerHTML = '<img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="G" style="width:20px;height:20px;margin-right:10px;">Continue with Google';
+            }
+            if (typeof Toast !== 'undefined') Toast.show('Sign-in failed. Please try again.', 'error');
+          });
+        }
+        /* Other errors (network, etc.) */
         var btn = document.getElementById('clarixGoogleSignIn');
         if (btn) {
           btn.disabled = false;
