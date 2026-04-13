@@ -1,0 +1,28 @@
+# CLARIX — Git Line Ending Config
+# Prevents the CRLF ↔ LF conversion that caused double-encoding corruption
+# All text files stored as LF in repo, served as-is
+
+* text=auto eol=lf
+
+# HTML/CSS/JS — always LF, never CRLF
+*.html text eol=lf
+*.css  text eol=lf
+*.js   text eol=lf
+*.json text eol=lf
+*.ts   text eol=lf
+*.md   text eol=lf
+*.txt  text eol=lf
+*.xml  text eol=lf
+*.svg  text eol=lf
+
+# Binary files — no line ending conversion
+*.png  binary
+*.jpg  binary
+*.jpeg binary
+*.gif  binary
+*.ico  binary
+*.webp binary
+*.woff binary
+*.woff2 binary
+*.ttf  binary
+*.eot  binary
