@@ -182,11 +182,12 @@ module.exports = async function handler(req, res) {
       return res.status(401).json({ error: 'Authentication required' });
     }
 
-    let uid;
+    let uid, decodedEmail = '';
     try {
       const { auth } = getFirebaseAdmin();
       const decoded = await auth.verifyIdToken(idToken);
       uid = decoded.uid;
+      decodedEmail = (decoded.email || '').toLowerCase();
     } catch (authErr) {
       console.error('[ClarixAPI] Auth verification failed:', authErr.message);
       return res.status(401).json({ 
@@ -230,10 +231,12 @@ module.exports = async function handler(req, res) {
     const dailyCount = dailyUsage.date === today ? dailyUsage.count : 0;
     const isPro = userData.isPro === true;
 
-    /* Admin bypass — owner gets unlimited usage for testing */
+    /* Admin bypass — owner gets unlimited usage for testing.
+       Use decoded.email from auth token as primary (always reliable),
+       userData.email from Firestore as fallback. */
     const ADMIN_EMAILS = ['vishalbirla700@gmail.com'];
-    const userEmail = userData.email || '';
-    const isAdmin = ADMIN_EMAILS.includes(userEmail.toLowerCase());
+    const userEmail = decodedEmail || (userData.email || '').toLowerCase();
+    const isAdmin = ADMIN_EMAILS.includes(userEmail);
 
     /* If admin's trials were inflated by bugs, reset them */
     if (isAdmin && trialUsed > 10) {
@@ -317,18 +320,20 @@ STRICT RULES:
       engineUsed = 'Local';
     }
 
-    /* 7. Increment usage in Firestore (server-side — tamper-proof) */
-    const newTrialUsed = Math.min(trialUsed + 1, FREE_TRIAL_LIMIT + 100);
-    const newDailyCount = dailyCount + 1;
-    await userRef.set({
-      trialUsed:  newTrialUsed,
-      dailyUsage: { date: today, count: newDailyCount }
-    }, { merge: true });
-
-    /* 8. Return result */
-    result.remaining = isPro ? 9999 : Math.max(0, FREE_TRIAL_LIMIT - newTrialUsed);
-    result.inTrial   = newTrialUsed < FREE_TRIAL_LIMIT;
-    result._engine   = engineUsed;
+    /* 7. Increment usage in Firestore — ONLY for free users (not Pro/Admin) */
+    if (!isPro && !isAdmin) {
+      const newTrialUsed = Math.min(trialUsed + 1, FREE_TRIAL_LIMIT + 100);
+      const newDailyCount = dailyCount + 1;
+      await userRef.set({
+        trialUsed:  newTrialUsed,
+        dailyUsage: { date: today, count: newDailyCount }
+      }, { merge: true });
+      result.remaining = Math.max(0, FREE_TRIAL_LIMIT - newTrialUsed);
+      result.inTrial   = newTrialUsed < FREE_TRIAL_LIMIT;
+    } else {
+      result.remaining = 9999;
+      result.inTrial   = false;
+    }
 
     return res.status(200).json(result);
 
