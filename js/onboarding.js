@@ -24,6 +24,7 @@ const Onboarding = {
   },
 
   render() {
+    const ob = Onboarding;
     const el = document.createElement('div');
     el.className = 'onboard-overlay';
     el.id = 'onboard-overlay';
@@ -40,17 +41,16 @@ const Onboarding = {
 
         <!-- STEP 1: Name -->
         <div class="onboard-step active" id="ob-step-1">
-          <div class="onboard-logo"><span class="onboard-logo-star">✦</span> clarix</div>
+          <div class="onboard-logo"><span class="onboard-logo-star">✶</span> clarix</div>
           <div class="onboard-welcome-icon">👋</div>
           <div class="onboard-title">India's First AI<br>Prompt Engine</div>
           <div class="onboard-sub">Let's personalise your experience. What should we call you?</div>
           <input type="text" class="onboard-input" id="ob-name-input"
             placeholder="Your name or creator alias..."
-            maxlength="24"
-            onkeydown="if(event.key==='Enter') Onboarding.nextStep()">
+            maxlength="24">
           <div class="onboard-btn-row">
-            <button class="onboard-btn onboard-btn-skip" onclick="Onboarding.skip()">Skip</button>
-            <button class="onboard-btn onboard-btn-primary" onclick="Onboarding.nextStep()">
+            <button class="onboard-btn onboard-btn-skip" data-action="skip">Skip</button>
+            <button class="onboard-btn onboard-btn-primary" data-action="next" id="ob-btn-continue-1">
               Continue →
             </button>
           </div>
@@ -58,16 +58,15 @@ const Onboarding = {
 
         <!-- STEP 2: Language -->
         <div class="onboard-step" id="ob-step-2">
-          <div class="onboard-logo"><span class="onboard-logo-star">✦</span> clarix</div>
+          <div class="onboard-logo"><span class="onboard-logo-star">✶</span> clarix</div>
           <div class="onboard-title">Choose your language</div>
           <div class="onboard-sub">Clarix will generate prompts and outputs in your language.</div>
           <input type="text" class="lang-search" id="ob-lang-search"
-            placeholder="🔍  Search language..."
-            oninput="Onboarding.filterLangs(this.value)">
+            placeholder="&#128269;  Search language...">
           <div id="ob-lang-container"></div>
           <div class="onboard-btn-row">
-            <button class="onboard-btn onboard-btn-skip" onclick="Onboarding.prevStep()">← Back</button>
-            <button class="onboard-btn onboard-btn-primary" onclick="Onboarding.nextStep()">
+            <button class="onboard-btn onboard-btn-skip" data-action="prev">← Back</button>
+            <button class="onboard-btn onboard-btn-primary" data-action="next">
               Continue →
             </button>
           </div>
@@ -75,20 +74,46 @@ const Onboarding = {
 
         <!-- STEP 3: Platform -->
         <div class="onboard-step" id="ob-step-3">
-          <div class="onboard-logo"><span class="onboard-logo-star">✦</span> clarix</div>
+          <div class="onboard-logo"><span class="onboard-logo-star">✶</span> clarix</div>
           <div class="onboard-title">Your go-to AI platform?</div>
           <div class="onboard-sub">We'll optimise your prompts for this platform by default.</div>
           <div class="platform-grid-onboard" id="ob-platform-grid"></div>
           <div class="onboard-btn-row">
-            <button class="onboard-btn onboard-btn-skip" onclick="Onboarding.prevStep()">← Back</button>
-            <button class="onboard-btn onboard-btn-primary" onclick="Onboarding.finish()">
-              🚀 Start Creating
+            <button class="onboard-btn onboard-btn-skip" data-action="prev">← Back</button>
+            <button class="onboard-btn onboard-btn-primary" data-action="finish">
+              &#128640; Start Creating
             </button>
           </div>
         </div>
       </div>
     `;
     document.body.appendChild(el);
+
+    /* Add event listeners AFTER DOM insertion — more reliable than onclick
+       attributes on mobile Chrome where const-scoped globals aren't on window */
+    el.querySelectorAll('[data-action]').forEach(function(btn) {
+      btn.addEventListener('click', function(e) {
+        e.preventDefault();
+        var action = btn.getAttribute('data-action');
+        if (action === 'next')   ob.nextStep();
+        else if (action === 'skip')   ob.skip();
+        else if (action === 'prev')   ob.prevStep();
+        else if (action === 'finish') ob.finish();
+      });
+    });
+
+    /* Name input: Enter key advances, search input filters languages */
+    var nameInput = document.getElementById('ob-name-input');
+    if (nameInput) {
+      nameInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') { e.preventDefault(); ob.nextStep(); }
+      });
+    }
+    var langSearch = document.getElementById('ob-lang-search');
+    if (langSearch) {
+      langSearch.addEventListener('input', function() { ob.filterLangs(this.value); });
+    }
+
     this.renderLangs('');
     this.renderPlatforms();
   },
