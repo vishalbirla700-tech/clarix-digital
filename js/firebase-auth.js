@@ -151,66 +151,38 @@ var ClarixAuth = {
       self._auth = firebase.auth();
       self._db   = firebase.firestore();
 
-      /* ── MOBILE REDIRECT LOOP FIX ──────────────────────────────────────
-         Problem: signInWithRedirect() navigates the page away and back.
-         On reload, _pendingRedirect resets to false (in-memory), so
-         onAuthStateChanged(null) fires BEFORE getRedirectResult() resolves,
-         showing the login modal, which triggers another redirect — infinite loop.
-
-         Fix: use sessionStorage which SURVIVES the page navigation.
-         signInWithGoogle() sets 'clarix_signin_pending' BEFORE redirect.
-         _setup() checks this flag and sets _pendingRedirect=true immediately.
-         getRedirectResult() clears the flag on success OR failure.
-         The login modal is suppressed while either flag is true.
-      ─────────────────────────────────────────────────────────────────── */
-      if (sessionStorage.getItem('clarix_signin_pending')) {
-        self._pendingRedirect = true;
-        console.log('[ClarixAuth] Redirect return detected via sessionStorage');
-      } else {
-        self._pendingRedirect = true;  /* always suppress modal until getRedirectResult resolves */
-      }
-
-      self._auth.getRedirectResult().then(function(result) {
-        sessionStorage.removeItem('clarix_signin_pending');
-        self._pendingRedirect = false;
-        self._redirectResolved = true;
-        if (result && result.user) {
-          console.log('[Clarix] redirect sign-in success:', result.user.email);
-          /* onAuthStateChanged will fire automatically */
-        }
-      }).catch(function(e) {
-        sessionStorage.removeItem('clarix_signin_pending');
-        self._pendingRedirect = false;
-        self._redirectResolved = true;
-        console.error('[Clarix] Redirect result error:', e.code, e.message);
-        /* Reset button if visible */
-        var btn = document.getElementById('clarixGoogleSignIn');
-        if (btn) {
-          btn.disabled = false;
-          btn.innerHTML = '<img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="G" style="width:20px;height:20px;margin-right:10px;">Continue with Google';
-        }
-        /* Show modal now that we know there is no pending redirect */
-        if (!self.currentUser) self._showLoginModal();
+      /* Explicitly set LOCAL persistence to survive page navigations */
+      self._auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).then(function() {
+        /* Persistence set — now call getRedirectResult to handle redirect flows */
+        self._auth.getRedirectResult().then(function(result) {
+          sessionStorage.removeItem('clarix_signin_pending');
+          self._redirectResolved = true;
+          if (result && result.user) {
+            console.log('[Clarix] redirect sign-in success:', result.user.email);
+          }
+        }).catch(function(e) {
+          sessionStorage.removeItem('clarix_signin_pending');
+          self._redirectResolved = true;
+          console.warn('[Clarix] getRedirectResult error:', e.code);
+        });
       });
 
       self._auth.onAuthStateChanged(function(user) {
+        /* Cancel any pending modal timer whenever auth state changes */
+        clearTimeout(self._loginModalTimer);
+
         if (user) {
-          self._pendingRedirect = false; /* user resolved — no longer pending */
           self.currentUser = user;
           self._loadProfile(user, function() {
             self._ready = true;
             self._readyCallbacks.forEach(function(cb) { cb(user); });
             self._readyCallbacks = [];
-            /* Refresh usage counter NOW that we have real Firestore data (isPro, trialUsed) */
             if (typeof updateUsageCounter === 'function') updateUsageCounter();
-            /* Hide login modal if open */
             var modal = document.getElementById('clarix-login-modal');
             if (modal) modal.remove();
-            /* Start onboarding if new user */
             if (!self.userProfile.onboarded) {
               self._showCountryOnboarding();
             } else {
-              /* Apply saved language + festivals */
               self._applyUserSettings();
             }
           });
@@ -218,12 +190,19 @@ var ClarixAuth = {
           self.currentUser = null;
           self.userProfile = null;
           self._ready = false;
-          /* GUARD: Do NOT show login modal while redirect result is in-flight.
-             Firebase fires onAuthStateChanged(null) BEFORE getRedirectResult()
-             resolves, which caused the infinite redirect loop. */
-          if (!self._pendingRedirect) {
-            self._showLoginModal();
-          }
+
+          /* GRACE PERIOD FIX: Firebase fires onAuthStateChanged(null) immediately
+             on page load BEFORE it has restored the auth session from localStorage.
+             The real user state arrives 50-500ms later via a second onAuthStateChanged(user) call.
+             Waiting 1500ms gives Firebase time to restore the session.
+             If the user IS signed in, the timer is cancelled when onAuthStateChanged(user) fires.
+             If they are genuinely not signed in, the modal shows after 1500ms. */
+          self._loginModalTimer = setTimeout(function() {
+            /* Double-check: use firebase.auth().currentUser as final source of truth */
+            if (!self.currentUser && !(self._auth && self._auth.currentUser)) {
+              self._showLoginModal();
+            }
+          }, 1500);
         }
       });
     } catch(e) {
@@ -491,6 +470,12 @@ var ClarixAuth = {
   /* ── LOGIN MODAL ── */
   _showLoginModal: function() {
     if (document.getElementById('clarix-login-modal')) return;
+    /* Safety guard: never show modal if Firebase already has a signed-in user */
+    if (this._auth && this._auth.currentUser) {
+      console.log('[Clarix] Modal suppressed — user already signed in:', this._auth.currentUser.email);
+      return;
+    }
+    if (this.currentUser) return;
     var self = this;
     var modal = document.createElement('div');
     modal.id = 'clarix-login-modal';
