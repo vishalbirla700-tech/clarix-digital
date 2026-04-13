@@ -1,9 +1,12 @@
 {
+  "id": "/",
   "name": "Clarix — AI Prompt Engine",
   "short_name": "Clarix",
   "description": "India's first AI prompt engineering studio. Turn rough ideas into powerful prompts for ChatGPT, Midjourney, Claude & 25+ platforms.",
-  "start_url": "/index.html",
+  "start_url": "/",
+  "scope": "/",
   "display": "standalone",
+  "display_override": ["window-controls-overlay", "standalone", "minimal-ui"],
   "orientation": "portrait-primary",
   "theme_color": "#ff7043",
   "background_color": "#000000",
