@@ -151,27 +151,36 @@ var ClarixAuth = {
       self._auth = firebase.auth();
       self._db   = firebase.firestore();
 
-      /* Explicitly set LOCAL persistence to survive page navigations */
-      self._auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).then(function() {
-        /* Persistence set — now call getRedirectResult to handle redirect flows */
-        self._auth.getRedirectResult().then(function(result) {
-          sessionStorage.removeItem('clarix_signin_pending');
-          self._redirectResolved = true;
-          if (result && result.user) {
-            console.log('[Clarix] redirect sign-in success:', result.user.email);
-          }
-        }).catch(function(e) {
-          sessionStorage.removeItem('clarix_signin_pending');
-          self._redirectResolved = true;
-          console.warn('[Clarix] getRedirectResult error:', e.code);
-        });
+      /* Set LOCAL persistence (fire-and-forget — this is already the default,
+         but explicit is safer. Do NOT nest getRedirectResult inside this
+         promise — that delays auth on slow mobile connections). */
+      self._auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+
+      /* Call getRedirectResult IMMEDIATELY — in parallel with setPersistence.
+         This handles both signInWithRedirect results AND cases where mobile
+         Chrome opens signInWithPopup as a Chrome Custom Tab (which behaves
+         like a redirect). Must resolve before the 3000ms grace period expires. */
+      self._auth.getRedirectResult().then(function(result) {
+        sessionStorage.removeItem('clarix_signin_pending');
+        self._redirectResolved = true;
+        if (result && result.user) {
+          console.log('[Clarix] redirect/CCT sign-in success:', result.user.email);
+          localStorage.setItem('clarix_uid', result.user.uid);
+        }
+      }).catch(function(e) {
+        sessionStorage.removeItem('clarix_signin_pending');
+        self._redirectResolved = true;
+        if (e.code !== 'auth/no-auth-event') {
+          console.warn('[Clarix] getRedirectResult:', e.code);
+        }
       });
 
       self._auth.onAuthStateChanged(function(user) {
-        /* Cancel any pending modal timer whenever auth state changes */
         clearTimeout(self._loginModalTimer);
 
         if (user) {
+          /* User is signed in — persist uid to localStorage for fast pre-check */
+          localStorage.setItem('clarix_uid', user.uid);
           self.currentUser = user;
           self._loadProfile(user, function() {
             self._ready = true;
@@ -187,22 +196,27 @@ var ClarixAuth = {
             }
           });
         } else {
+          localStorage.removeItem('clarix_uid');
           self.currentUser = null;
           self.userProfile = null;
           self._ready = false;
 
-          /* GRACE PERIOD FIX: Firebase fires onAuthStateChanged(null) immediately
-             on page load BEFORE it has restored the auth session from localStorage.
-             The real user state arrives 50-500ms later via a second onAuthStateChanged(user) call.
-             Waiting 1500ms gives Firebase time to restore the session.
-             If the user IS signed in, the timer is cancelled when onAuthStateChanged(user) fires.
-             If they are genuinely not signed in, the modal shows after 1500ms. */
+          /* GRACE PERIOD: Firebase fires onAuthStateChanged(null) immediately
+             on every page load, BEFORE restoring the session from IndexedDB.
+             On slow Android phones this restoration can take 1-2 seconds.
+             We wait 3000ms and check BOTH firebase.auth().currentUser and
+             localStorage.clarix_uid before deciding to show the modal.
+             If the session IS restored, clearTimeout fires above and cancels this. */
           self._loginModalTimer = setTimeout(function() {
-            /* Double-check: use firebase.auth().currentUser as final source of truth */
-            if (!self.currentUser && !(self._auth && self._auth.currentUser)) {
+            var stillNull = !self.currentUser && !(self._auth && self._auth.currentUser);
+            var knownUser = !!localStorage.getItem('clarix_uid');
+            if (stillNull && !knownUser) {
               self._showLoginModal();
+            } else if (!stillNull) {
+              /* Auth resolved during grace period — nothing to do */
+              console.log('[Clarix] Auth resolved within grace period');
             }
-          }, 1500);
+          }, 3000);
         }
       });
     } catch(e) {
