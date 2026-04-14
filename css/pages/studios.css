@@ -161,7 +161,7 @@
   cursor:pointer; transition:all .2s; white-space:nowrap;
 }
 .studio-pill:hover  { border-color:rgba(255,255,255,.25); color:#fff; }
-.studio-pill.active { background:rgba(255,112,67,.15); border-color:rgba(255,112,67,.6); color:#fff; }
+.studio-pill.active { background:rgba(255,112,67,.3); border-color:#ff7043; color:#fff; box-shadow:0 0 0 2px rgba(255,112,67,.25); font-weight:700; }
 
 /* ── FESTIVAL GRID ── */
 .festival-grid {
@@ -350,7 +350,7 @@
   cursor:pointer; transition:all .18s;
 }
 .cdp-pill:hover { border-color:rgba(255,112,67,.4); color:#fff; }
-.cdp-pill.active { background:rgba(255,112,67,.15); border-color:rgba(255,112,67,.6); color:#fff; }
+.cdp-pill.active { background:rgba(255,112,67,.3); border-color:#ff7043; color:#fff; box-shadow:0 0 0 2px rgba(255,112,67,.25); font-weight:700; }
 
 /* Toggle */
 .cdp-toggle {
@@ -398,5 +398,7 @@
 }
 .blank-canvas-section .bcs-input:focus { outline:none; border-color:rgba(255,112,67,.4); }
 .blank-canvas-section .bcs-emoji { width:80px; text-align:center; font-size:22px; }
+/* Fix native dropdown option text visibility — force dark text on white background */
+.blank-canvas-section .bcs-input option { color:#111; background:#fff; font-size:14px; }
 
 #blankCardCanvas { margin-top:12px; }

@@ -952,7 +952,22 @@ function drawFestivalCanvas(canvas, opts) {
   ctx.font       = fontSize + 'px ' + fontFamily;
   ctx.shadowBlur = 14; ctx.shadowColor = 'rgba(0,0,0,0.7)';
   ctx.fillStyle  = d.textColor || '#ffffff';
-  wrapCanvasText(ctx, text.substring(0, 320), 540, 490, 900, lineHeight);
+  var textWrapMaxY = opts.fromTo ? 800 : 880;
+  wrapCanvasText(ctx, text.substring(0, 320), 540, 490, 900, lineHeight, textWrapMaxY);
+
+  /* ── From / To (professional bottom section) ── */
+  if (opts.fromTo) {
+    ctx.shadowBlur = 0;
+    ctx.beginPath();
+    ctx.strokeStyle = 'rgba(255,255,255,0.22)'; ctx.lineWidth = 1;
+    ctx.moveTo(160, 858); ctx.lineTo(920, 858);
+    ctx.stroke();
+    ctx.shadowBlur = 8; ctx.shadowColor = 'rgba(0,0,0,0.5)';
+    ctx.font = 'italic 29px ' + fontFamily;
+    ctx.fillStyle = 'rgba(255,255,255,0.85)';
+    ctx.fillText(opts.fromTo, 540, 900);
+    ctx.shadowBlur = 0;
+  }
 
   /* ── Watermark ── */
   if (d.showWatermark) {
@@ -978,14 +993,24 @@ function generateFestivalCard(text) {
   /* Reset design to festival theme on new generate */
   cardDesign.bgPreset = 0;
 
+  /* Extract "To: X | From: Y" from AI text — render as professional bottom section */
+  var fromTo = '';
+  var textClean = text;
+  var ftMatch = text.match(/(?:To:\s*\S[\w\s]*(?:\s*[|]\s*From:\s*\S[\w\s]*)?|From:\s*\S[\w\s]*(?:\s*[|]\s*To:\s*\S[\w\s]*)?)/i);
+  if (ftMatch) {
+    fromTo = ftMatch[0].replace(/\s*[|]+\s*/g, '  ·  ').trim();
+    textClean = text.replace(ftMatch[0], '').trim();
+  }
+  window._festivalFromTo = fromTo;
+
   var canvas = document.createElement('canvas');
-  drawFestivalCanvas(canvas, { festival: festival, text: text, design: cardDesign });
+  drawFestivalCanvas(canvas, { festival: festival, text: textClean, design: cardDesign, fromTo: fromTo });
 
   /* Store globally */
   window._festivalCanvas  = canvas;
-  window._festivalText    = text;
+  window._festivalText    = textClean;
   window._festivalName    = festival.name;
-  window._festivalOpts    = { festival: festival, text: text };
+  window._festivalOpts    = { festival: festival, text: textClean };
 
   canvas.style.cssText = 'width:100%;border-radius:16px;display:block;box-shadow:0 20px 60px rgba(0,0,0,0.6);margin-top:16px;';
   canvas.id = 'festivalCanvasEl';
@@ -1124,16 +1149,17 @@ function generateBlankCard() {
   /* Extract just the text without emoji for canvas title */
   var cleanTitle = title.replace(/[\u{1F300}-\u{1FAFF}]/gu, '').trim() || title;
 
-  /* Build from/to line — auto-fill FROM with user name if empty */
+  /* Build from/to — professional separate section (not embedded in message text) */
   var from = fromEl ? fromEl.value.trim() : '';
   if (!from) from = localStorage.getItem('clarix_uname') || '';
   var to   = toEl   ? toEl.value.trim()   : '';
-  var fromToLine = '';
-  if (to)   fromToLine += 'To: ' + to;
-  if (from) fromToLine += (fromToLine ? '  |  ' : '') + 'From: ' + from;
+  var ftParts = [];
+  if (to)   ftParts.push('To: ' + to);
+  if (from) ftParts.push('From: ' + from);
+  var fromToLine = ftParts.join('  ·  ');
 
-  /* Full message on card */
-  var fullText = text + (fromToLine ? '\n\n' + fromToLine : '');
+  /* Full message — fromToLine is a separate canvas section, not inline */
+  var fullText = text;
 
   var wrap = document.getElementById('blankCardCanvas');
   if (!wrap) return;
@@ -1145,7 +1171,8 @@ function generateBlankCard() {
   drawFestivalCanvas(canvas, {
     text: fullText, emoji: emoji, title: cleanTitle,
     emoji2: emoji + '  ' + emoji,
-    design: cardDesign
+    design: cardDesign,
+    fromTo: fromToLine
   });
 
   if (!existing) {
@@ -1175,7 +1202,7 @@ function redrawCard() {
       if (FESTIVALS[i].name === selectedFestival) { festival = FESTIVALS[i]; break; }
     }
     if (!festival) return;
-    drawFestivalCanvas(canvasEl, { festival: festival, text: text, design: cardDesign });
+    drawFestivalCanvas(canvasEl, { festival: festival, text: text, design: cardDesign, fromTo: window._festivalFromTo || '' });
     window._festivalCanvas = canvasEl;
   }
 }
@@ -1388,10 +1415,11 @@ function studioTipAction(type) {
 }
 
 
-function wrapCanvasText(ctx, text, x, y, maxWidth, lineHeight) {
+function wrapCanvasText(ctx, text, x, y, maxWidth, lineHeight, maxY) {
   var words = text.split(' ');
   var line = '';
   var curY = y;
+  var limit = maxY || 880;
   for (var n = 0; n < words.length; n++) {
     var testLine = line + words[n] + ' ';
     var w = ctx.measureText(testLine).width;
@@ -1399,7 +1427,7 @@ function wrapCanvasText(ctx, text, x, y, maxWidth, lineHeight) {
       ctx.fillText(line, x, curY);
       line = words[n] + ' ';
       curY += lineHeight;
-      if (curY > 880) break;
+      if (curY > limit) break;
     } else { line = testLine; }
   }
   ctx.fillText(line, x, curY);
