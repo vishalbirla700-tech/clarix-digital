@@ -29,6 +29,7 @@ window.Sidebar = {
       { href:'write.html',    icon:'✍️', label:'Write' },
       { href:'inspire.html',  icon:'🎨', label:'InspireMe' },
       { href:'library.html',  icon:'📚', label:'Library', dynamicBadge:'clarix_saved' },
+      { href:'data.html',     icon:'📊', label:'Data Intelligence' },
       { href:'apps.html',     icon:'🚀', label:'Apps' },
       { href:'history.html',  icon:'📜', label:'History' },
       { href:'profile.html',  icon:'👤', label:'Profile' },

@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en" prefix="og: https://ogp.me/ns#">
+<head>
+  <!-- Google Analytics GA4 -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-YZJ8P58KTJ"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-YZJ8P58KTJ');
+  </script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- PRIMARY SEO -->
+  <title>Data Intelligence | Upload Excel, Get Expert Analysis – Clarix AI</title>
+  <meta name="description" content="Clarix Data Intelligence: Upload any Excel, CSV, or data file and get instant expert-grade charts, statistical analysis, and AI insights. Built for Banking, Oil & Gas, Lab/QC, Stock Market, and Engineering.">
+  <meta name="keywords" content="excel data analysis AI, chart generator from excel, QC control chart, SPC analysis, stock technical analysis, financial ratio calculator, oil production analysis, Clarix data intelligence">
+  <meta name="author" content="Clarix AI">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://clarix.digital/data.html">
+
+  <!-- OPEN GRAPH -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://clarix.digital/data.html">
+  <meta property="og:title" content="Clarix Data Intelligence – Expert Analysis in 30 Seconds">
+  <meta property="og:description" content="Upload Excel or CSV. Get multi-chart dashboard with UCL/LCL control lines, statistical table, and AI expert analysis — for any industry.">
+  <meta property="og:image" content="https://clarix.digital/icons/og-image.png">
+  <meta property="og:locale" content="en_IN">
+  <meta property="og:site_name" content="Clarix AI">
+
+  <!-- TWITTER CARD -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:site" content="@ClarixAI">
+  <meta name="twitter:title" content="Clarix Data Intelligence – Expert Analysis in 30 Seconds">
+  <meta name="twitter:description" content="Upload Excel or CSV. Get multi-chart dashboard with UCL/LCL lines and AI expert analysis.">
+  <meta name="twitter:image" content="https://clarix.digital/icons/og-image.png">
+
+  <!-- PWA -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#ff7043">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%23ff7043'/><text x='50%' y='55%' font-size='18' text-anchor='middle' dominant-baseline='middle' fill='white'>&#10022;</text></svg>">
+
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/design.css?v=20260414I">
+  <link rel="stylesheet" href="css/components.css?v=20260414I">
+  <link rel="stylesheet" href="css/sidebar.css?v=20260414I">
+  <link rel="stylesheet" href="css/auth.css?v=20260414I">
+  <link rel="stylesheet" href="css/pages/studios.css?v=20260414I">
+  <link rel="stylesheet" href="css/pages/data.css?v=20260414I">
+</head>
+<body>
+
+  <!-- SIDEBAR -->
+  <div id="sidebar"></div>
+  <div id="sidebar-overlay" class="sidebar-overlay"></div>
+
+  <!-- MAIN CONTENT -->
+  <main class="main-content data-lab-main" id="mainContent">
+
+    <!-- ── HERO ── -->
+    <div class="data-hero">
+      <div class="data-hero-badge">⚡ Clarix Data Intelligence</div>
+      <h1>Upload Data.<br><span>Get Expert Analysis.</span></h1>
+      <p>Any Excel or CSV file → charts with control limits, statistical breakdown, and AI expert insights — in 30 seconds.</p>
+    </div>
+
+    <!-- ── STEP 1: Industry Selector ── -->
+    <div class="data-industry-section">
+      <div class="data-industry-label">Step 1 — Select your industry (optional, auto-detects from file)</div>
+      <div class="data-industry-grid" id="industryGrid"></div>
+    </div>
+
+    <div class="data-section-divider"></div>
+
+    <!-- ── STEP 2: Upload Zone ── -->
+    <div class="data-upload-zone" id="dataDropZone" onclick="document.getElementById('dataFileInput').click()">
+      <span class="data-upload-icon">📂</span>
+      <div class="data-upload-title">Drop your file here or click to browse</div>
+      <div class="data-upload-sub">Excel (.xlsx, .xls), CSV, PDF, DOCX &nbsp;·&nbsp; Max 10 MB</div>
+      <div class="data-upload-btn">Browse File</div>
+      <input type="file" id="dataFileInput" style="display:none"
+        accept=".pdf,.docx,.txt,.xlsx,.xls,.csv,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,text/plain,text/csv">
+      <div class="data-file-status" id="dataFileStatus">No file selected</div>
+    </div>
+
+    <!-- ── STEP 3: Context + Analyze ── -->
+    <div class="data-analyze-row">
+      <input type="text" class="data-context-input" id="dataContext"
+        placeholder="Optional: add context (e.g. 'Q1 plant performance', 'Reliance 2024 annual report')…">
+      <button class="data-analyze-btn" id="dataAnalyzeBtn" onclick="dataAnalyze()">
+        ⚡ Analyze
+      </button>
+    </div>
+
+    <!-- ── OUTPUT DASHBOARD ── -->
+    <div class="data-output" id="dataOutput">
+
+      <!-- Report header -->
+      <div class="data-report-header">
+        <div id="dataIndustryBadge"></div>
+        <div class="data-report-title" id="dataReportTitle">Intelligence Report</div>
+        <div class="data-report-meta" id="dataReportMeta"></div>
+      </div>
+
+      <!-- KPI cards row — real calculated values -->
+      <div class="data-kpi-row" id="dataKpiRow"></div>
+
+      <!-- Column visibility toggles -->
+      <div class="data-column-controls" id="dataColumnControls"></div>
+
+      <!-- Multi-chart grid (one chart per column, by data.js _renderMultiCharts) -->
+      <div id="dataMultiChartWrap"></div>
+
+      <div class="data-section-divider"></div>
+
+      <!-- AI Expert Analysis -->
+      <div class="data-panel">
+        <div class="data-panel-title">🤖 Expert Analysis</div>
+        <div class="data-analysis-text" id="dataAnalysisText"></div>
+        <div id="dataKeyPoints"></div>
+      </div>
+
+      <!-- Anomaly Alerts (shown only if breaches detected) -->
+      <div id="dataAnomalies" style="display:none">
+        <div class="data-panel">
+          <div class="data-panel-title">⚠️ Anomaly Alerts</div>
+          <div id="dataAnomalyList"></div>
+        </div>
+      </div>
+
+      <!-- Recommendations -->
+      <div class="data-panel data-recs">
+        <div class="data-panel-title">🎯 Recommendations</div>
+        <ol id="dataRecsList"></ol>
+      </div>
+
+      <!-- Export / Share row -->
+      <div class="data-export-row">
+        <button class="data-export-btn data-export-btn-primary" onclick="dataExportPDF()">📄 Export PDF</button>
+        <button class="data-export-btn data-export-btn-primary" onclick="dataExportPPT()">🎥 Export PPT</button>
+        <button class="data-export-btn data-export-btn-secondary" onclick="dataShareLink(this)">🔗 Share Link</button>
+        <button class="data-export-btn data-export-btn-ghost" onclick="dataCopyText()">📋 Copy Text</button>
+        <button class="data-export-btn data-export-btn-ghost" onclick="dataNewAnalysis()">🔄 New Analysis</button>
+      </div>
+
+    </div>
+    <!-- /dataOutput -->
+
+  </main>
+
+  <!-- MOBILE BOTTOM NAV -->
+  <nav class="mobile-nav">
+    <div class="mnav-items">
+      <a href="index.html" class="mnav-item"><span class="mnav-icon">&#127968;</span>Home</a>
+      <a href="write.html" class="mnav-item"><span class="mnav-icon">&#9997;&#65039;</span>Write</a>
+      <a href="data.html" class="mnav-item active"><span class="mnav-icon">&#128202;</span>Data</a>
+      <a href="history.html" class="mnav-item"><span class="mnav-icon">&#128220;</span>History</a>
+      <a href="apps.html" class="mnav-item"><span class="mnav-icon">&#10024;</span>Apps</a>
+    </div>
+  </nav>
+
+  <!-- SCRIPTS -->
+  <script src="config.js?v=20260414I"></script>
+  <script src="js/languages.js?v=20260414I"></script>
+  <script src="js/core.js?v=20260414I"></script>
+  <script src="js/sidebar.js?v=20260414I"></script>
+  <script src="js/firebase.js?v=20260414I"></script>
+  <script src="js/firebase-auth.js?v=20260414I"></script>
+  <script src="js/pages/studios.js?v=20260414I"></script>
+  <script src="js/pages/data.js?v=20260414I"></script>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      if (window.Sidebar) Sidebar.init();
+    });
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js').catch(function() {});
+    }
+  </script>
+  <script src="js/pwa.js?v=20260414I"></script>
+</body>
+</html>
