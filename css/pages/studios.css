@@ -537,8 +537,12 @@
 }
 .doc-action-btn:hover { background:rgba(255,255,255,.1); color:#fff; }
 .doc-action-btn.doc-action-primary {
-  background:linear-gradient(135deg,#0ea5e9,#6366f1); border:none; color:#fff;
+  background:linear-gradient(135deg,#ff7043,#f59e0b); border:none; color:#fff;
 }
 .doc-action-btn.doc-action-primary:hover { filter:brightness(1.1); transform:translateY(-1px); }
+.doc-action-btn.doc-action-secondary {
+  background:linear-gradient(135deg,#0ea5e9,#6366f1); border:none; color:#fff;
+}
+.doc-action-btn.doc-action-secondary:hover { filter:brightness(1.1); transform:translateY(-1px); }
 @media(max-width:500px) { .doc-action-row { flex-direction:column; } }
 

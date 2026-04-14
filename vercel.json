@@ -13,7 +13,8 @@
     { "source": "/onepager",  "destination": "/clarix-onepager.html" },
     { "source": "/terms",     "destination": "/terms.html" },
     { "source": "/privacy",   "destination": "/privacy.html" },
-    { "source": "/refund",    "destination": "/refund.html" }
+    { "source": "/refund",    "destination": "/refund.html" },
+    { "source": "/view",      "destination": "/view.html" }
   ],
   "headers": [
     {
@@ -25,7 +26,7 @@
       ]
     },
     {
-      "source": "/(write|inspire|library|apps|history|profile|breakdown|community|about|terms|privacy|refund|onepager|indias-first-ai-prompt-engine)",
+      "source": "/(write|inspire|library|apps|history|profile|breakdown|community|about|terms|privacy|refund|onepager|indias-first-ai-prompt-engine|view)",
       "headers": [
         { "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate" },
         { "key": "Pragma",        "value": "no-cache" },
