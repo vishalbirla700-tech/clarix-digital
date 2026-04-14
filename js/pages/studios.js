@@ -1730,7 +1730,11 @@ function _parseOneSheet(ws, sheetName) {
   var logScaleRec    = false;
 
   var timeRx = /^(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec|q[1-4]|fy|week|day|hour|min|time|date|\d{4})/i;
-  var isTime = labels.some(function(l) { return timeRx.test(String(l).trim()); })
+  /* Also check if the COLUMN HEADER itself is a time keyword (e.g. 'HOUR', 'TIME', 'DAY') */
+  var col0Header = String(headerRow[0] || '').toLowerCase().trim();
+  var col0IsTime = /^(hour|hours|time|day|days|week|weeks|month|months|year|years|period|quarter|minute|second|reading|sample|sr\b|no\b)/.test(col0Header);
+  var isTime = col0IsTime
+    || labels.some(function(l) { return timeRx.test(String(l).trim()); })
     || dataRows.some(function(r) { var v = r[0]; return typeof v === 'number' && v > 40000 && v < 55000; });
 
   var firstNumeric = dataRows.slice(0, Math.min(dataRows.length, 6))
@@ -2071,6 +2075,11 @@ async function renderDocChart(result) {
   if (!window.Chart) {
     await loadScript('https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js');
   }
+  /* Load datalabels plugin (shows values on chart points/bars) */
+  if (!window.ChartDataLabels) {
+    await loadScript('https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js');
+    if (window.ChartDataLabels) Chart.register(ChartDataLabels);
+  }
 
   /* Destroy previous chart instance */
   if (window._docChartInstance) {
@@ -2137,12 +2146,13 @@ async function renderDocChart(result) {
           data:            ds.data,
           backgroundColor: chartType === 'line' ? c.replace('0.85', '0.15') : c,
           borderColor:     c,
-          borderWidth:     chartType === 'line' ? 2 : 1,
+          borderWidth:     chartType === 'line' ? 2.5 : 1,
           fill:            false,
-          tension:         0.4,
+          tension:         0,          /* straight lines like MS Excel */
           pointRadius:     chartType === 'line' ? 4 : 0,
+          pointHoverRadius: chartType === 'line' ? 7 : 4,
           pointBackgroundColor: c,
-          borderRadius:    chartType === 'bar' ? 5 : 0
+          borderRadius:    chartType === 'bar' ? 4 : 0
         };
       });
     }
@@ -2174,12 +2184,33 @@ async function renderDocChart(result) {
     return; /* Nothing to chart */
   }
 
+  /* Data label helper */
+  var nPts = datasets.length > 0 ? (datasets[0].data ? datasets[0].data.length : 0) : 0;
+  var dlConfig = (chartType === 'pie' || chartType === 'scatter') ? { display: false } : {
+    display: function(ctx) {
+      if (nPts > 120) return false;
+      if (nPts > 60)  return ctx.dataIndex % 3 === 0;
+      if (nPts > 30)  return ctx.dataIndex % 2 === 0;
+      return true;
+    },
+    color:     'rgba(255,255,255,0.82)',
+    font:      { size: nPts > 50 ? 7.5 : (nPts > 25 ? 8.5 : 9.5), weight: '700' },
+    formatter: function(value) { return (value === 0 || value === null) ? '' : value; },
+    anchor:    chartType === 'bar' ? 'end' : 'center',
+    align:     chartType === 'bar' ? 'top'  : 'top',
+    offset:    chartType === 'bar' ? 3 : 2,
+    rotation:  nPts > 30 ? -60 : 0,
+    clip:      false,
+    backgroundColor: 'transparent'
+  };
+
   window._docChartInstance = new Chart(canvas, {
     type: chartType,
     data: { labels: labels, datasets: datasets },
     options: {
       responsive: true,
       maintainAspectRatio: false,
+      layout: { padding: { top: nPts > 30 ? 28 : 18 } },
       plugins: {
         legend: {
           display: chartType === 'pie' || datasets.length > 1,
@@ -2188,17 +2219,18 @@ async function renderDocChart(result) {
         tooltip: {
           mode:      chartType === 'pie' ? 'nearest' : 'index',
           intersect: chartType === 'pie'
-        }
+        },
+        datalabels: dlConfig
       },
       scales: (chartType === 'pie') ? {} : {
         x: {
           type: chartType === 'scatter' ? 'linear' : 'category',
-          ticks: { color: 'rgba(255,255,255,0.65)', font: { size: 11 }, maxRotation: 45 },
+          ticks: { color: 'rgba(255,255,255,0.65)', font: { size: 10 }, maxRotation: 45 },
           grid:  { color: 'rgba(255,255,255,0.05)' }
         },
         y: {
           type: (docDirectChartData && docDirectChartData.logScaleRec && chartType !== 'pie') ? 'logarithmic' : 'linear',
-          ticks: { color: 'rgba(255,255,255,0.65)', font: { size: 11 } },
+          ticks: { color: 'rgba(255,255,255,0.65)', font: { size: 10 } },
           grid:  { color: 'rgba(255,255,255,0.05)' }
         }
       }
