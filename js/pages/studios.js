@@ -1,9 +1,9 @@
-/* ═══════════════════════════════════════════════
-   CLARIX — CREATIVE STUDIOS v3 (clean rewrite)
+﻿/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   CLARIX â€” CREATIVE STUDIOS v3 (clean rewrite)
    Fixed: pill onclick, festival apostrophe, selectPill
-═══════════════════════════════════════════════ */
+â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 
-/* ── Image Compression ── */
+/* â”€â”€ Image Compression â”€â”€ */
 function studioCompressImage(file, maxPx, quality) {
   maxPx = maxPx || 512; quality = quality || 0.80;
   return new Promise(function(resolve, reject) {
@@ -31,26 +31,26 @@ function studioCompressImage(file, maxPx, quality) {
   });
 }
 
-/* ── Blank canvas mode state ── */
+/* â”€â”€ Blank canvas mode state â”€â”€ */
 var blankCanvasMode = false;
 
-/* ── Festival Config ── */
+/* â”€â”€ Festival Config â”€â”€ */
 var FESTIVALS = [
-  { emoji:'🪔', name:'Diwali',           grad:['#ff6b00','#ffc300','#ff8c00'], emoji2:'✨🪔🎇' },
-  { emoji:'🎊', name:'Navratri',         grad:['#d63031','#e17055','#fdcb6e'], emoji2:'🎊🌸💃' },
-  { emoji:'🌙', name:'Eid',              grad:['#00b894','#00cec9','#6c5ce7'], emoji2:'🌙⭐🕌' },
-  { emoji:'🎄', name:'Christmas',        grad:['#2d3436','#00b894','#d63031'], emoji2:'🎄❄️🎁' },
-  { emoji:'🎆', name:'New Year',         grad:['#2d3436','#6c5ce7','#e17055'], emoji2:'🎆🥂✨' },
-  { emoji:'🌈', name:'Holi',             grad:['#e84393','#00b894','#fdcb6e'], emoji2:'🌈🎨💦' },
-  { emoji:'💝', name:'Valentines',       grad:['#d63031','#e84393','#fd79a8'], emoji2:'💝🌹❤️' },
-  { emoji:'🇮🇳', name:'Republic Day',    grad:['#ff7043','#ffffff','#1a78c2'], emoji2:'🇮🇳🎺🌟' },
-  { emoji:'🎂', name:'Birthday',         grad:['#a29bfe','#fd79a8','#fdcb6e'], emoji2:'🎂🎉🎈' },
-  { emoji:'🏆', name:'Dussehra',         grad:['#e17055','#d63031','#fdcb6e'], emoji2:'🏆🏹✨' },
-  { emoji:'🙏', name:'Ganesh Chaturthi', grad:['#fdcb6e','#e17055','#6c5ce7'], emoji2:'🙏🐘🌸' },
-  { emoji:'🌸', name:'Baisakhi',         grad:['#fdcb6e','#00b894','#e17055'], emoji2:'🌾🌸🎵' }
+  { emoji:'ðŸª”', name:'Diwali',           grad:['#ff6b00','#ffc300','#ff8c00'], emoji2:'âœ¨ðŸª”ðŸŽ‡' },
+  { emoji:'ðŸŽŠ', name:'Navratri',         grad:['#d63031','#e17055','#fdcb6e'], emoji2:'ðŸŽŠðŸŒ¸ðŸ’ƒ' },
+  { emoji:'ðŸŒ™', name:'Eid',              grad:['#00b894','#00cec9','#6c5ce7'], emoji2:'ðŸŒ™â­ðŸ•Œ' },
+  { emoji:'ðŸŽ„', name:'Christmas',        grad:['#2d3436','#00b894','#d63031'], emoji2:'ðŸŽ„â„ï¸ðŸŽ' },
+  { emoji:'ðŸŽ†', name:'New Year',         grad:['#2d3436','#6c5ce7','#e17055'], emoji2:'ðŸŽ†ðŸ¥‚âœ¨' },
+  { emoji:'ðŸŒˆ', name:'Holi',             grad:['#e84393','#00b894','#fdcb6e'], emoji2:'ðŸŒˆðŸŽ¨ðŸ’¦' },
+  { emoji:'ðŸ’', name:'Valentines',       grad:['#d63031','#e84393','#fd79a8'], emoji2:'ðŸ’ðŸŒ¹â¤ï¸' },
+  { emoji:'ðŸ‡®ðŸ‡³', name:'Republic Day',    grad:['#ff7043','#ffffff','#1a78c2'], emoji2:'ðŸ‡®ðŸ‡³ðŸŽºðŸŒŸ' },
+  { emoji:'ðŸŽ‚', name:'Birthday',         grad:['#a29bfe','#fd79a8','#fdcb6e'], emoji2:'ðŸŽ‚ðŸŽ‰ðŸŽˆ' },
+  { emoji:'ðŸ†', name:'Dussehra',         grad:['#e17055','#d63031','#fdcb6e'], emoji2:'ðŸ†ðŸ¹âœ¨' },
+  { emoji:'ðŸ™', name:'Ganesh Chaturthi', grad:['#fdcb6e','#e17055','#6c5ce7'], emoji2:'ðŸ™ðŸ˜ðŸŒ¸' },
+  { emoji:'ðŸŒ¸', name:'Baisakhi',         grad:['#fdcb6e','#00b894','#e17055'], emoji2:'ðŸŒ¾ðŸŒ¸ðŸŽµ' }
 ];
 
-/* ── Kids Style Previews ── */
+/* â”€â”€ Kids Style Previews â”€â”€ */
 var KIDS_STYLES = [
   { label:'Cartoon / Pixar',   img:'https://images.unsplash.com/photo-1618336753974-aae8e04506aa?w=200&q=70', desc:'Fun & colorful' },
   { label:'Sketch & Doodle',   img:'https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?w=200&q=70', desc:'Hand-drawn feel' },
@@ -59,90 +59,90 @@ var KIDS_STYLES = [
   { label:'Colorful Pop Art',  img:'https://images.unsplash.com/photo-1541961017774-22349e4a1262?w=200&q=70', desc:'Bold & vibrant' }
 ];
 
-/* ── Studios Config ── */
+/* â”€â”€ Studios Config â”€â”€ */
 var STUDIOS = [
   {
-    id:'kids', emoji:'👶', name:'Kids Creator',
+    id:'kids', emoji:'ðŸ‘¶', name:'Kids Creator',
     sub:'Fun cartoon-style prompts for young ones',
     badge:'Fun Zone', css:'studio-kids',
     heroBg:'https://images.unsplash.com/photo-1618336753974-aae8e04506aa?w=800&q=60',
     desc:'Turn any photo into fun AI prompts for cartoon art, birthday cards & kids content.',
-    tips:['🎨 Paste prompt into Midjourney', '🖨️ Print as poster or birthday card', '💬 Share as WhatsApp sticker', '🎬 Use as Reel caption'],
+    tips:['ðŸŽ¨ Paste prompt into Midjourney', 'ðŸ–¨ï¸ Print as poster or birthday card', 'ðŸ’¬ Share as WhatsApp sticker', 'ðŸŽ¬ Use as Reel caption'],
     options:{
       'Art Style':['Cartoon / Pixar','Sketch & Doodle','Storybook','Superhero Comic','Colorful Pop Art'],
       'Platform':['Instagram','WhatsApp Sticker','Print / Poster','Birthday Card','Reel Caption']
     },
     placeholder:'Describe the scene (e.g. "my daughter playing with her puppy in the park")',
-    analyzeLabel:'✨ Generate Fun Prompts',
+    analyzeLabel:'âœ¨ Generate Fun Prompts',
     promptFn:'kids'
   },
   {
-    id:'corporate', emoji:'💼', name:'Corporate Creator',
+    id:'corporate', emoji:'ðŸ’¼', name:'Corporate Creator',
     sub:'Professional content for brands & businesses',
     badge:'Business', css:'studio-corp',
     heroBg:'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=800&q=60',
     desc:'Professional AI prompts for LinkedIn posts, pitch decks, brand ads & business content.',
-    tips:['💼 LinkedIn posts get 3x reach with visuals','📊 Use for pitch deck descriptions','📧 Email campaign headers','🏆 Build premium brand imagery'],
+    tips:['ðŸ’¼ LinkedIn posts get 3x reach with visuals','ðŸ“Š Use for pitch deck descriptions','ðŸ“§ Email campaign headers','ðŸ† Build premium brand imagery'],
     options:{
       'Content Type':['LinkedIn Post','Pitch Deck Visual','Email Campaign','Brand Ad','Team Photo'],
       'Style':['Professional & Clean','Bold & Dynamic','Friendly & Approachable','Premium Luxury']
     },
     placeholder:'Describe your brand (e.g. "our fintech startup team in a modern Mumbai office")',
-    analyzeLabel:'⚡ Generate Pro Prompts',
+    analyzeLabel:'âš¡ Generate Pro Prompts',
     promptFn:'corporate'
   },
   {
-    id:'cultural', emoji:'🎉', name:'Cultural Creator',
-    sub:'Festival cards with AI text — download & share instantly',
+    id:'cultural', emoji:'ðŸŽ‰', name:'Cultural Creator',
+    sub:'Festival cards with AI text â€” download & share instantly',
     badge:'Festivals', css:'studio-cultural',
     heroBg:'https://images.unsplash.com/photo-1574482620811-1aa16ffe3c82?w=800&q=60',
-    desc:'Generate beautiful festival cards with AI — download and share on WhatsApp & Instagram.',
-    tips:['💬 Send as WhatsApp image instantly','📸 Share as Instagram story','🌏 Available in 6 Indian languages','🎨 Beautiful canvas card generated'],
+    desc:'Generate beautiful festival cards with AI â€” download and share on WhatsApp & Instagram.',
+    tips:['ðŸ’¬ Send as WhatsApp image instantly','ðŸ“¸ Share as Instagram story','ðŸŒ Available in 6 Indian languages','ðŸŽ¨ Beautiful canvas card generated'],
     options:{
       'Language':['English','Hindi','Hinglish','Gujarati','Marathi','Urdu'],
       'Card Style':['Festive & Warm','Minimal & Elegant','Bold & Vibrant','Premium Dark'],
       'Content Type':['WhatsApp Wish','Instagram Post','Business Greeting','Story Caption']
     },
     placeholder:'Add personal touch (e.g. "from our family to yours" or your name/brand)',
-    analyzeLabel:'🎉 Generate Festival Card',
+    analyzeLabel:'ðŸŽ‰ Generate Festival Card',
     promptFn:'cultural',
     hasFestivals: true
   },
   {
-    id:'multilingual', emoji:'🔤', name:'Multilingual Analyzer',
-    sub:'Image with any language text → 2 creative prompts',
+    id:'multilingual', emoji:'ðŸ”¤', name:'Multilingual Analyzer',
+    sub:'Image with any language text â†’ 2 creative prompts',
     badge:'Language AI', css:'studio-multi',
     heroBg:'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=800&q=60',
     desc:'Upload any image with Hindi, Marathi, Gujarati, Tamil, Urdu, or Arabic text. AI reads it and generates prompts.',
-    tips:['🇮🇳 Supports 20+ languages','📸 Works on banners, labels, menus','✍️ Literal or creative output','🌐 Auto-detects language — no setup'],
+    tips:['ðŸ‡®ðŸ‡³ Supports 20+ languages','ðŸ“¸ Works on banners, labels, menus','âœï¸ Literal or creative output','ðŸŒ Auto-detects language â€” no setup'],
     options:{
       'Output Platform':['Midjourney','DALL-E / ChatGPT','Instagram','LinkedIn','WhatsApp'],
       'Variation Style':['Literal (stays close)','Creative (artistic)','Both styles']
     },
     placeholder:'Add context (e.g. "this is a Diwali banner from a Pune shop")',
-    analyzeLabel:'🔍 Detect Language & Analyze',
+    analyzeLabel:'ðŸ” Detect Language & Analyze',
     promptFn:'multilingual'
   },
   {
-    id:'docanalyzer', emoji:'📄', name:'Document Analyzer',
-    sub:'Upload PDF, DOCX or TXT — get slides, charts & AI insights',
+    id:'docanalyzer', emoji:'ðŸ“„', name:'Document Analyzer',
+    sub:'Upload PDF, DOCX or TXT â€” get slides, charts & AI insights',
     badge:'AI Insights', css:'studio-doc',
     heroBg:'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=800&q=60',
     desc:'Turn any business document into a GAMMA-style slide deck with charts, key insights and executive summary.',
-    tips:['📄 Supports PDF, DOCX & TXT','📊 Auto or manual chart type','🖥️ Export as HTML slide deck','💼 Perfect for reports & proposals'],
+    tips:['ðŸ“„ Supports PDF, DOCX & TXT','ðŸ“Š Auto or manual chart type','ðŸ–¥ï¸ Export as HTML slide deck','ðŸ’¼ Perfect for reports & proposals'],
     options:{
       'Output Style':['Slide Deck','Executive Summary','Full Report'],
       'Tone':['Professional','Concise','Detailed']
     },
     placeholder:'Add context (e.g. "Q3 sales report for our SaaS startup in Mumbai")',
-    analyzeLabel:'✨ Analyze Document',
+    analyzeLabel:'âœ¨ Analyze Document',
     promptFn:'docanalyzer',
     hasDocUpload: true,
     hasUpload: false
   }
 ];
 
-/* ── State ── */
+/* â”€â”€ State â”€â”€ */
 var activeStudio = null;
 var studioFile = null;
 var studioDataUrl = null;
@@ -153,47 +153,47 @@ var studioVoiceOn = false;
 var studioRecognition = null;
 var blankCanvasMode = false;
 
-/* ── Document Analyzer State ── */
+/* â”€â”€ Document Analyzer State â”€â”€ */
 var docExtractedText = '';
 var docFileName = '';
 var docChartMode = 'auto';
 var _currentDocResult = null;
 var _currentDocSlideIdx = 0;
-var docDirectChartData   = null; /* Real Excel cell data — bypasses AI chart estimation */
+var docDirectChartData   = null; /* Real Excel cell data â€” bypasses AI chart estimation */
 
-/* ── Studio Templates (shown as dropdown in each studio) ── */
+/* â”€â”€ Studio Templates (shown as dropdown in each studio) â”€â”€ */
 var STUDIO_TEMPLATES = {
   'kids': [
-    { icon: '🐕', name: 'Kid with Pet',       text: 'My daughter playing with her golden puppy at the park on a sunny day' },
-    { icon: '🦸', name: 'Superhero Child',   text: 'My son dressed as a superhero flying over the city with a colorful cape' },
-    { icon: '🎂', name: 'Birthday Party',   text: 'Kids birthday party with colorful balloons, big cake and confetti everywhere' },
-    { icon: '🌳', name: 'Nature Adventure',  text: 'Children exploring an enchanted forest and discovering magical glowing creatures' },
-    { icon: '🎮', name: 'Game World',        text: 'My child as a cartoon game character inside a magical pixel adventure world' },
+    { icon: 'ðŸ•', name: 'Kid with Pet',       text: 'My daughter playing with her golden puppy at the park on a sunny day' },
+    { icon: 'ðŸ¦¸', name: 'Superhero Child',   text: 'My son dressed as a superhero flying over the city with a colorful cape' },
+    { icon: 'ðŸŽ‚', name: 'Birthday Party',   text: 'Kids birthday party with colorful balloons, big cake and confetti everywhere' },
+    { icon: 'ðŸŒ³', name: 'Nature Adventure',  text: 'Children exploring an enchanted forest and discovering magical glowing creatures' },
+    { icon: 'ðŸŽ®', name: 'Game World',        text: 'My child as a cartoon game character inside a magical pixel adventure world' },
   ],
   'corporate': [
-    { icon: '💼', name: 'Team at Office',    text: 'Our tech startup team in a modern co-working space in Mumbai' },
-    { icon: '🚀', name: 'Product Launch',    text: 'New product launch event with professional stage setup and company branding' },
-    { icon: '📊', name: 'Pitch Deck Visual', text: 'Business pitch presentation for investors in a sleek boardroom setting' },
-    { icon: '🤝', name: 'Partnership Deal',  text: 'Professional handshake and collaboration between two business leaders' },
-    { icon: '🏆', name: 'Award Ceremony',   text: 'Company awards night with team celebrating excellence and achievement on stage' },
+    { icon: 'ðŸ’¼', name: 'Team at Office',    text: 'Our tech startup team in a modern co-working space in Mumbai' },
+    { icon: 'ðŸš€', name: 'Product Launch',    text: 'New product launch event with professional stage setup and company branding' },
+    { icon: 'ðŸ“Š', name: 'Pitch Deck Visual', text: 'Business pitch presentation for investors in a sleek boardroom setting' },
+    { icon: 'ðŸ¤', name: 'Partnership Deal',  text: 'Professional handshake and collaboration between two business leaders' },
+    { icon: 'ðŸ†', name: 'Award Ceremony',   text: 'Company awards night with team celebrating excellence and achievement on stage' },
   ],
   'cultural': [
-    { icon: '🪤', name: 'Diwali Wish',       text: 'From our family to yours — wishing you a bright, prosperous and joyful Diwali' },
-    { icon: '🌈', name: 'Holi Greetings',   text: 'May colours of joy and happiness fill your life — Happy Holi from all of us' },
-    { icon: '🎊', name: 'New Year',          text: 'Wishing you success, good health, and endless happiness in the new year ahead' },
-    { icon: '🌙', name: 'Eid Mubarak',       text: 'Eid Mubarak! May peace, joy and prosperity be yours always this blessed season' },
-    { icon: '👉', name: 'Business Greeting', text: 'Warm festival greetings from our team to yours — wishing you continued growth' },
+    { icon: 'ðŸª¤', name: 'Diwali Wish',       text: 'From our family to yours â€” wishing you a bright, prosperous and joyful Diwali' },
+    { icon: 'ðŸŒˆ', name: 'Holi Greetings',   text: 'May colours of joy and happiness fill your life â€” Happy Holi from all of us' },
+    { icon: 'ðŸŽŠ', name: 'New Year',          text: 'Wishing you success, good health, and endless happiness in the new year ahead' },
+    { icon: 'ðŸŒ™', name: 'Eid Mubarak',       text: 'Eid Mubarak! May peace, joy and prosperity be yours always this blessed season' },
+    { icon: 'ðŸ‘‰', name: 'Business Greeting', text: 'Warm festival greetings from our team to yours â€” wishing you continued growth' },
   ],
   'multilingual': [
-    { icon: '🪧', name: 'Shop Banner',       text: 'This is a Diwali sale banner from a local sweet shop in Pune with Marathi text' },
-    { icon: '💌', name: 'Wedding Card',      text: 'Hindu wedding invitation card with Sanskrit blessings and traditional floral patterns' },
-    { icon: '🏷️', name: 'Product Label',    text: 'Ayurvedic product label with Hindi description listing herbal ingredients and benefits' },
-    { icon: '🎨', name: 'Cultural Poster',  text: 'Classical Bharatnatyam dance performance poster in Tamil with event details' },
-    { icon: '📰', name: 'News Headline',     text: 'Regional Marathi newspaper headline about a local community festival celebration' },
+    { icon: 'ðŸª§', name: 'Shop Banner',       text: 'This is a Diwali sale banner from a local sweet shop in Pune with Marathi text' },
+    { icon: 'ðŸ’Œ', name: 'Wedding Card',      text: 'Hindu wedding invitation card with Sanskrit blessings and traditional floral patterns' },
+    { icon: 'ðŸ·ï¸', name: 'Product Label',    text: 'Ayurvedic product label with Hindi description listing herbal ingredients and benefits' },
+    { icon: 'ðŸŽ¨', name: 'Cultural Poster',  text: 'Classical Bharatnatyam dance performance poster in Tamil with event details' },
+    { icon: 'ðŸ“°', name: 'News Headline',     text: 'Regional Marathi newspaper headline about a local community festival celebration' },
   ],
 };
 
-/* ── Card Design State ── */
+/* â”€â”€ Card Design State â”€â”€ */
 var cardDesign = {
   bgPreset: 0,          /* 0 = festival theme, 1-5 = presets */
   bgCustom: '',         /* custom hex color */
@@ -205,12 +205,12 @@ var cardDesign = {
 };
 
 var BG_PRESETS = [
-  { name: '🎨 Festival', colors: null },
-  { name: '🌅 Sunset',   colors: ['#ff6b35','#f79d65','#ffecd2'] },
-  { name: '🌊 Ocean',    colors: ['#0077b6','#00b4d8','#90e0ef'] },
-  { name: '🌌 Night',    colors: ['#03045e','#023e8a','#7b2d8b'] },
-  { name: '🌹 Rose',     colors: ['#b76e79','#dba098','#f0c8b0'] },
-  { name: '🌿 Forest',   colors: ['#1b4332','#40916c','#95d5b2'] }
+  { name: 'ðŸŽ¨ Festival', colors: null },
+  { name: 'ðŸŒ… Sunset',   colors: ['#ff6b35','#f79d65','#ffecd2'] },
+  { name: 'ðŸŒŠ Ocean',    colors: ['#0077b6','#00b4d8','#90e0ef'] },
+  { name: 'ðŸŒŒ Night',    colors: ['#03045e','#023e8a','#7b2d8b'] },
+  { name: 'ðŸŒ¹ Rose',     colors: ['#b76e79','#dba098','#f0c8b0'] },
+  { name: 'ðŸŒ¿ Forest',   colors: ['#1b4332','#40916c','#95d5b2'] }
 ];
 
 var FONT_MAP = {
@@ -222,7 +222,7 @@ var FONT_MAP = {
 
 var TEXT_SIZE_MAP = { small: 30, medium: 38, large: 50 };
 
-/* ── Render Studio Cards ── */
+/* â”€â”€ Render Studio Cards â”€â”€ */
 function renderStudios() {
   var grid = document.getElementById('studiosGrid');
   if (!grid) return;
@@ -240,7 +240,7 @@ function renderStudios() {
   grid.innerHTML = html;
 }
 
-/* ── Open / Close ── */
+/* â”€â”€ Open / Close â”€â”€ */
 function openStudio(id) {
   for (var i = 0; i < STUDIOS.length; i++) {
     if (STUDIOS[i].id === id) { activeStudio = STUDIOS[i]; break; }
@@ -278,21 +278,21 @@ function showBlankCanvas() {
 
   if (blankCanvasMode) {
     toggle.classList.add('active');
-    toggle.textContent = '✕ Close Custom Card';
+    toggle.textContent = 'âœ• Close Custom Card';
     section.classList.add('visible');
     /* Hide festival picker when in blank mode */
     if (festLabel) festLabel.style.display = 'none';
     if (festGrid)  festGrid.style.display  = 'none';
   } else {
     toggle.classList.remove('active');
-    toggle.textContent = '✏️ Create Your Own Card — No Festival Needed';
+    toggle.textContent = 'âœï¸ Create Your Own Card â€” No Festival Needed';
     section.classList.remove('visible');
     if (festLabel) festLabel.style.display = '';
     if (festGrid)  festGrid.style.display  = '';
   }
 }
 
-/* Gated blank card generator — checks trial before drawing */
+/* Gated blank card generator â€” checks trial before drawing */
 function generateBlankCardGated() {
   if (!ClarixState.canEnhance()) {
     UpgradeModal.show('You\'ve used all your free prompts!');
@@ -304,7 +304,7 @@ function generateBlankCardGated() {
   var rem = ClarixState.remainingToday();
   var inTrial = ClarixState.isInTrial();
   if (!ClarixState.isPro) {
-    Toast.show('🎨 Card created! ' + rem + (inTrial ? ' trial' : ' free') + ' prompts remaining.', 'success', 3500);
+    Toast.show('ðŸŽ¨ Card created! ' + rem + (inTrial ? ' trial' : ' free') + ' prompts remaining.', 'success', 3500);
   }
   /* Auto-trigger selected social platform */
   var platform = _blankSocialPlatform || 'whatsapp';
@@ -315,29 +315,29 @@ function generateBlankCardGated() {
       studioTipAction('download');
       setTimeout(function() {
         window.open('https://www.facebook.com/', '_blank', 'noopener noreferrer');
-        Toast.show('📥 Image saved — upload it to Facebook!', 'success', 4000);
+        Toast.show('ðŸ“¥ Image saved â€” upload it to Facebook!', 'success', 4000);
       }, 700);
     } else if (platform === 'twitter') {
       studioTipAction('download');
       setTimeout(function() {
         window.open('https://x.com/compose/tweet', '_blank', 'noopener noreferrer');
-        Toast.show('📥 Image saved — attach it in your tweet!', 'success', 4000);
+        Toast.show('ðŸ“¥ Image saved â€” attach it in your tweet!', 'success', 4000);
       }, 700);
     } else if (platform === 'linkedin') {
       studioTipAction('download');
       setTimeout(function() {
         window.open('https://www.linkedin.com/feed/', '_blank', 'noopener noreferrer');
-        Toast.show('📥 Image saved — upload it to LinkedIn!', 'success', 4000);
+        Toast.show('ðŸ“¥ Image saved â€” upload it to LinkedIn!', 'success', 4000);
       }, 700);
     } else {
-      /* whatsapp, instagram, share — handled by studioTipAction */
+      /* whatsapp, instagram, share â€” handled by studioTipAction */
       studioTipAction(platform);
     }
   }, 600);
 }
 
 
-/* ── Build Modal ── */
+/* â”€â”€ Build Modal â”€â”€ */
 function buildStudioModal() {
   var s = activeStudio;
 
@@ -350,8 +350,8 @@ function buildStudioModal() {
     + '<div class="studio-hero-sub">' + s.desc + '</div>'
     + '</div></div>';
 
-  /* Tips — always show with clear label */
-  var tips = '<div class="studio-how-to-label">📌 How to use this studio:</div>'
+  /* Tips â€” always show with clear label */
+  var tips = '<div class="studio-how-to-label">ðŸ“Œ How to use this studio:</div>'
     + '<div class="studio-tips-strip">';
   for (var t = 0; t < s.tips.length; t++) {
     var tip = s.tips[t];
@@ -367,7 +367,7 @@ function buildStudioModal() {
   /* Kids gallery */
   var kidsGallery = '';
   if (s.id === 'kids') {
-    kidsGallery = '<div class="studio-options-label">Style Preview — Tap to select</div>'
+    kidsGallery = '<div class="studio-options-label">Style Preview â€” Tap to select</div>'
       + '<div class="kids-style-gallery">';
     for (var ki = 0; ki < KIDS_STYLES.length; ki++) {
       var ks = KIDS_STYLES[ki];
@@ -386,59 +386,59 @@ function buildStudioModal() {
   if (s.hasFestivals) {
     /* Blank canvas toggle */
     festSection = '<button class="blank-canvas-toggle" id="blankCanvasToggle" onclick="showBlankCanvas()">'
-      + '✏️ Create Your Own Card — No Festival Needed'
+      + 'âœï¸ Create Your Own Card â€” No Festival Needed'
       + '</button>'
       + '<div class="blank-canvas-section" id="blankCanvasSection">'
 
       /* Card type dropdown */
-      + '<div class="bcs-label">🎉 Card Type</div>'
+      + '<div class="bcs-label">ðŸŽ‰ Card Type</div>'
       + '<select class="bcs-input" id="blankCardTitleSelect" onchange="updateBlankCardTitle()">'
-      + '<option value="">— Select Occasion —</option>'
-      + '<option value="Happy Birthday! 🎂">🎂 Birthday</option>'
-      + '<option value="Happy Anniversary! 💍">💍 Anniversary</option>'
-      + '<option value="Congratulations! 🎉">🎉 Congratulations</option>'
-      + '<option value="Thank You! 🙏">🙏 Thank You</option>'
-      + '<option value="Get Well Soon! 💐">💐 Get Well Soon</option>'
-      + '<option value="Good Luck! 🍀">🍀 Good Luck</option>'
-      + '<option value="Welcome! 🎊">🎊 Welcome</option>'
-      + '<option value="Happy Retirement! 🌟">🌟 Retirement</option>'
-      + '<option value="Farewell! 👋">👋 Farewell</option>'
-      + '<option value="Custom">✏️ Type my own...</option>'
+      + '<option value="">â€” Select Occasion â€”</option>'
+      + '<option value="Happy Birthday! ðŸŽ‚">ðŸŽ‚ Birthday</option>'
+      + '<option value="Happy Anniversary! ðŸ’">ðŸ’ Anniversary</option>'
+      + '<option value="Congratulations! ðŸŽ‰">ðŸŽ‰ Congratulations</option>'
+      + '<option value="Thank You! ðŸ™">ðŸ™ Thank You</option>'
+      + '<option value="Get Well Soon! ðŸ’">ðŸ’ Get Well Soon</option>'
+      + '<option value="Good Luck! ðŸ€">ðŸ€ Good Luck</option>'
+      + '<option value="Welcome! ðŸŽŠ">ðŸŽŠ Welcome</option>'
+      + '<option value="Happy Retirement! ðŸŒŸ">ðŸŒŸ Retirement</option>'
+      + '<option value="Farewell! ðŸ‘‹">ðŸ‘‹ Farewell</option>'
+      + '<option value="Custom">âœï¸ Type my own...</option>'
       + '</select>'
       + '<input class="bcs-input" id="blankCardTitle" placeholder="Type your custom title..." maxlength="40" style="display:none;margin-top:8px">'
 
-      /* From → To */
-      + '<div class="bcs-label">👤 From → To</div>'
+      /* From â†’ To */
+      + '<div class="bcs-label">ðŸ‘¤ From â†’ To</div>'
       + '<div style="display:flex;gap:8px;align-items:center">'
       + '<input class="bcs-input" id="blankCardFrom" placeholder="From (your name / family)" maxlength="30" style="flex:1">'
-      + '<span style="color:rgba(255,255,255,0.4);font-size:18px;flex-shrink:0">→</span>'
+      + '<span style="color:rgba(255,255,255,0.4);font-size:18px;flex-shrink:0">â†’</span>'
       + '<input class="bcs-input" id="blankCardTo" placeholder="To (recipient name)" maxlength="30" style="flex:1">'
       + '</div>'
 
       /* Message with voice */
-      + '<div class="bcs-label">💬 Your Message</div>'
+      + '<div class="bcs-label">ðŸ’¬ Your Message</div>'
       + '<div class="studio-voice-row">'
-      + '<textarea class="bcs-input" id="blankCardText" rows="3" placeholder="Type your heartfelt message (or tap 🎤 to speak)..."></textarea>'
-      + '<button class="studio-mic-btn" id="blankMicBtn" onclick="toggleBlankVoice()" title="Voice input">🎤</button>'
+      + '<textarea class="bcs-input" id="blankCardText" rows="3" placeholder="Type your heartfelt message (or tap ðŸŽ¤ to speak)..."></textarea>'
+      + '<button class="studio-mic-btn" id="blankMicBtn" onclick="toggleBlankVoice()" title="Voice input">ðŸŽ¤</button>'
       + '</div>'
 
       /* Emoji */
       + '<div class="bcs-label">Emoji</div>'
-      + '<div class="bcs-row"><input class="bcs-input bcs-emoji" id="blankCardEmoji" placeholder="✨" maxlength="4" value="✨">'
+      + '<div class="bcs-row"><input class="bcs-input bcs-emoji" id="blankCardEmoji" placeholder="âœ¨" maxlength="4" value="âœ¨">'
       + '<span style="font-size:12px;color:rgba(255,255,255,.4);align-self:center">Paste any emoji here</span></div>'
 
       /* Share To platform */
-      + '<div class="bcs-label">📲 Share To</div>'
+      + '<div class="bcs-label">ðŸ“² Share To</div>'
       + '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:4px">'
-      + '<button class="bcs-social-btn active" id="bsp-whatsapp"   onclick="selectBlankSocial(\'whatsapp\',this)"  style="background:rgba(37,211,102,0.15);border:1.5px solid rgba(37,211,102,0.5);color:#25d366;border-radius:10px;padding:10px 4px;font-size:12px;font-weight:700;cursor:pointer;">💬 WhatsApp</button>'
-      + '<button class="bcs-social-btn"        id="bsp-instagram"  onclick="selectBlankSocial(\'instagram\',this)"  style="background:rgba(255,255,255,0.04);border:1.5px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.7);border-radius:10px;padding:10px 4px;font-size:12px;font-weight:700;cursor:pointer;">📸 Instagram</button>'
-      + '<button class="bcs-social-btn"        id="bsp-facebook"   onclick="selectBlankSocial(\'facebook\',this)"   style="background:rgba(255,255,255,0.04);border:1.5px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.7);border-radius:10px;padding:10px 4px;font-size:12px;font-weight:700;cursor:pointer;">📘 Facebook</button>'
-      + '<button class="bcs-social-btn"        id="bsp-twitter"    onclick="selectBlankSocial(\'twitter\',this)"    style="background:rgba(255,255,255,0.04);border:1.5px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.7);border-radius:10px;padding:10px 4px;font-size:12px;font-weight:700;cursor:pointer;">🐦 Twitter / X</button>'
-      + '<button class="bcs-social-btn"        id="bsp-linkedin"   onclick="selectBlankSocial(\'linkedin\',this)"   style="background:rgba(255,255,255,0.04);border:1.5px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.7);border-radius:10px;padding:10px 4px;font-size:12px;font-weight:700;cursor:pointer;">💼 LinkedIn</button>'
-      + '<button class="bcs-social-btn"        id="bsp-print"      onclick="selectBlankSocial(\'print\',this)"      style="background:rgba(255,255,255,0.04);border:1.5px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.7);border-radius:10px;padding:10px 4px;font-size:12px;font-weight:700;cursor:pointer;">🖨️ Print</button>'
+      + '<button class="bcs-social-btn active" id="bsp-whatsapp"   onclick="selectBlankSocial(\'whatsapp\',this)"  style="background:rgba(37,211,102,0.15);border:1.5px solid rgba(37,211,102,0.5);color:#25d366;border-radius:10px;padding:10px 4px;font-size:12px;font-weight:700;cursor:pointer;">ðŸ’¬ WhatsApp</button>'
+      + '<button class="bcs-social-btn"        id="bsp-instagram"  onclick="selectBlankSocial(\'instagram\',this)"  style="background:rgba(255,255,255,0.04);border:1.5px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.7);border-radius:10px;padding:10px 4px;font-size:12px;font-weight:700;cursor:pointer;">ðŸ“¸ Instagram</button>'
+      + '<button class="bcs-social-btn"        id="bsp-facebook"   onclick="selectBlankSocial(\'facebook\',this)"   style="background:rgba(255,255,255,0.04);border:1.5px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.7);border-radius:10px;padding:10px 4px;font-size:12px;font-weight:700;cursor:pointer;">ðŸ“˜ Facebook</button>'
+      + '<button class="bcs-social-btn"        id="bsp-twitter"    onclick="selectBlankSocial(\'twitter\',this)"    style="background:rgba(255,255,255,0.04);border:1.5px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.7);border-radius:10px;padding:10px 4px;font-size:12px;font-weight:700;cursor:pointer;">ðŸ¦ Twitter / X</button>'
+      + '<button class="bcs-social-btn"        id="bsp-linkedin"   onclick="selectBlankSocial(\'linkedin\',this)"   style="background:rgba(255,255,255,0.04);border:1.5px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.7);border-radius:10px;padding:10px 4px;font-size:12px;font-weight:700;cursor:pointer;">ðŸ’¼ LinkedIn</button>'
+      + '<button class="bcs-social-btn"        id="bsp-print"      onclick="selectBlankSocial(\'print\',this)"      style="background:rgba(255,255,255,0.04);border:1.5px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.7);border-radius:10px;padding:10px 4px;font-size:12px;font-weight:700;cursor:pointer;">ðŸ–¨ï¸ Print</button>'
       + '</div>'
 
-      + '<button class="studio-analyze-btn" id="blankGenerateBtn" onclick="generateBlankCardGated()" style="margin-top:14px">🎨 Create My Card</button>'
+      + '<button class="studio-analyze-btn" id="blankGenerateBtn" onclick="generateBlankCardGated()" style="margin-top:14px">ðŸŽ¨ Create My Card</button>'
       + '<div id="blankCardCanvas"></div>'
       + '</div>';
 
@@ -469,27 +469,27 @@ function buildStudioModal() {
     upload = '<div class="studio-options-label">Upload Photo <span style="color:rgba(255,255,255,0.4);font-weight:400">(optional)</span></div>'
       + '<div class="studio-upload-zone" id="studioDropZone" onclick="document.getElementById(\'studioFileInput\').click()" ondragover="studioDragOver(event)" ondrop="studioDrop(event)">'
       + '<div id="studioUploadInner" style="text-align:center">'
-      + '<div style="font-size:40px">📷</div>'
+      + '<div style="font-size:40px">ðŸ“·</div>'
       + '<div style="font-size:14px;font-weight:700;color:#fff;margin-top:8px">Tap to upload photo</div>'
       + '<div style="font-size:12px;color:rgba(255,255,255,0.45);margin-top:4px">or drag &amp; drop</div>'
       + '</div></div>'
       + '<div class="studio-upload-preview" id="studioPreview">'
       + '<img id="studioPreviewImg" src="" alt="Preview">'
-      + '<button class="change-photo" onclick="event.stopPropagation();document.getElementById(\'studioFileInput\').click()">📷 Change</button>'
+      + '<button class="change-photo" onclick="event.stopPropagation();document.getElementById(\'studioFileInput\').click()">ðŸ“· Change</button>'
       + '</div>'
       + '<input type="file" id="studioFileInput" accept="image/*" style="display:none" onchange="studioFileSelected(this.files[0])">';
   }
 
-  /* ── Document Upload (Document Analyzer only) ── */
+  /* â”€â”€ Document Upload (Document Analyzer only) â”€â”€ */
   var docUpload = '';
   if (s.hasDocUpload) {
-    docUpload = '<div class="studio-options-label">📄 Upload Your Document</div>'
+    docUpload = '<div class="studio-options-label">ðŸ“„ Upload Your Document</div>'
       + '<div class="doc-upload-zone" id="docDropZone"'
       + ' onclick="document.getElementById(\'docFileInput\').click()"'
       + ' ondragover="docDragOver(event)" ondrop="docDrop(event)">'
-      + '<div style="font-size:40px">📄</div>'
+      + '<div style="font-size:40px">ðŸ“„</div>'
       + '<div style="font-size:14px;font-weight:700;color:#fff;margin-top:8px">Tap to upload document</div>'
-      + '<div style="font-size:12px;color:rgba(255,255,255,0.45);margin-top:6px">PDF, DOCX, TXT, XLSX, XLS, CSV • Max 10MB</div>'
+      + '<div style="font-size:12px;color:rgba(255,255,255,0.45);margin-top:6px">PDF, DOCX, TXT, XLSX, XLS, CSV â€¢ Max 10MB</div>'
       + '</div>'
       + '<div class="doc-file-status" id="docFileStatus"></div>'
       + '<div class="doc-file-name" id="docFileName"></div>'
@@ -498,7 +498,7 @@ function buildStudioModal() {
       + ' style="display:none" onchange="docFileSelected(this.files[0])">';
   }
 
-  /* Options — index-based onclick avoids ALL special char issues */
+  /* Options â€” index-based onclick avoids ALL special char issues */
   var opts = '';
   var grpKeys = Object.keys(s.options || {});
   for (var gi = 0; gi < grpKeys.length; gi++) {
@@ -513,31 +513,31 @@ function buildStudioModal() {
     opts += '</div>';
   }
 
-  /* Context + Voice — no templates dropdown, just clean textarea */
+  /* Context + Voice â€” no templates dropdown, just clean textarea */
   var ctx = '<div class="studio-options-label" style="font-size:13px;font-weight:700;color:rgba(255,255,255,0.9);margin-bottom:8px;">&#10024; Add Your Personal Touch</div>'
     + '<div style="font-size:12px;color:rgba(255,255,255,0.45);margin-bottom:10px;line-height:1.5;">Add your name, message, or any personal detail to make the output uniquely yours.</div>'
     + '<div class="studio-voice-row">'
     + '<textarea id="studioContext" rows="3" class="studio-textarea" placeholder="' + s.placeholder + '"></textarea>'
-    + '<button class="studio-mic-btn" id="studioMicBtn" onclick="toggleStudioVoice()" title="Voice input">🎤</button>'
+    + '<button class="studio-mic-btn" id="studioMicBtn" onclick="toggleStudioVoice()" title="Voice input">ðŸŽ¤</button>'
     + '</div>'
     + '<div class="studio-context-actions">'
-    + '<button class="studio-ctx-btn" onclick="clearStudioContext()" title="Clear text">🗑 Clear</button>'
-    + '<button class="studio-ctx-btn" onclick="reuseLastContext()" title="Reuse last input">🔄 Reuse Last</button>'
-    + '<button class="studio-ctx-btn" onclick="saveStudioDraft()" title="Save as draft" style="color:var(--accent);">💾 Save Draft</button>'
+    + '<button class="studio-ctx-btn" onclick="clearStudioContext()" title="Clear text">ðŸ—‘ Clear</button>'
+    + '<button class="studio-ctx-btn" onclick="reuseLastContext()" title="Reuse last input">ðŸ”„ Reuse Last</button>'
+    + '<button class="studio-ctx-btn" onclick="saveStudioDraft()" title="Save as draft" style="color:var(--accent);">ðŸ’¾ Save Draft</button>'
     + '</div>';
 
   /* Output */
   var out = s.id === 'docanalyzer'
     ? '<div class="studio-output" id="studioOutput"><div id="docAnalyzerOutput"></div></div>'
     : '<div class="studio-output" id="studioOutput">'
-      + '<div class="studio-output-label">✨ AI Generated — Choose your variation</div>'
+      + '<div class="studio-output-label">âœ¨ AI Generated â€” Choose your variation</div>'
       + '<div id="studioVariations"></div>'
       + (s.id === 'cultural' ? '<div id="festivalCardCanvas" class="festival-canvas-wrap"></div>' : '')
-      + '<button class="studio-send-to-write" onclick="sendStudioToWrite()">✍️ Open in Write for more customization →</button>'
+      + '<button class="studio-send-to-write" onclick="sendStudioToWrite()">âœï¸ Open in Write for more customization â†’</button>'
       + '</div>';
 
   document.querySelector('.studio-modal').innerHTML =
-    '<button class="studio-modal-close-top" onclick="closeStudio()">✕ Close</button>'
+    '<button class="studio-modal-close-top" onclick="closeStudio()">âœ• Close</button>'
     + hero
     + '<div class="studio-modal-body">'
     + tips + kidsGallery + festSection + upload + docUpload + opts + ctx
@@ -564,13 +564,13 @@ function buildFestivalPreview() {
   return '<div class="festival-preview-card" id="festivalPreviewCard" style="background:linear-gradient(135deg,' + f.grad[0] + ',' + f.grad[1] + ',' + f.grad[2] + ')">'
     + '<div class="fpc-emojis">' + f.emoji2 + '</div>'
     + '<div class="fpc-name">' + f.name + '</div>'
-    + '<div class="fpc-sub">Tap Generate to get your card ↓</div>'
+    + '<div class="fpc-sub">Tap Generate to get your card â†“</div>'
     + '</div>';
 }
 
-/* ── Selection Handlers ── */
+/* â”€â”€ Selection Handlers â”€â”€ */
 
-/* Pill select — uses group-index (gi) and pill-index (pi) — no string escaping needed */
+/* Pill select â€” uses group-index (gi) and pill-index (pi) â€” no string escaping needed */
 function selectPill(gi, pi) {
   var s = activeStudio;
   if (!s) return;
@@ -588,7 +588,7 @@ function selectPill(gi, pi) {
   }
 }
 
-/* Kids style — uses index */
+/* Kids style â€” uses index */
 function selectKidsStyle(ki) {
   if (ki >= KIDS_STYLES.length) return;
   selectedOptions['Art Style'] = KIDS_STYLES[ki].label;
@@ -596,7 +596,7 @@ function selectKidsStyle(ki) {
   for (var i = 0; i < cards.length; i++) cards[i].classList.toggle('active', i === ki);
 }
 
-/* Festival select — uses index, no apostrophe issues */
+/* Festival select â€” uses index, no apostrophe issues */
 function selectFestival(fi) {
   if (fi >= FESTIVALS.length) return;
   var f = FESTIVALS[fi];
@@ -616,7 +616,7 @@ function selectFestival(fi) {
   var newHtml = '<div class="festival-preview-card" id="festivalPreviewCard" style="background:linear-gradient(135deg,' + f.grad[0] + ',' + f.grad[1] + ',' + f.grad[2] + ')">'
     + '<div class="fpc-emojis">' + f.emoji2 + '</div>'
     + '<div class="fpc-name">' + f.name + '</div>'
-    + '<div class="fpc-sub">Tap Generate to get your card ↓</div>'
+    + '<div class="fpc-sub">Tap Generate to get your card â†“</div>'
     + '</div>';
   var existing = document.getElementById('festivalPreviewCard');
   var grid     = document.getElementById('festivalGrid');
@@ -624,7 +624,7 @@ function selectFestival(fi) {
   else if (grid) grid.insertAdjacentHTML('afterend', newHtml);
 }
 
-/* ── Drag & Drop ── */
+/* â”€â”€ Drag & Drop â”€â”€ */
 function studioDragOver(e) { e.preventDefault(); document.getElementById('studioDropZone').classList.add('dragover'); }
 function studioDrop(e) {
   e.preventDefault();
@@ -637,7 +637,7 @@ function studioFileSelected(file) {
   studioFile = file;
   /* Logo PNG Quality Warning */
   if (file.type !== 'image/png') {
-    Toast.show('💡 For logos: PNG gives best results. JPG may affect quality.', 'info', 5000);
+    Toast.show('ðŸ’¡ For logos: PNG gives best results. JPG may affect quality.', 'info', 5000);
     /* Show warning banner inside the upload zone */
     setTimeout(function() {
       var zone = document.getElementById('studioDropZone');
@@ -647,7 +647,7 @@ function studioFileSelected(file) {
           warn = document.createElement('div');
           warn.id = 'studioLogoWarn';
           warn.style.cssText = 'margin-top:8px;padding:8px 12px;background:rgba(255,193,7,0.1);border:1px solid rgba(255,193,7,0.3);border-radius:8px;font-size:12px;color:#ffc107;line-height:1.5;';
-          warn.innerHTML = '⚠️ <strong>Logo detected as non-PNG.</strong> For best output quality, upload a transparent PNG logo. Your result will be close but may vary.';
+          warn.innerHTML = 'âš ï¸ <strong>Logo detected as non-PNG.</strong> For best output quality, upload a transparent PNG logo. Your result will be close but may vary.';
           zone.parentNode.insertBefore(warn, zone.nextSibling);
         }
       }
@@ -668,7 +668,7 @@ function studioFileSelected(file) {
   reader.readAsDataURL(file);
 }
 
-/* ── Voice ── */
+/* â”€â”€ Voice â”€â”€ */
 function toggleStudioVoice() {
   if (studioVoiceOn) { stopStudioVoice(); return; }
   var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -687,17 +687,17 @@ function toggleStudioVoice() {
   studioRecognition.start();
   studioVoiceOn = true;
   var btn = document.getElementById('studioMicBtn');
-  if (btn) { btn.textContent = '🔴'; btn.style.background = 'rgba(255,50,50,0.2)'; }
-  Toast.show('🎤 Listening... speak now', 'info', 5000);
+  if (btn) { btn.textContent = 'ðŸ”´'; btn.style.background = 'rgba(255,50,50,0.2)'; }
+  Toast.show('ðŸŽ¤ Listening... speak now', 'info', 5000);
 }
 function stopStudioVoice() {
   if (studioRecognition) { try { studioRecognition.stop(); } catch(e) {} studioRecognition = null; }
   studioVoiceOn = false;
   var btn = document.getElementById('studioMicBtn');
-  if (btn) { btn.textContent = '🎤'; btn.style.background = ''; }
+  if (btn) { btn.textContent = 'ðŸŽ¤'; btn.style.background = ''; }
 }
 
-/* ── Run Studio ── */
+/* â”€â”€ Run Studio â”€â”€ */
 async function runStudio() {
   var s = activeStudio;
   var btn = document.getElementById('studioAnalyzeBtn');
@@ -705,7 +705,7 @@ async function runStudio() {
   context = context.trim();
   stopStudioVoice();
 
-  /* ── TRIAL / USAGE GATE ── */
+  /* â”€â”€ TRIAL / USAGE GATE â”€â”€ */
   if (!ClarixState.canEnhance()) {
     UpgradeModal.show('You\'ve used all your free Creative Studio prompts!');
     return;
@@ -715,15 +715,15 @@ async function runStudio() {
      promptCultural() already defaults to 'Diwali' when selectedFestival is null. */
   /* Document Analyzer: need uploaded doc */
   if (s.id === 'docanalyzer' && !docExtractedText) {
-    Toast.show('📄 Please upload a document first', 'error'); return;
+    Toast.show('ðŸ“„ Please upload a document first', 'error'); return;
   }
 
   if (s.hasFestivals && !selectedFestival && !blankCanvasMode && !context) {
-    Toast.show('Please select a festival first 🎉', 'error'); return;
+    Toast.show('Please select a festival first ðŸŽ‰', 'error'); return;
   }
 
   btn.disabled = true;
-  btn.textContent = '⏳ Generating...';
+  btn.textContent = 'â³ Generating...';
   Toast.show(s.emoji + ' Creating your content...', 'info', 12000);
 
   try {
@@ -740,7 +740,7 @@ async function runStudio() {
     else if (s.promptFn === 'multilingual')result = await promptMultilingual(base64, mime, context);
     else if (s.promptFn === 'docanalyzer') result = await promptDocAnalyzer(context);
 
-    /* ── DEDUCT USAGE after success (not before - so failed calls don't waste credits) ── */
+    /* â”€â”€ DEDUCT USAGE after success (not before - so failed calls don't waste credits) â”€â”€ */
     ClarixState.incUsage();
     if (typeof updateUsageCounter === 'function') updateUsageCounter();
     if (typeof Sidebar !== 'undefined' && Sidebar.refresh) Sidebar.refresh();
@@ -749,9 +749,9 @@ async function runStudio() {
     var rem = ClarixState.remainingToday();
     var inTrial = ClarixState.isInTrial();
     if (!ClarixState.isPro) {
-      Toast.show('✅ Done! ' + rem + (inTrial ? ' trial' : ' free') + ' prompts remaining.', 'success', 3500);
+      Toast.show('âœ… Done! ' + rem + (inTrial ? ' trial' : ' free') + ' prompts remaining.', 'success', 3500);
     } else {
-      Toast.show('✅ Done! Pick a variation below.', 'success', 3000);
+      Toast.show('âœ… Done! Pick a variation below.', 'success', 3000);
     }
 
     if (s.id === 'docanalyzer') {
@@ -763,7 +763,7 @@ async function runStudio() {
     if (s.id !== 'docanalyzer') setTimeout(showStudioContinueModal, 1500);
   } catch(err) {
     console.error('[Studio]', err);
-    Toast.show('❌ ' + (err.message || 'Something went wrong. Try again.'), 'error');
+    Toast.show('âŒ ' + (err.message || 'Something went wrong. Try again.'), 'error');
   } finally {
     btn.disabled = false;
     btn.textContent = s.analyzeLabel;
@@ -771,7 +771,7 @@ async function runStudio() {
 }
 
 
-/* ── Render Output ── */
+/* â”€â”€ Render Output â”€â”€ */
 function renderStudioOutput(result) {
   var out  = document.getElementById('studioOutput');
   var varD = document.getElementById('studioVariations');
@@ -780,7 +780,7 @@ function renderStudioOutput(result) {
   var html = '';
   for (var i = 0; i < vars.length; i++) {
     html += '<div class="studio-variation' + (i === 0 ? ' selected' : '') + '" onclick="selectVariation(' + i + ')" id="sv' + i + '">'
-      + '<div class="studio-variation-num">Variation ' + (i + 1) + (i === 0 ? ' · ★ Recommended' : '') + '</div>'
+      + '<div class="studio-variation-num">Variation ' + (i + 1) + (i === 0 ? ' Â· â˜… Recommended' : '') + '</div>'
       + '<div class="studio-variation-text">' + vars[i].replace(/\n/g, '<br>') + '</div>'
       + '<button class="studio-variation-copy" onclick="event.stopPropagation();copyVar(' + i + ')">Copy</button>'
       + '</div>';
@@ -811,7 +811,7 @@ function selectVariation(i) {
 function copyVar(i) {
   var text = (window._studioVars || [])[i] || '';
   if (navigator.clipboard) {
-    navigator.clipboard.writeText(text).then(function() { Toast.show('✅ Copied!', 'success', 2000); });
+    navigator.clipboard.writeText(text).then(function() { Toast.show('âœ… Copied!', 'success', 2000); });
   } else {
     Toast.show('Select and copy the text manually', 'error');
   }
@@ -826,7 +826,7 @@ function sendStudioToWrite() {
   window.location.href = 'write.html';
 }
 
-/* ── Clear / Reuse / Save Draft helpers ── */
+/* â”€â”€ Clear / Reuse / Save Draft helpers â”€â”€ */
 function clearStudioContext() {
   var ta = document.getElementById('studioContext');
   if (ta) { ta.value = ''; ta.focus(); }
@@ -841,7 +841,7 @@ function reuseLastContext() {
   var ta = document.getElementById('studioContext');
   if (!last) { Toast.show('No previous input found', 'info', 2000); return; }
   if (ta) { ta.value = last; ta.focus(); }
-  Toast.show('Last input restored ✓', 'success', 2000);
+  Toast.show('Last input restored âœ“', 'success', 2000);
 }
 
 function saveStudioDraft() {
@@ -861,7 +861,7 @@ function saveStudioDraft() {
         });
     }
   } catch(e) {}
-  Toast.show('💾 Draft saved!', 'success', 2000);
+  Toast.show('ðŸ’¾ Draft saved!', 'success', 2000);
 }
 
 /* Save studio generation result to Firestore history */
@@ -903,37 +903,37 @@ function showStudioContinueModal() {
   el.style.cssText = 'position:fixed;inset:0;z-index:10000;background:rgba(0,0,0,0.88);backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;padding:20px;';
   var studioName = activeStudio ? activeStudio.name : 'Studio';
   el.innerHTML = '<div style="background:#111;border:1px solid rgba(255,112,67,0.3);border-radius:20px;padding:32px 28px;max-width:380px;width:100%;text-align:center;">'
-    + '<div style="font-size:30px;margin-bottom:12px;">✨</div>'
+    + '<div style="font-size:30px;margin-bottom:12px;">âœ¨</div>'
     + '<div style="font-size:18px;font-weight:800;color:#fff;margin-bottom:8px;font-family:var(--font-head);">Great output!</div>'
     + '<div style="font-size:13px;color:rgba(255,255,255,0.6);margin-bottom:24px;line-height:1.6;">What would you like to do next?</div>'
     + '<div style="display:flex;flex-direction:column;gap:10px;">'
-    + '<button onclick="document.getElementById(\'clarix-studio-continue\').remove()" style="background:var(--accent);color:#fff;border:none;border-radius:12px;padding:13px;font-size:14px;font-weight:700;cursor:pointer;">🔄 Refine or Enhance More</button>'
-    + '<button onclick="document.getElementById(\'clarix-studio-continue\').remove();clearStudioContext()" style="background:rgba(255,255,255,0.06);color:#fff;border:1px solid rgba(255,255,255,0.12);border-radius:12px;padding:13px;font-size:14px;font-weight:700;cursor:pointer;">🎨 Change Style / Options</button>'
-    + '<button onclick="sendStudioToWrite()" style="background:rgba(255,255,255,0.06);color:#fff;border:1px solid rgba(255,255,255,0.12);border-radius:12px;padding:13px;font-size:14px;font-weight:700;cursor:pointer;">✍️ Open in Write Studio</button>'
+    + '<button onclick="document.getElementById(\'clarix-studio-continue\').remove()" style="background:var(--accent);color:#fff;border:none;border-radius:12px;padding:13px;font-size:14px;font-weight:700;cursor:pointer;">ðŸ”„ Refine or Enhance More</button>'
+    + '<button onclick="document.getElementById(\'clarix-studio-continue\').remove();clearStudioContext()" style="background:rgba(255,255,255,0.06);color:#fff;border:1px solid rgba(255,255,255,0.12);border-radius:12px;padding:13px;font-size:14px;font-weight:700;cursor:pointer;">ðŸŽ¨ Change Style / Options</button>'
+    + '<button onclick="sendStudioToWrite()" style="background:rgba(255,255,255,0.06);color:#fff;border:1px solid rgba(255,255,255,0.12);border-radius:12px;padding:13px;font-size:14px;font-weight:700;cursor:pointer;">âœï¸ Open in Write Studio</button>'
     + '<button onclick="document.getElementById(\'clarix-studio-continue\').remove();closeStudio()" style="background:none;border:none;color:rgba(255,255,255,0.35);cursor:pointer;font-size:13px;padding:8px;">Back to Apps</button>'
     + '</div></div>';
   document.body.appendChild(el);
   el.addEventListener('click', function(e) { if (e.target === el) el.remove(); });
 }
 
-/* ════════════════════════════════════════════
-   FESTIVAL CANVAS ENGINE — Design-System Aware
-════════════════════════════════════════════ */
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   FESTIVAL CANVAS ENGINE â€” Design-System Aware
+â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 
-/* Core drawing function — shared by festival card AND blank canvas */
+/* Core drawing function â€” shared by festival card AND blank canvas */
 function drawFestivalCanvas(canvas, opts) {
   /* opts: { festival, text, emoji, title, design } */
   var festival = opts.festival || null;
   var text     = opts.text || '';
-  var emoji    = opts.emoji || (festival ? festival.emoji : '✨');
-  var emoji2   = opts.emoji2 || (festival ? festival.emoji2 : '✨🌟✨');
+  var emoji    = opts.emoji || (festival ? festival.emoji : 'âœ¨');
+  var emoji2   = opts.emoji2 || (festival ? festival.emoji2 : 'âœ¨ðŸŒŸâœ¨');
   var title    = opts.title || (festival ? festival.name : 'My Card');
   var d        = opts.design || cardDesign;
 
   var ctx = canvas.getContext('2d');
   canvas.width = 1080; canvas.height = 1080;
 
-  /* ── Background ── */
+  /* â”€â”€ Background â”€â”€ */
   var bgColors;
   if (d.bgPreset === 0 && festival) {
     bgColors = festival.grad;
@@ -955,7 +955,7 @@ function drawFestivalCanvas(canvas, opts) {
   ctx.fillStyle = 'rgba(0,0,0,0.28)';
   ctx.fillRect(0, 0, 1080, 1080);
 
-  /* ── Border / Frame ── */
+  /* â”€â”€ Border / Frame â”€â”€ */
   if (d.borderStyle === 'double') {
     ctx.strokeStyle = 'rgba(255,255,255,0.25)'; ctx.lineWidth = 6;
     ctx.strokeRect(28, 28, 1024, 1024);
@@ -974,35 +974,35 @@ function drawFestivalCanvas(canvas, opts) {
     ctx.strokeStyle = 'rgba(255,215,0,0.3)'; ctx.lineWidth = 2;
     ctx.strokeRect(40, 40, 1000, 1000);
   }
-  /* borderStyle === 'none' → skip */
+  /* borderStyle === 'none' â†’ skip */
 
-  /* ── Emoji top ── */
+  /* â”€â”€ Emoji top â”€â”€ */
   ctx.font = '110px serif';
   ctx.textAlign = 'center';
   ctx.fillStyle = '#ffffff';
   ctx.shadowBlur = 0;
   ctx.fillText(emoji, 540, 175);
 
-  /* ── Title ── */
+  /* â”€â”€ Title â”€â”€ */
   var fontFamily = FONT_MAP[d.fontStyle] || 'Arial, sans-serif';
   ctx.font = 'bold 70px ' + fontFamily;
   ctx.shadowColor = 'rgba(0,0,0,0.55)'; ctx.shadowBlur = 20;
   ctx.fillStyle = d.textColor || '#ffffff';
   ctx.fillText(title, 540, 290);
 
-  /* ── Secondary emoji strip ── */
+  /* â”€â”€ Secondary emoji strip â”€â”€ */
   ctx.shadowBlur = 0;
   ctx.font = '42px serif';
   ctx.fillStyle = '#ffffff';
   ctx.fillText(emoji2, 540, 390);
 
-  /* ── Divider line ── */
+  /* â”€â”€ Divider line â”€â”€ */
   ctx.beginPath();
   ctx.strokeStyle = 'rgba(255,255,255,0.2)'; ctx.lineWidth = 1;
   ctx.moveTo(100, 428); ctx.lineTo(980, 428);
   ctx.stroke();
 
-  /* ── Message text (bottom section) ── */
+  /* â”€â”€ Message text (bottom section) â”€â”€ */
   var fontSize   = TEXT_SIZE_MAP[d.textSize] || 38;
   var lineHeight = Math.round(fontSize * 1.6);
   ctx.font       = fontSize + 'px ' + fontFamily;
@@ -1011,7 +1011,7 @@ function drawFestivalCanvas(canvas, opts) {
   var textWrapMaxY = opts.fromTo ? 800 : 880;
   wrapCanvasText(ctx, text.substring(0, 320), 540, 490, 900, lineHeight, textWrapMaxY);
 
-  /* ── From / To (professional bottom section) ── */
+  /* â”€â”€ From / To (professional bottom section) â”€â”€ */
   if (opts.fromTo) {
     ctx.shadowBlur = 0;
     ctx.beginPath();
@@ -1025,16 +1025,16 @@ function drawFestivalCanvas(canvas, opts) {
     ctx.shadowBlur = 0;
   }
 
-  /* ── Watermark ── */
+  /* â”€â”€ Watermark â”€â”€ */
   if (d.showWatermark) {
     ctx.shadowBlur = 0;
     ctx.font = '21px Arial, sans-serif';
     ctx.fillStyle = 'rgba(255,255,255,0.32)';
-    ctx.fillText('Made with Clarix AI  ·  clarix.digital', 540, 1050);
+    ctx.fillText('Made with Clarix AI  Â·  clarix.digital', 540, 1050);
   }
 }
 
-/* ── generateFestivalCard — called from renderStudioOutput ── */
+/* â”€â”€ generateFestivalCard â€” called from renderStudioOutput â”€â”€ */
 function generateFestivalCard(text) {
   var festival = null;
   for (var i = 0; i < FESTIVALS.length; i++) {
@@ -1049,12 +1049,12 @@ function generateFestivalCard(text) {
   /* Reset design to festival theme on new generate */
   cardDesign.bgPreset = 0;
 
-  /* Extract "To: X | From: Y" from AI text — render as professional bottom section */
+  /* Extract "To: X | From: Y" from AI text â€” render as professional bottom section */
   var fromTo = '';
   var textClean = text;
   var ftMatch = text.match(/(?:To:\s*\S[\w\s]*(?:\s*[|]\s*From:\s*\S[\w\s]*)?|From:\s*\S[\w\s]*(?:\s*[|]\s*To:\s*\S[\w\s]*)?)/i);
   if (ftMatch) {
-    fromTo = ftMatch[0].replace(/\s*[|]+\s*/g, '  ·  ').trim();
+    fromTo = ftMatch[0].replace(/\s*[|]+\s*/g, '  Â·  ').trim();
     textClean = text.replace(ftMatch[0], '').trim();
   }
   window._festivalFromTo = fromTo;
@@ -1076,7 +1076,7 @@ function generateFestivalCard(text) {
   renderCardControls(wrap);
 }
 
-/* ── Blank Canvas helpers ── */
+/* â”€â”€ Blank Canvas helpers â”€â”€ */
 
 function updateBlankCardTitle() {
   var sel = document.getElementById('blankCardTitleSelect');
@@ -1112,18 +1112,18 @@ function toggleBlankVoice() {
   _blankRecognition.start();
   _blankVoiceOn = true;
   var btn = document.getElementById('blankMicBtn');
-  if (btn) { btn.textContent = '🔴'; btn.style.background = 'rgba(255,50,50,0.2)'; }
-  Toast.show('🎤 Listening… speak your message', 'info', 5000);
+  if (btn) { btn.textContent = 'ðŸ”´'; btn.style.background = 'rgba(255,50,50,0.2)'; }
+  Toast.show('ðŸŽ¤ Listeningâ€¦ speak your message', 'info', 5000);
 }
 
 function stopBlankVoice() {
   if (_blankRecognition) { try { _blankRecognition.stop(); } catch(e) {} _blankRecognition = null; }
   _blankVoiceOn = false;
   var btn = document.getElementById('blankMicBtn');
-  if (btn) { btn.textContent = '🎤'; btn.style.background = ''; }
+  if (btn) { btn.textContent = 'ðŸŽ¤'; btn.style.background = ''; }
 }
 
-/* ── Show blank canvas section ── */
+/* â”€â”€ Show blank canvas section â”€â”€ */
 function showBlankCanvas() {
   blankCanvasMode = true;
   var section = document.getElementById('blankCanvasSection');
@@ -1143,7 +1143,7 @@ function showBlankCanvas() {
   }
 }
 
-/* ── Generate blank card (pure canvas — no AI required) ── */
+/* â”€â”€ Generate blank card (pure canvas â€” no AI required) â”€â”€ */
 function generateBlankCardGated() {
   generateBlankCard();
 }
@@ -1152,7 +1152,7 @@ function autoShareBlankCard(platform) {
   studioTipAction(platform || 'whatsapp');
 }
 
-/* ── Social platform selector ── */
+/* â”€â”€ Social platform selector â”€â”€ */
 var _blankSocialPlatform = 'whatsapp'; /* default */
 
 function selectBlankSocial(platform, btn) {
@@ -1183,7 +1183,7 @@ function selectBlankSocial(platform, btn) {
   }
 }
 
-/* ── generateBlankCard — reads from/to + dropdown title ── */
+/* â”€â”€ generateBlankCard â€” reads from/to + dropdown title â”€â”€ */
 function generateBlankCard() {
   var textEl   = document.getElementById('blankCardText');
   var emojiEl  = document.getElementById('blankCardEmoji');
@@ -1193,7 +1193,7 @@ function generateBlankCard() {
   var toEl     = document.getElementById('blankCardTo');
 
   var text  = (textEl  ? textEl.value.trim()  : '') || 'Happy Celebrations!';
-  var emoji = (emojiEl ? emojiEl.value.trim() : '') || '✨';
+  var emoji = (emojiEl ? emojiEl.value.trim() : '') || 'âœ¨';
 
   /* Title: dropdown value OR custom input */
   var titleVal = '';
@@ -1205,16 +1205,16 @@ function generateBlankCard() {
   /* Extract just the text without emoji for canvas title */
   var cleanTitle = title.replace(/[\u{1F300}-\u{1FAFF}]/gu, '').trim() || title;
 
-  /* Build from/to — professional separate section (not embedded in message text) */
+  /* Build from/to â€” professional separate section (not embedded in message text) */
   var from = fromEl ? fromEl.value.trim() : '';
   if (!from) from = localStorage.getItem('clarix_uname') || '';
   var to   = toEl   ? toEl.value.trim()   : '';
   var ftParts = [];
   if (to)   ftParts.push('To: ' + to);
   if (from) ftParts.push('From: ' + from);
-  var fromToLine = ftParts.join('  ·  ');
+  var fromToLine = ftParts.join('  Â·  ');
 
-  /* Full message — fromToLine is a separate canvas section, not inline */
+  /* Full message â€” fromToLine is a separate canvas section, not inline */
   var fullText = text;
 
   var wrap = document.getElementById('blankCardCanvas');
@@ -1244,7 +1244,7 @@ function generateBlankCard() {
   window._festivalName   = cleanTitle || 'my-card';
 }
 
-/* ── redrawCard — live re-render when design changes ── */
+/* â”€â”€ redrawCard â€” live re-render when design changes â”€â”€ */
 function redrawCard() {
   var canvasEl = document.getElementById('festivalCanvasEl') || document.getElementById('blankCanvasEl');
   if (!canvasEl) return;
@@ -1263,7 +1263,7 @@ function redrawCard() {
   }
 }
 
-/* ── Design Control Panel ── */
+/* â”€â”€ Design Control Panel â”€â”€ */
 function renderCardControls(wrap) {
   /* Remove old panel if any */
   var old = document.getElementById('cardDesignPanel');
@@ -1274,8 +1274,8 @@ function renderCardControls(wrap) {
   panel.className = 'card-design-panel';
   panel.innerHTML = [
     '<div class="cdp-header" onclick="this.parentElement.classList.toggle(\'open\')">',
-      '<span>🎨 Customise Card</span>',
-      '<span class="cdp-arrow">▼</span>',
+      '<span>ðŸŽ¨ Customise Card</span>',
+      '<span class="cdp-arrow">â–¼</span>',
     '</div>',
     '<div class="cdp-body">',
 
@@ -1288,7 +1288,7 @@ function renderCardControls(wrap) {
           : 'background:linear-gradient(135deg,#ff6b00,#ffc300)';
         return '<button class="cdp-swatch' + (cardDesign.bgPreset === i ? ' active' : '') + '" '
           + 'style="' + bg + '" onclick="cardDesign.bgPreset=' + i + ';updateDesignUI();redrawCard();" title="' + p.name + '">'
-          + (cardDesign.bgPreset === i ? '✓' : '')
+          + (cardDesign.bgPreset === i ? 'âœ“' : '')
           + '</button>';
       }).join(''),
       '<input type="color" class="cdp-color-input" id="cdpBgColor" value="#1a1a2e" title="Custom color" '
@@ -1316,11 +1316,11 @@ function renderCardControls(wrap) {
     /* Text colour */
     '<div class="cdp-label">Text Colour</div>',
     '<div class="cdp-row">',
-      [['#ffffff','White'],['#ffd700','Gold ✨'],['#222222','Dark']].map(function(c) {
+      [['#ffffff','White'],['#ffd700','Gold âœ¨'],['#222222','Dark']].map(function(c) {
         return '<button class="cdp-swatch cdp-text-swatch' + (cardDesign.textColor === c[0] ? ' active' : '') + '" '
           + 'style="background:' + c[0] + ';border:2px solid rgba(255,255,255,0.3);" '
           + 'onclick="cardDesign.textColor=\'' + c[0] + '\';updateDesignUI();redrawCard();" title="' + c[1] + '">'
-          + (cardDesign.textColor === c[0] ? '✓' : '') + '</button>';
+          + (cardDesign.textColor === c[0] ? 'âœ“' : '') + '</button>';
       }).join(''),
       '<input type="color" class="cdp-color-input" id="cdpTextColor" value="#ffffff" title="Custom text color" '
         + 'onchange="cardDesign.textColor=this.value;redrawCard();">',
@@ -1329,7 +1329,7 @@ function renderCardControls(wrap) {
     /* Border / Frame */
     '<div class="cdp-label">Border / Frame</div>',
     '<div class="cdp-pill-row">',
-      [['none','None'],['double','Classic'],['glow','Glow'],['gold','Gold 🌟']].map(function(b) {
+      [['none','None'],['double','Classic'],['glow','Glow'],['gold','Gold ðŸŒŸ']].map(function(b) {
         return '<button class="cdp-pill' + (cardDesign.borderStyle === b[0] ? ' active' : '') + '" '
           + 'onclick="cardDesign.borderStyle=\'' + b[0] + '\';updateDesignUI();redrawCard();">' + b[1] + '</button>';
       }).join(''),
@@ -1357,7 +1357,7 @@ function updateDesignUI() {
     var isActive = (
       cardDesign.fontStyle === txt.split(' ')[0] ||
       cardDesign.textSize  === txt ||
-      cardDesign.borderStyle === txt.replace(' 🌟','') ||
+      cardDesign.borderStyle === txt.replace(' ðŸŒŸ','') ||
       (txt === 'classic' && cardDesign.borderStyle === 'double') ||
       (txt === 'elegant' && cardDesign.fontStyle === 'decorative')
     );
@@ -1365,7 +1365,7 @@ function updateDesignUI() {
   });
 }
 
-/* ── Share buttons row ── */
+/* â”€â”€ Share buttons row â”€â”€ */
 function appendShareButtons(wrap, gradColors) {
   var existing = wrap.querySelector('.studio-share-row');
   if (existing) existing.remove();
@@ -1375,26 +1375,26 @@ function appendShareButtons(wrap, gradColors) {
   btnRow.style.cssText = 'display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;';
 
   var dlBtn = document.createElement('button');
-  dlBtn.textContent = '⬇️ Download';
+  dlBtn.textContent = 'â¬‡ï¸ Download';
   dlBtn.style.cssText = 'flex:1;min-width:110px;padding:13px 10px;border-radius:12px;background:linear-gradient(135deg,'
     + (gradColors[0]||'#ff7043') + ',' + (gradColors[1]||'#ff5722') + ');border:none;color:#fff;font-size:14px;font-weight:800;cursor:pointer;font-family:var(--font-body);';
   dlBtn.onclick = function() { studioTipAction('download'); };
   btnRow.appendChild(dlBtn);
 
   var shareBtn = document.createElement('button');
-  shareBtn.textContent = '📤 Share';
+  shareBtn.textContent = 'ðŸ“¤ Share';
   shareBtn.style.cssText = 'flex:1;min-width:110px;padding:13px 10px;border-radius:12px;background:rgba(255,112,67,0.15);border:1px solid rgba(255,112,67,0.5);color:#ff7043;font-size:14px;font-weight:800;cursor:pointer;font-family:var(--font-body);';
   shareBtn.onclick = function() { studioTipAction('share'); };
   btnRow.appendChild(shareBtn);
 
   var wpBtn = document.createElement('button');
-  wpBtn.textContent = '💬 WhatsApp';
+  wpBtn.textContent = 'ðŸ’¬ WhatsApp';
   wpBtn.style.cssText = 'flex:1;min-width:110px;padding:13px 10px;border-radius:12px;background:rgba(37,211,102,0.13);border:1px solid rgba(37,211,102,0.5);color:#25d366;font-size:14px;font-weight:800;cursor:pointer;font-family:var(--font-body);';
   wpBtn.onclick = function() { studioTipAction('whatsapp'); };
   btnRow.appendChild(wpBtn);
 
   var igBtn = document.createElement('button');
-  igBtn.textContent = '📸 Instagram';
+  igBtn.textContent = 'ðŸ“¸ Instagram';
   igBtn.style.cssText = 'flex:1;min-width:110px;padding:13px 10px;border-radius:12px;background:rgba(225,48,108,0.12);border:1px solid rgba(225,48,108,0.45);color:#e1306c;font-size:14px;font-weight:800;cursor:pointer;font-family:var(--font-body);';
   igBtn.onclick = function() { studioTipAction('instagram'); };
   btnRow.appendChild(igBtn);
@@ -1402,34 +1402,34 @@ function appendShareButtons(wrap, gradColors) {
   wrap.appendChild(btnRow);
 }
 
-/* ── Share / Download Actions ── */
+/* â”€â”€ Share / Download Actions â”€â”€ */
 function studioTipAction(type) {
   var canvas = window._festivalCanvas;
   var text   = window._festivalText || '';
   var name   = (window._festivalName || 'my-card').toLowerCase().replace(/\s+/g, '-');
-  var msg    = text.substring(0, 300) + '\n\n✨ Made with Clarix AI · clarix.digital';
+  var msg    = text.substring(0, 300) + '\n\nâœ¨ Made with Clarix AI Â· clarix.digital';
 
   if (!canvas) {
-    Toast.show('Generate a card first! 🎉', 'error'); return;
+    Toast.show('Generate a card first! ðŸŽ‰', 'error'); return;
   }
 
-  /* ── Native Share Sheet (Android/iOS) ── */
+  /* â”€â”€ Native Share Sheet (Android/iOS) â”€â”€ */
   if (type === 'share' || (type === 'whatsapp' && navigator.share && navigator.canShare)) {
     canvas.toBlob(function(blob) {
       var file = new File([blob], 'clarix-' + name + '-card.png', { type: 'image/png' });
       var shareData = { files: [file], text: msg, title: 'Festival Card from Clarix AI' };
       if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
         navigator.share(shareData)
-          .then(function() { Toast.show('🎉 Shared successfully!', 'success'); })
+          .then(function() { Toast.show('ðŸŽ‰ Shared successfully!', 'success'); })
           .catch(function(err) {
             if (err.name !== 'AbortError') {
-              /* Share was cancelled by user or failed — fallback to download */
+              /* Share was cancelled by user or failed â€” fallback to download */
               studioTipAction('download');
             }
           });
         return;
       }
-      /* Desktop fallback — download */
+      /* Desktop fallback â€” download */
       studioTipAction('download');
     }, 'image/png');
     return;
@@ -1440,17 +1440,17 @@ function studioTipAction(type) {
     a.download = 'clarix-' + name + '-card.png';
     a.href = canvas.toDataURL('image/png');
     a.click();
-    Toast.show('📥 Card downloaded!', 'success');
+    Toast.show('ðŸ“¥ Card downloaded!', 'success');
 
   } else if (type === 'whatsapp') {
-    /* Desktop fallback — download + open WhatsApp web */
+    /* Desktop fallback â€” download + open WhatsApp web */
     var a2 = document.createElement('a');
     a2.download = 'clarix-' + name + '-card.png';
     a2.href = canvas.toDataURL('image/png');
     a2.click();
     setTimeout(function() {
       window.open('https://wa.me/?text=' + encodeURIComponent(msg), '_blank', 'noopener noreferrer');
-      Toast.show('📥 Image saved — attach it in WhatsApp!', 'success', 5000);
+      Toast.show('ðŸ“¥ Image saved â€” attach it in WhatsApp!', 'success', 5000);
     }, 700);
 
   } else if (type === 'instagram') {
@@ -1458,13 +1458,13 @@ function studioTipAction(type) {
     a3.download = 'clarix-' + name + '-card.png';
     a3.href = canvas.toDataURL('image/png');
     a3.click();
-    var caption = text.substring(0, 400) + '\n\n✨ Made with Clarix AI · clarix.digital';
+    var caption = text.substring(0, 400) + '\n\nâœ¨ Made with Clarix AI Â· clarix.digital';
     if (navigator.clipboard) {
       navigator.clipboard.writeText(caption).then(function() {
-        Toast.show('📸 Image saved + caption copied! Upload to Instagram.', 'success', 5000);
+        Toast.show('ðŸ“¸ Image saved + caption copied! Upload to Instagram.', 'success', 5000);
       });
     } else {
-      Toast.show('📸 Image downloaded! Open Instagram and upload it.', 'success', 4000);
+      Toast.show('ðŸ“¸ Image downloaded! Open Instagram and upload it.', 'success', 4000);
     }
     setTimeout(function() { window.open('https://www.instagram.com/', '_blank', 'noopener noreferrer'); }, 900);
   }
@@ -1489,21 +1489,21 @@ function wrapCanvasText(ctx, text, x, y, maxWidth, lineHeight, maxY) {
   ctx.fillText(line, x, curY);
 }
 
-/* ════════════════════════════════════════════
-   GROQ PROMPT BUILDERS — via /api/studio proxy
-════════════════════════════════════════════ */
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   GROQ PROMPT BUILDERS â€” via /api/studio proxy
+â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 async function groqCall(base64, mime, prompt) {
   /* Get Firebase auth token.
-     Priority: ClarixAuth (compat SDK — always resolved by the time user clicks)
-               → ClarixFirebase (modular SDK — async init, may be slower on mobile) */
+     Priority: ClarixAuth (compat SDK â€” always resolved by the time user clicks)
+               â†’ ClarixFirebase (modular SDK â€” async init, may be slower on mobile) */
   var user = null;
 
-  /* 1. ClarixAuth (compat SDK) — fastest, already loaded synchronously */
+  /* 1. ClarixAuth (compat SDK) â€” fastest, already loaded synchronously */
   if (typeof ClarixAuth !== 'undefined' && ClarixAuth.currentUser) {
     user = ClarixAuth.currentUser;
   }
 
-  /* 2. ClarixFirebase (modular SDK) — wait up to 5s if compat SDK not available */
+  /* 2. ClarixFirebase (modular SDK) â€” wait up to 5s if compat SDK not available */
   if (!user && typeof ClarixFirebase !== 'undefined') {
     user = await new Promise(function(resolve) {
       var timer = setTimeout(function() { resolve(ClarixFirebase.getUser()); }, 5000);
@@ -1513,7 +1513,7 @@ async function groqCall(base64, mime, prompt) {
 
   var token = '';
   if (user && typeof user.getIdToken === 'function') {
-    /* forceRefresh:false — use cached token (auto-refreshes when < 5 min left).
+    /* forceRefresh:false â€” use cached token (auto-refreshes when < 5 min left).
        forceRefresh:true caused network round-trip on every Generate click,
        which failed on slow mobile connections. */
     try { token = await user.getIdToken(false); } catch(e) { token = ''; }
@@ -1593,17 +1593,17 @@ async function promptMultilingual(base64, mime, context) {
     + 'Return JSON only: {"detected_language":"...","text_found":"...","translation":"...","variation1":"literal ' + platform + ' prompt","variation2":"creative ' + platform + ' prompt"}';
   var raw = await groqCall(base64, mime, p);
   return {
-    variation1: '🌐 Language: ' + (raw.detected_language || 'Detected') + '\n📝 Text: "' + (raw.text_found || '') + '"\n🔤 Meaning: ' + (raw.translation || '') + '\n\n' + (raw.variation1 || ''),
+    variation1: 'ðŸŒ Language: ' + (raw.detected_language || 'Detected') + '\nðŸ“ Text: "' + (raw.text_found || '') + '"\nðŸ”¤ Meaning: ' + (raw.translation || '') + '\n\n' + (raw.variation1 || ''),
     variation2: raw.variation2 || ''
   };
 }
 
-/* ═══════════════════════════════════════════════
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
    DOCUMENT ANALYZER ENGINE
-   TXT / DOCX / PDF → AI → GAMMA-style slide deck
-═══════════════════════════════════════════════ */
+   TXT / DOCX / PDF â†’ AI â†’ GAMMA-style slide deck
+â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 
-/* ── Lazy CDN script loader ── */
+/* â”€â”€ Lazy CDN script loader â”€â”€ */
 function loadScript(url) {
   return new Promise(function(resolve, reject) {
     if (document.querySelector('script[src="' + url + '"]')) { resolve(); return; }
@@ -1613,7 +1613,7 @@ function loadScript(url) {
   });
 }
 
-/* ── TXT parser ── */
+/* â”€â”€ TXT parser â”€â”€ */
 function parseTxtDoc(file) {
   return new Promise(function(resolve, reject) {
     var reader = new FileReader();
@@ -1623,13 +1623,13 @@ function parseTxtDoc(file) {
   });
 }
 
-/* ── DOCX parser (via JSZip CDN) ── */
+/* â”€â”€ DOCX parser (via JSZip CDN) â”€â”€ */
 async function parseDocxDoc(file) {
   await loadScript('https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js');
   var buf = await file.arrayBuffer();
   var zip = await JSZip.loadAsync(buf);
   var xmlFile = zip.file('word/document.xml');
-  if (!xmlFile) throw new Error('Invalid DOCX file — could not read content.');
+  if (!xmlFile) throw new Error('Invalid DOCX file â€” could not read content.');
   var xml = await xmlFile.async('string');
   /* Strip XML tags and normalise whitespace */
   var text = xml.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
@@ -1637,7 +1637,7 @@ async function parseDocxDoc(file) {
   return text;
 }
 
-/* ── PDF parser (via PDF.js CDN) ── */
+/* â”€â”€ PDF parser (via PDF.js CDN) â”€â”€ */
 async function parsePdfDoc(file) {
   var PDFJS_URL    = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
   var PDFJS_WORKER = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
@@ -1662,11 +1662,11 @@ async function parsePdfDoc(file) {
     var content = await page.getTextContent();
     text += content.items.map(function(item) { return item.str; }).join(' ') + '\n';
   }
-  if (!text.trim()) throw new Error('No readable text in this PDF — it may be a scanned image.');
+  if (!text.trim()) throw new Error('No readable text in this PDF â€” it may be a scanned image.');
   return text;
 }
 
-/* ── Excel parser (via SheetJS CDN) ── */
+/* â”€â”€ Excel parser (via SheetJS CDN) â”€â”€ */
 async function parseXlsxDoc(file) {
   await loadScript('https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js');
   var buf = await file.arrayBuffer();
@@ -1681,13 +1681,13 @@ async function parseXlsxDoc(file) {
     }
   });
   if (!text.trim()) throw new Error('No data found in this Excel file.');
-  /* ╔══ Extract real chart data directly from cells (bypasses AI for charting) ══╗ */
+  /* â•”â•â• Extract real chart data directly from cells (bypasses AI for charting) â•â•â•— */
   docDirectChartData = extractXlsxChartData(workbook);
   return text;
 }
 
 
-/* ── Statistics for one data series ── */
+/* â”€â”€ Statistics for one data series â”€â”€ */
 function _computeStats(values) {
   var nonZero = values.filter(function(v) { return v !== 0 && !isNaN(v); });
   if (nonZero.length === 0) return null;
@@ -1708,7 +1708,7 @@ function _computeStats(values) {
   return { mean: mean, std: std, ucl: ucl, lcl: lcl, min: min, max: max, trend: trend, pctChange: pctChange, n: n };
 }
 
-/* ── Find the real header row in an Excel sheet (skips title/blank rows) ── */
+/* â”€â”€ Find the real header row in an Excel sheet (skips title/blank rows) â”€â”€ */
 function _findHeaderRow(rows) {
   /* Look for the row that has the most numeric-column-label pattern:
      A good header row has >= 2 non-empty cells and at least one looks like a column label (non-numeric short string) */
@@ -1731,7 +1731,7 @@ function _findHeaderRow(rows) {
   return 0; /* fallback: first row */
 }
 
-/* ── Extract data from ONE worksheet (helper) ── */
+/* â”€â”€ Extract data from ONE worksheet (helper) â”€â”€ */
 function _parseOneSheet(ws, sheetName) {
   var allRows = XLSX.utils.sheet_to_json(ws, { header: 1, raw: true, blankrows: false });
   allRows = allRows.filter(function(r) { return r.some(function(c) { return c !== undefined && c !== ''; }); });
@@ -1775,7 +1775,7 @@ function _parseOneSheet(ws, sheetName) {
   }
   if (datasets.length === 0) return null;
 
-  /* ── Industry + chart type detection ── */
+  /* â”€â”€ Industry + chart type detection â”€â”€ */
   var col0Header = String(headerRow[0] || '').toLowerCase().trim();
   var col0IsTime = /^(hour|hours|time|day|days|week|month|year|period|quarter|minute|second|reading|sample|date|sr|no\b)/.test(col0Header);
   var timeRx     = /^(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec|q[1-4]|fy|week|day|hour|min|time|date|\d{4})/i;
@@ -1808,17 +1808,17 @@ function _parseOneSheet(ws, sheetName) {
 
   var detectedType, detectedReason;
   if (industry === 'stock' && datasets.length >= 4) {
-    detectedType = 'candlestick'; detectedReason = 'Stock OHLCV — Candlestick chart';
+    detectedType = 'candlestick'; detectedReason = 'Stock OHLCV â€” Candlestick chart';
   } else if (isTime) {
-    detectedType = 'line'; detectedReason = 'Time series — Line chart per column';
+    detectedType = 'line'; detectedReason = 'Time series â€” Line chart per column';
   } else if (firstNumeric && datasets.length === 1) {
-    detectedType = 'scatter'; detectedReason = 'XY correlation — Scatter plot';
+    detectedType = 'scatter'; detectedReason = 'XY correlation â€” Scatter plot';
   } else if (datasets.length > 2) {
-    detectedType = 'bar'; detectedReason = 'Multi-series (' + datasets.length + ') — Grouped bar';
+    detectedType = 'bar'; detectedReason = 'Multi-series (' + datasets.length + ') â€” Grouped bar';
   } else {
-    detectedType = 'bar'; detectedReason = 'Comparison — Bar chart';
+    detectedType = 'bar'; detectedReason = 'Comparison â€” Bar chart';
   }
-  if (logScaleRec) detectedReason += ' · ⚠️ Wide value range';
+  if (logScaleRec) detectedReason += ' Â· âš ï¸ Wide value range';
 
   return {
     labels: labels, datasets: datasets, sheetName: sheetName,
@@ -1829,7 +1829,7 @@ function _parseOneSheet(ws, sheetName) {
 }
 
 
-/* ── Extract real chart-ready data from ALL Excel sheets ── */
+/* â”€â”€ Extract real chart-ready data from ALL Excel sheets â”€â”€ */
 function extractXlsxChartData(workbook) {
   var allSheets = [];
 
@@ -1861,7 +1861,7 @@ function extractXlsxChartData(workbook) {
   };
 }
 
-/* ── File format router ── */
+/* â”€â”€ File format router â”€â”€ */
 async function parseUploadedDoc(file) {
   var name = (file.name || '').toLowerCase();
   if (name.endsWith('.txt')  || file.type === 'text/plain')                                   return parseTxtDoc(file);
@@ -1874,7 +1874,7 @@ async function parseUploadedDoc(file) {
   throw new Error('Unsupported file type. Please upload PDF, DOCX, TXT, XLSX, XLS, or CSV.');
 }
 
-/* ── Drag & Drop handlers (for doc upload zone) ── */
+/* â”€â”€ Drag & Drop handlers (for doc upload zone) â”€â”€ */
 function docDragOver(e) { e.preventDefault(); var z = document.getElementById('docDropZone'); if (z) z.classList.add('dragover'); }
 function docDrop(e) {
   e.preventDefault();
@@ -1884,7 +1884,7 @@ function docDrop(e) {
   if (f) docFileSelected(f);
 }
 
-/* ── File selected handler ── */
+/* â”€â”€ File selected handler â”€â”€ */
 function docFileSelected(file) {
   if (!file) return;
   var statusEl = document.getElementById('docFileStatus');
@@ -1919,43 +1919,158 @@ function docFileSelected(file) {
   });
 }
 
-/* ── AI prompt builder for Document Analyzer ── */
+/* â”€â”€ Build statistical context block from real Excel data â”€â”€ */
+function _buildStatsContext() {
+  if (!docDirectChartData || !docDirectChartData.datasets) return '';
+  var d = docDirectChartData;
+  var lines = ['REAL EXCEL DATA EXTRACTED (' + d.labels.length + ' rows Ã— ' + (d.datasets.length + 1) + ' columns):'];
+  lines.push('X-axis column: ' + (d.col0Label || 'Row') + ' | Range: ' + d.labels[0] + ' â†’ ' + d.labels[d.labels.length - 1]);
+  lines.push('');
+  d.datasets.forEach(function(ds) {
+    if (!ds.stats) return;
+    var s = ds.stats;
+    var trendStr = s.trend === 'up' ? 'â†‘ Rising (+' + s.pctChange + '%)' : s.trend === 'down' ? 'â†“ Falling (' + s.pctChange + '%)' : 'â†’ Stable';
+    lines.push('  Column: ' + ds.label);
+    lines.push('    Mean=' + s.mean.toFixed(2) + '  Std Dev=' + s.std.toFixed(2) + '  Min=' + s.min.toFixed(2) + '  Max=' + s.max.toFixed(2));
+    lines.push('    UCL(+3Ïƒ)=' + s.ucl.toFixed(2) + '  LCL(-3Ïƒ)=' + (s.lcl > 0 ? s.lcl.toFixed(2) : '0') + '  Trend: ' + trendStr);
+    /* Detect breaches */
+    var breaches = ds.data.filter(function(v) { return v > s.ucl; });
+    if (breaches.length > 0) lines.push('    âš ï¸ UCL BREACHES: ' + breaches.length + ' readings exceeded UCL (max breach: ' + Math.max.apply(null, breaches).toFixed(2) + ')');
+  });
+  return lines.join('\n');
+}
+
+/* â”€â”€ Industry-specific expert prompt builder â”€â”€ */
+function _buildIndustryPrompt(industry, statsContext, textSample, context, tone, truncated) {
+  var industryRole = {
+    'process': 'You are a Senior Process/Chemical Engineer with 20 years of experience in industrial plant operations and process control.',
+    'lab':     'You are an expert Lab/QC Analyst and Statistical Process Control (SPC) specialist.',
+    'oil':     'You are a Petroleum/Reservoir Engineer specializing in production optimization and decline curve analysis.',
+    'stock':   'You are a Chartered Market Analyst (CMA) specializing in technical analysis and equity research.',
+    'finance': 'You are a Chartered Accountant (CA) and Senior Financial Analyst specializing in corporate finance and credit analysis.',
+    'engineering': 'You are a Senior Mechanical/Civil Engineer specializing in project management and BOM analysis.',
+    'general': 'You are a Senior Business Analyst and Management Consultant with expertise across multiple industries.'
+  };
+  var role = industryRole[industry] || industryRole['general'];
+
+  var industryQuestions = {
+    'process': [
+      'Assess process STABILITY â€” were readings within UCL/LCL control limits? What % of time was in control?',
+      'Identify distinct PHASES: startup ramp-up, steady state, any shutdown or anomaly periods',
+      'Analyse CORRELATION between columns (e.g. Steam vs CW relationship, efficiency ratios)',
+      'Flag any OPERATIONAL ANOMALIES â€” sudden spikes, gradual drift, step changes',
+      'Assess EQUIPMENT PERFORMANCE â€” are readings consistent with healthy equipment?',
+      'Provide 3 specific OPERATIONAL RECOMMENDATIONS for the plant operator'
+    ],
+    'lab': [
+      'SPC ASSESSMENT â€” is the process in statistical control? Calculate Cp/Cpk if spec limits detectable',
+      'Identify OUT-OF-CONTROL signals: any runs, trends, or UCL/LCL breaches?',
+      'Recommend CORRECTIVE ACTIONS for any non-conformances found',
+      'Assess MEASUREMENT SYSTEM â€” consistency and repeatability of readings',
+      'Compliance statement: what % of readings fall within acceptable range?'
+    ],
+    'oil': [
+      'PRODUCTION TREND analysis â€” is production declining, stable, or increasing?',
+      'Calculate implied DECLINE RATE if time vs production data present',
+      'Analyse GOR (Gas-Oil Ratio) trends if present â€” implications for reservoir health',
+      'WATER CUT progression â€” implications for well performance',
+      'Cumulative production estimate from the data',
+      'Well intervention recommendations based on trends'
+    ],
+    'stock': [
+      'PRICE TREND assessment â€” bullish, bearish, or sideways?',
+      'Calculate % return over the data period',
+      'Identify KEY SUPPORT and RESISTANCE levels from the data',
+      'Volatility assessment (high/low/normal)',
+      'Volume trend analysis if available â€” confirming or diverging from price?',
+      'Trading outlook: short-term and medium-term bias'
+    ],
+    'finance': [
+      'KEY FINANCIAL RATIOS â€” calculate CAGR, YoY growth, profit margins from the data',
+      'Balance sheet HEALTH â€” liquidity, solvency, leverage assessment',
+      'TREND ANALYSIS â€” revenue, profit, and key metric trajectories',
+      'RED FLAGS or POSITIVE indicators from the numbers',
+      'Benchmark comparison â€” how do these metrics compare to industry norms?',
+      'Credit/investment RECOMMENDATION with supporting rationale'
+    ],
+    'engineering': [
+      'BOM/PROJECT SUMMARY â€” categorize items, identify high-value or critical items',
+      'COST DISTRIBUTION analysis if cost data present',
+      'PROCUREMENT RISK â€” any single-source or high-cost dependencies?',
+      'Schedule compliance if timeline data present',
+      'Value engineering OPPORTUNITIES â€” areas for cost or time optimization'
+    ],
+    'general': [
+      'Key INSIGHTS from the data with specific numbers',
+      'Trend analysis â€” what is improving, what is declining?',
+      'Critical RISK FACTORS identified',
+      'TOP 3 actionable RECOMMENDATIONS',
+      'Executive summary suitable for C-suite presentation'
+    ]
+  };
+  var questions = industryQuestions[industry] || industryQuestions['general'];
+
+  var p = role + '\n\n';
+  if (statsContext) {
+    p += '=== STATISTICAL ANALYSIS (calculated from real Excel data) ===\n' + statsContext + '\n\n';
+    p += 'IMPORTANT: The stats above are CALCULATED FROM REAL DATA. Reference specific numbers in your analysis.\n\n';
+  }
+  p += '=== DOCUMENT/DATA CONTENT ===\n' + textSample + '\n';
+  if (truncated) p += '[Data continues â€” excerpt shown]\n';
+  p += '\n';
+  if (context) p += 'User notes: "' + context + '"\n\n';
+  p += 'Tone: ' + tone + ' | Industry: ' + industry.toUpperCase() + '\n\n';
+  p += 'Provide expert ' + industry.toUpperCase() + ' analysis covering:\n';
+  questions.forEach(function(q, i) { p += (i + 1) + '. ' + q + '\n'; });
+  p += '\nReturn ONLY valid JSON â€” no markdown, no extra text:\n';
+  p += '{'
+    + '"title":"concise report title (max 8 words)",'
+    + '"summary":"3-sentence expert executive summary with specific numbers from the data",'
+    + '"keyPoints":["specific finding 1 with number","finding 2","finding 3","finding 4","finding 5"],'
+    + '"stats":['
+    +   '{"label":"Key metric name","value":"specific number or %","trend":"up|down|neutral"},'
+    +   '{"label":"Second metric","value":"value","trend":"neutral"},'
+    +   '{"label":"Third metric","value":"value","trend":"up"}'
+    + '],'
+    + '"chartData":{"type":"line","labels":["label1","label2","label3"],"values":[40,60,30],"unit":""},'
+    + '"recommendations":["specific action 1","action 2","action 3","action 4"],'
+    + '"hashtags":["#tag1","#tag2","#tag3","#tag4","#tag5"]'
+    + '}\n\n'
+    + 'CRITICAL: Extract REAL numbers from the data. Do NOT make up numbers. Use the statistical analysis provided.';
+  return p;
+}
+
+/* â”€â”€ AI prompt builder for Document Analyzer â”€â”€ */
 async function promptDocAnalyzer(context) {
   if (!docExtractedText) throw new Error('Please upload a document first.');
 
   var outputStyle = selectedOptions['Output Style'] || 'Slide Deck';
   var tone        = selectedOptions['Tone']         || 'Professional';
-  var chartHint   = (docChartMode !== 'auto') ? 'Preferred chart type: ' + docChartMode + '. ' : '';
-  var textSample  = docExtractedText.substring(0, 3000);
-  var truncated   = docExtractedText.length > 3000;
+  var textSample  = docExtractedText.substring(0, 5000);
+  var truncated   = docExtractedText.length > 5000;
 
-  var p = 'You are an expert business analyst and presentation designer.\n'
-    + 'Analyze this document carefully:\n\n'
-    + '--- DOCUMENT START ---\n' + textSample + '\n'
-    + (truncated ? '[Document continues \u2014 this is an excerpt]\n' : '')
-    + '--- DOCUMENT END ---\n\n'
-    + (context ? 'User context: "' + context + '"\n\n' : '')
-    + 'Output Style: ' + outputStyle + ' | Tone: ' + tone + '\n'
-    + chartHint + '\n'
-    + 'Return ONLY valid JSON — no extra text, no markdown fences:\n'
-    + '{'
-    + '"title":"short doc title (max 8 words)",'
-    + '"summary":"3-sentence executive summary",'
-    + '"keyPoints":["insight 1","insight 2","insight 3","insight 4","insight 5"],'
-    + '"stats":['
-    +   '{"label":"Metric name","value":"number or %","trend":"up|down|neutral"},'
-    +   '{"label":"Metric 2","value":"value","trend":"neutral"}'
-    + '],'
-    + '"chartData":{"type":"bar","labels":["label1","label2","label3"],"values":[40,60,30],"unit":"%"},'
-    + '"recommendations":["action 1","action 2","action 3"],'
-    + '"hashtags":["#tag1","#tag2","#tag3","#tag4","#tag5"]'
-    + '}\n\n'
-    + 'RULES: Extract real numbers from the document. If no numeric data exists, infer plausible metrics. Always return valid JSON only.';
+  /* Detect industry from real Excel data (most accurate) OR from text keywords */
+  var industry = 'general';
+  if (docDirectChartData && docDirectChartData.industry) {
+    industry = docDirectChartData.industry;
+  } else {
+    var txt = textSample.toLowerCase();
+    if (/\b(bbl|bopd|bwpd|gor|reservoir|wellhead|psi|mcf)\b/.test(txt))       industry = 'oil';
+    else if (/\b(open|high|low|close|volume|nse|bse|sensex|nifty|equity)\b/.test(txt)) industry = 'stock';
+    else if (/\b(revenue|npa|crar|ebitda|loan|deposit|balance sheet)\b/.test(txt)) industry = 'finance';
+    else if (/\b(ph|titration|absorbance|molarity|reagent|sample|qc)\b/.test(txt)) industry = 'lab';
+    else if (/\b(cw|steam|pressure|flow rate|kg.hr|m3.hr|rpm|kwh)\b/.test(txt)) industry = 'process';
+    else if (/\b(bom|bill of material|part no|item|qty|material|specification)\b/.test(txt)) industry = 'engineering';
+  }
 
+  /* Build statistical context from real Excel data */
+  var statsContext = _buildStatsContext();
+
+  var p = _buildIndustryPrompt(industry, statsContext, textSample, context, tone, truncated);
   return groqCall(null, null, p);
 }
 
-/* ── Render GAMMA-style output ── */
+/* â”€â”€ Render GAMMA-style output â”€â”€ */
 function renderDocAnalyzerOutput(result) {
   _currentDocResult   = result;
   _currentDocSlideIdx = 0;
@@ -1975,7 +2090,7 @@ function renderDocAnalyzerOutput(result) {
   setTimeout(function() { renderDocChart(result); }, 250);
 }
 
-/* ── Build full output HTML ── */
+/* â”€â”€ Build full output HTML â”€â”€ */
 function buildDocOutputHTML(result) {
   var title           = result.title           || 'Document Analysis';
   var summary         = result.summary         || '';
@@ -2027,7 +2142,7 @@ function buildDocOutputHTML(result) {
       } else {
         slidesHtml += '<div class="doc-detect-banner" id="docDetectBanner">\ud83d\udd0d ' + (docDirectChartData.detectedReason || '') + '</div>';
       }
-      /* Series toggles — shown only when multiple data columns exist */
+      /* Series toggles â€” shown only when multiple data columns exist */
       if (docDirectChartData && docDirectChartData.datasets && docDirectChartData.datasets.length > 1) {
         slidesHtml += '<div class="doc-series-toggles" id="docSeriesToggleRow"><span class="doc-sheet-tabs-label">Columns:</span>';
         docDirectChartData.datasets.forEach(function(ds, i) {
@@ -2082,7 +2197,7 @@ function buildDocOutputHTML(result) {
     + statsHtml + slidesHtml + navHtml + actHtml;
 }
 
-/* ── Slide navigation ── */
+/* â”€â”€ Slide navigation â”€â”€ */
 function navDocSlide(dir) {
   var slides = document.querySelectorAll('.doc-slide');
   if (!slides.length) return;
@@ -2097,7 +2212,7 @@ function navDocSlide(dir) {
   }
 }
 
-/* ── Switch chart type (both auto + manual) ── */
+/* â”€â”€ Switch chart type (both auto + manual) â”€â”€ */
 function setDocChartMode(type) {
   docChartMode = type;
   document.querySelectorAll('.doc-chart-type-btn').forEach(function(btn) {
@@ -2112,7 +2227,7 @@ function setDocChartMode(type) {
   }
 }
 
-/* ── Switch active sheet tab ── */
+/* â”€â”€ Switch active sheet tab â”€â”€ */
 function selectDocSheet(idx) {
   if (!docDirectChartData || !docDirectChartData.allSheets) return;
   var sheet = docDirectChartData.allSheets[idx];
@@ -2134,17 +2249,17 @@ function selectDocSheet(idx) {
 
   /* Update detection banner */
   var banner = document.getElementById('docDetectBanner');
-  if (banner) banner.textContent = sheet.detectedReason ? ('🔍 ' + sheet.detectedReason) : '';
+  if (banner) banner.textContent = sheet.detectedReason ? ('ðŸ” ' + sheet.detectedReason) : '';
 
   /* Update chart source */
   var src = document.getElementById('docChartSource');
-  if (src) src.textContent = '📊 Real data from sheet: "' + sheet.sheetName + '"';
+  if (src) src.textContent = 'ðŸ“Š Real data from sheet: "' + sheet.sheetName + '"';
 
   /* Re-render chart with new sheet data */
   renderDocChart(_currentDocResult);
 }
 
-/* ── Toggle individual data series visibility ── */
+/* â”€â”€ Toggle individual data series visibility â”€â”€ */
 var _hiddenSeries = {};
 function toggleDocSeries(idx) {
   _hiddenSeries[idx] = !_hiddenSeries[idx];
@@ -2154,7 +2269,7 @@ function toggleDocSeries(idx) {
   renderDocChart(_currentDocResult);
 }
 
-/* ── Multi-chart dashboard: one chart per data series ── */
+/* â”€â”€ Multi-chart dashboard: one chart per data series â”€â”€ */
 async function renderDocChart(result) {
   /* Load Chart.js + datalabels */
   if (!window.Chart) {
@@ -2165,13 +2280,13 @@ async function renderDocChart(result) {
     if (window.ChartDataLabels) Chart.register(ChartDataLabels);
   }
 
-  /* ── CASE 1: Real Excel data → multi-chart per series ── */
+  /* â”€â”€ CASE 1: Real Excel data â†’ multi-chart per series â”€â”€ */
   if (docDirectChartData && docDirectChartData.datasets && docDirectChartData.datasets.length > 0) {
     _renderMultiCharts(docDirectChartData, docChartMode);
     return;
   }
 
-  /* ── CASE 2: AI-inferred data (non-Excel or failed parse) → single chart ── */
+  /* â”€â”€ CASE 2: AI-inferred data (non-Excel or failed parse) â†’ single chart â”€â”€ */
   var canvas = document.getElementById('docMainChart');
   if (!canvas) return;
   if (docChartMode === 'none') { canvas.style.display = 'none'; return; }
@@ -2194,7 +2309,7 @@ async function renderDocChart(result) {
     fill: false, tension: 0, pointRadius: 4, pointHoverRadius: 7
   }];
   var src2 = document.getElementById('docChartSource');
-  if (src2) src2.textContent = '⚠️ AI-estimated data — upload the actual .xlsx file for real chart';
+  if (src2) src2.textContent = 'âš ï¸ AI-estimated data â€” upload the actual .xlsx file for real chart';
 
   window._docChartInstance = new Chart(canvas, {
     type: chartType, data: { labels: labels, datasets: datasets },
@@ -2214,10 +2329,10 @@ async function renderDocChart(result) {
   });
 }
 
-/* ══════════════════════════════════════════════════════════════════
-   MULTI-CHART ENGINE — one Chart.js panel per data series
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   MULTI-CHART ENGINE â€” one Chart.js panel per data series
    Each panel: line chart + UCL (red dashed) + Mean (green dashed) + LCL (red dashed)
-══════════════════════════════════════════════════════════════════ */
+â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 var _multiChartInstances = [];
 
 function _renderMultiCharts(data, mode) {
@@ -2241,7 +2356,7 @@ function _renderMultiCharts(data, mode) {
 
   /* Filter hidden series */
   var visibleSeries = data.datasets.filter(function(_, i) { return !_hiddenSeries[i]; });
-  if (visibleSeries.length === 0) { wrap.innerHTML = '<p style="color:rgba(255,255,255,.4);padding:16px">All series hidden — click a column button above to show</p>'; return; }
+  if (visibleSeries.length === 0) { wrap.innerHTML = '<p style="color:rgba(255,255,255,.4);padding:16px">All series hidden â€” click a column button above to show</p>'; return; }
 
   /* Build HTML: one chart-panel per series */
   var panelH = nPts > 60 ? 300 : (nPts > 30 ? 270 : 240);
@@ -2251,7 +2366,7 @@ function _renderMultiCharts(data, mode) {
     html += '<div class="doc-chart-panel-title">' + ds.label + '</div>';
     if (ds.stats) {
       var s = ds.stats;
-      var trendIcon = s.trend === 'up' ? '↑' : s.trend === 'down' ? '↓' : '→';
+      var trendIcon = s.trend === 'up' ? 'â†‘' : s.trend === 'down' ? 'â†“' : 'â†’';
       var trendCls  = s.trend === 'up' ? 'stat-up' : s.trend === 'down' ? 'stat-dn' : 'stat-neu';
       html += '<div class="doc-panel-kpi">'
         + '<span>Avg: <b>' + s.mean.toFixed(1) + '</b></span>'
@@ -2267,15 +2382,15 @@ function _renderMultiCharts(data, mode) {
 
   /* Stats summary table */
   html += '<div class="doc-stats-table-wrap">';
-  html += '<div class="doc-stats-table-title">📊 Statistical Summary</div>';
+  html += '<div class="doc-stats-table-title">ðŸ“Š Statistical Summary</div>';
   html += '<table class="doc-stats-table"><thead><tr>'
     + '<th>Column</th><th>Points</th><th>Mean</th><th>Std Dev</th>'
-    + '<th>Min</th><th>Max</th><th>UCL (+3σ)</th><th>LCL (−3σ)</th><th>Trend</th>'
+    + '<th>Min</th><th>Max</th><th>UCL (+3Ïƒ)</th><th>LCL (âˆ’3Ïƒ)</th><th>Trend</th>'
     + '</tr></thead><tbody>';
   data.datasets.forEach(function(ds) {
     if (!ds.stats) return;
     var s = ds.stats;
-    var trendTxt = s.trend === 'up' ? '↑ +' + s.pctChange + '%' : s.trend === 'down' ? '↓ ' + s.pctChange + '%' : '→ Stable';
+    var trendTxt = s.trend === 'up' ? 'â†‘ +' + s.pctChange + '%' : s.trend === 'down' ? 'â†“ ' + s.pctChange + '%' : 'â†’ Stable';
     var trendCls = s.trend === 'up' ? 'stat-up' : s.trend === 'down' ? 'stat-dn' : '';
     html += '<tr>'
       + '<td><b>' + ds.label + '</b></td>'
@@ -2295,7 +2410,7 @@ function _renderMultiCharts(data, mode) {
 
   /* Update source label */
   var src = document.getElementById('docChartSource');
-  if (src) src.textContent = '📊 Real data · Sheet: "' + data.sheetName + '" · ' + nPts + ' data points × ' + data.datasets.length + ' columns';
+  if (src) src.textContent = 'ðŸ“Š Real data Â· Sheet: "' + data.sheetName + '" Â· ' + nPts + ' data points Ã— ' + data.datasets.length + ' columns';
 
   /* Now render each Chart.js instance */
   visibleSeries.forEach(function(ds, i) {
@@ -2321,19 +2436,19 @@ function _renderMultiCharts(data, mode) {
     }];
 
     if (st && chartType === 'line') {
-      /* UCL — red dashed */
+      /* UCL â€” red dashed */
       chartDatasets.push({ label: 'UCL (' + st.ucl.toFixed(1) + ')',
         data: labels.map(function() { return st.ucl; }),
         borderColor: 'rgba(239,68,68,0.75)', borderWidth: 1.5,
         borderDash: [6,4], pointRadius: 0, fill: false, tension: 0, order: 1,
         datalabels: { display: false } });
-      /* Mean — green dashed */
+      /* Mean â€” green dashed */
       chartDatasets.push({ label: 'Mean (' + st.mean.toFixed(1) + ')',
         data: labels.map(function() { return st.mean; }),
         borderColor: 'rgba(74,222,128,0.75)', borderWidth: 1.5,
         borderDash: [4,3], pointRadius: 0, fill: false, tension: 0, order: 1,
         datalabels: { display: false } });
-      /* LCL — red dashed (only if > 0) */
+      /* LCL â€” red dashed (only if > 0) */
       if (st.lcl > 0) {
         chartDatasets.push({ label: 'LCL (' + st.lcl.toFixed(1) + ')',
           data: labels.map(function() { return st.lcl; }),
@@ -2434,7 +2549,7 @@ function _renderMultiCharts(data, mode) {
   var labels, datasets;
 
   if (docDirectChartData) {
-    /* ╔═ REAL Excel data ═╗ */
+    /* â•”â• REAL Excel data â•â•— */
     labels = docDirectChartData.labels;
 
     /* Scatter: combine labels (X) + values (Y) into XY pairs */
@@ -2442,7 +2557,7 @@ function _renderMultiCharts(data, mode) {
       datasets = docDirectChartData.datasets.map(function(ds, i) {
         var c = palette6[i % palette6.length];
         var xVals = docDirectChartData.labels.map(function(l, idx) {
-          var n = parseFloat(String(l).replace(/[,%$₹£€]/g, ''));
+          var n = parseFloat(String(l).replace(/[,%$â‚¹Â£â‚¬]/g, ''));
           return isNaN(n) ? idx : n; /* fall back to row index if X is text */
         });
         return {
@@ -2491,10 +2606,10 @@ function _renderMultiCharts(data, mode) {
 
     /* Update source label */
     var src = document.getElementById('docChartSource');
-    if (src) src.textContent = '📊 Real data from sheet: “' + docDirectChartData.sheetName + '”';
+    if (src) src.textContent = 'ðŸ“Š Real data from sheet: â€œ' + docDirectChartData.sheetName + 'â€';
 
   } else if (result && result.chartData) {
-    /* ╔═ AI-inferred data (non-Excel files) ═╗ */
+    /* â•”â• AI-inferred data (non-Excel files) â•â•— */
     var cd  = result.chartData;
     labels  = cd.labels || ['A','B','C'];
     var unit = cd.unit || '';
@@ -2511,7 +2626,7 @@ function _renderMultiCharts(data, mode) {
     }];
 
     var src2 = document.getElementById('docChartSource');
-    if (src2) src2.textContent = '🤖 AI-analyzed data (upload an Excel file for real numbers)';
+    if (src2) src2.textContent = 'ðŸ¤– AI-analyzed data (upload an Excel file for real numbers)';
   } else {
     return; /* Nothing to chart */
   }
@@ -2570,7 +2685,7 @@ function _renderMultiCharts(data, mode) {
   });
 }
 
-/* ── Download chart as PNG ── */
+/* â”€â”€ Download chart as PNG â”€â”€ */
 function downloadDocChart() {
   var canvas = document.getElementById('docMainChart');
   if (!canvas) { Toast.show('Generate analysis first', 'error'); return; }
@@ -2581,7 +2696,7 @@ function downloadDocChart() {
   Toast.show('\ud83d\udcca Chart downloaded!', 'success');
 }
 
-/* ── Download full HTML deck ── */
+/* â”€â”€ Download full HTML deck â”€â”€ */
 function downloadHtmlDeck() {
   var result = _currentDocResult;
   if (!result) { Toast.show('Generate analysis first', 'error'); return; }
@@ -2639,7 +2754,7 @@ function downloadHtmlDeck() {
   Toast.show('\ud83d\udcc4 HTML deck downloaded!', 'success');
 }
 
-/* ── Copy summary to clipboard ── */
+/* â”€â”€ Copy summary to clipboard â”€â”€ */
 function copyDocSummary() {
   var result = _currentDocResult;
   if (!result) return;
@@ -2652,11 +2767,11 @@ function copyDocSummary() {
   }
 }
 
-/* ═══════════════════════════════════════════════
-   EXPORT ENGINE — PPT / PDF / SHARE
-═══════════════════════════════════════════════ */
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   EXPORT ENGINE â€” PPT / PDF / SHARE
+â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 
-/* ── Helper: navigate to chart slide, capture canvas, restore ── */
+/* â”€â”€ Helper: navigate to chart slide, capture canvas, restore â”€â”€ */
 async function _captureChartImage() {
   var slides  = document.querySelectorAll('.doc-slide');
   var prevIdx = _currentDocSlideIdx;
@@ -2679,7 +2794,7 @@ async function _captureChartImage() {
   return imgData;
 }
 
-/* ── Export PowerPoint (.pptx) ── */
+/* â”€â”€ Export PowerPoint (.pptx) â”€â”€ */
 async function exportDocToPPT() {
   var result = _currentDocResult;
   if (!result) { Toast.show('Generate analysis first', 'error'); return; }
@@ -2700,7 +2815,7 @@ async function exportDocToPPT() {
       slide.addShape(pptx.ShapeType ? pptx.ShapeType.rect : 'rect', { x: 0, y: 0, w: '100%', h: 0.07, fill: { color: color } });
     }
 
-    /* Slide 1 – Title */
+    /* Slide 1 â€“ Title */
     var s1 = pptx.addSlide();
     s1.background = { color: BG };
     addAccent(s1, C_OR);
@@ -2713,14 +2828,14 @@ async function exportDocToPPT() {
       x: 0.5, y: 4.9, w: 9, h: 0.4, fontSize: 10, color: C_GR, align: 'center'
     });
 
-    /* Slide 2 – Executive Summary */
+    /* Slide 2 â€“ Executive Summary */
     var s2 = pptx.addSlide();
     s2.background = { color: BG };
     addAccent(s2, C_BL);
     s2.addText('Executive Summary', { x: 0.5, y: 0.22, w: 9, h: 0.6, fontSize: 22, bold: true, color: C_BL });
     s2.addText(result.summary || '', { x: 0.5, y: 1.1, w: 9, h: 3.8, fontSize: 14, color: C_WH, wrap: true, valign: 'top', lineSpacingMultiple: 1.5 });
 
-    /* Slide 3 – Key Metrics */
+    /* Slide 3 â€“ Key Metrics */
     if ((result.stats || []).length > 0) {
       var s3 = pptx.addSlide();
       s3.background = { color: BG };
@@ -2748,7 +2863,7 @@ async function exportDocToPPT() {
       });
     }
 
-    /* Slide 4 – Key Insights */
+    /* Slide 4 â€“ Key Insights */
     if ((result.keyPoints || []).length > 0) {
       var s4 = pptx.addSlide();
       s4.background = { color: BG };
@@ -2760,7 +2875,7 @@ async function exportDocToPPT() {
       s4.addText(bullets, { x: 0.5, y: 1.1, w: 9, h: 4, valign: 'top', wrap: true });
     }
 
-    /* Slide 5 – Data Analysis (chart image) */
+    /* Slide 5 â€“ Data Analysis (chart image) */
     var s5 = pptx.addSlide();
     s5.background = { color: BG };
     addAccent(s5, C_OR);
@@ -2774,7 +2889,7 @@ async function exportDocToPPT() {
       s5.addText('Chart data available\u2014navigate to Slide 3 in the app and try again.', { x: 1, y: 2.2, w: 8, h: 1.5, fontSize: 13, color: C_GR, align: 'center' });
     }
 
-    /* Slide 6 – Recommendations */
+    /* Slide 6 â€“ Recommendations */
     if ((result.recommendations || []).length > 0) {
       var s6 = pptx.addSlide();
       s6.background = { color: BG };
@@ -2795,7 +2910,7 @@ async function exportDocToPPT() {
   }
 }
 
-/* ── Export PDF (professional white report) ── */
+/* â”€â”€ Export PDF (professional white report) â”€â”€ */
 async function exportDocToPDF() {
   var result = _currentDocResult;
   if (!result) { Toast.show('Generate analysis first', 'error'); return; }
@@ -2823,7 +2938,7 @@ async function exportDocToPDF() {
       y += 11;
     }
 
-    /* ── Cover Page ── */
+    /* â”€â”€ Cover Page â”€â”€ */
     bg();
     pdf.setFillColor(15, 15, 26);
     pdf.rect(0, 0, W, 46, 'F');
@@ -2837,14 +2952,14 @@ async function exportDocToPDF() {
 
     y = 60;
 
-    /* ── Executive Summary ── */
+    /* â”€â”€ Executive Summary â”€â”€ */
     sectionHeader('EXECUTIVE SUMMARY', 56, 189, 248);
     pdf.setFont('helvetica', 'normal'); pdf.setFontSize(11); pdf.setTextColor(30, 30, 50);
     var sumLines = pdf.splitTextToSize(result.summary || '', cw);
     sumLines.forEach(function(line) { needY(6); pdf.text(line, mg, y); y += 5.8; });
     y += 8;
 
-    /* ── Key Metrics Table ── */
+    /* â”€â”€ Key Metrics Table â”€â”€ */
     if ((result.stats || []).length > 0) {
       sectionHeader('KEY METRICS', 255, 112, 67);
       pdf.autoTable({
@@ -2863,7 +2978,7 @@ async function exportDocToPDF() {
       y = pdf.lastAutoTable.finalY + 10;
     }
 
-    /* ── Key Insights ── */
+    /* â”€â”€ Key Insights â”€â”€ */
     if ((result.keyPoints || []).length > 0) {
       sectionHeader('KEY INSIGHTS', 56, 189, 248);
       result.keyPoints.forEach(function(pt, i) {
@@ -2876,7 +2991,7 @@ async function exportDocToPDF() {
       y += 4;
     }
 
-    /* ── Data Analysis Chart ── */
+    /* â”€â”€ Data Analysis Chart â”€â”€ */
     if (chartImg) {
       newPage();
       sectionHeader('DATA ANALYSIS', 255, 112, 67);
@@ -2891,7 +3006,7 @@ async function exportDocToPDF() {
       }
     }
 
-    /* ── Recommendations ── */
+    /* â”€â”€ Recommendations â”€â”€ */
     if ((result.recommendations || []).length > 0) {
       needY(20);
       sectionHeader('RECOMMENDATIONS', 56, 189, 248);
@@ -2904,7 +3019,7 @@ async function exportDocToPDF() {
       });
     }
 
-    /* ── Footer on every page ── */
+    /* â”€â”€ Footer on every page â”€â”€ */
     var pages = pdf.internal.getNumberOfPages();
     for (var p = 1; p <= pages; p++) {
       pdf.setPage(p);
@@ -2923,7 +3038,7 @@ async function exportDocToPDF() {
   }
 }
 
-/* ── Share Analysis (Firebase Firestore + public link) ── */
+/* â”€â”€ Share Analysis (Firebase Firestore + public link) â”€â”€ */
 async function shareDocAnalysis(btn) {
   var result = _currentDocResult;
   if (!result) { Toast.show('Generate analysis first', 'error'); return; }
@@ -2975,7 +3090,7 @@ async function shareDocAnalysis(btn) {
   }
 }
 
-/* ── Init ── */
+/* â”€â”€ Init â”€â”€ */
 
 document.addEventListener('DOMContentLoaded', function() {
   renderStudios();
