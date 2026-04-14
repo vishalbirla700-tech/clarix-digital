@@ -122,6 +122,23 @@ var STUDIOS = [
     placeholder:'Add context (e.g. "this is a Diwali banner from a Pune shop")',
     analyzeLabel:'🔍 Detect Language & Analyze',
     promptFn:'multilingual'
+  },
+  {
+    id:'docanalyzer', emoji:'📄', name:'Document Analyzer',
+    sub:'Upload PDF, DOCX or TXT — get slides, charts & AI insights',
+    badge:'AI Insights', css:'studio-doc',
+    heroBg:'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=800&q=60',
+    desc:'Turn any business document into a GAMMA-style slide deck with charts, key insights and executive summary.',
+    tips:['📄 Supports PDF, DOCX & TXT','📊 Auto or manual chart type','🖥️ Export as HTML slide deck','💼 Perfect for reports & proposals'],
+    options:{
+      'Output Style':['Slide Deck','Executive Summary','Full Report'],
+      'Tone':['Professional','Concise','Detailed']
+    },
+    placeholder:'Add context (e.g. "Q3 sales report for our SaaS startup in Mumbai")',
+    analyzeLabel:'✨ Analyze Document',
+    promptFn:'docanalyzer',
+    hasDocUpload: true,
+    hasUpload: false
   }
 ];
 
@@ -135,6 +152,13 @@ var selectedVariation = null;
 var studioVoiceOn = false;
 var studioRecognition = null;
 var blankCanvasMode = false;
+
+/* ── Document Analyzer State ── */
+var docExtractedText = '';
+var docFileName = '';
+var docChartMode = 'auto';
+var _currentDocResult = null;
+var _currentDocSlideIdx = 0;
 
 /* ── Studio Templates (shown as dropdown in each studio) ── */
 var STUDIO_TEMPLATES = {
@@ -222,6 +246,8 @@ function openStudio(id) {
   }
   studioFile = null; studioDataUrl = null;
   selectedOptions = {}; selectedFestival = null; selectedVariation = null;
+  docExtractedText = ''; docFileName = '';
+  docChartMode = 'auto'; _currentDocResult = null; _currentDocSlideIdx = 0;
   /* pre-select first option in each group */
   var keys = Object.keys(activeStudio.options || {});
   for (var k = 0; k < keys.length; k++) {
@@ -453,6 +479,24 @@ function buildStudioModal() {
       + '<input type="file" id="studioFileInput" accept="image/*" style="display:none" onchange="studioFileSelected(this.files[0])">';
   }
 
+  /* ── Document Upload (Document Analyzer only) ── */
+  var docUpload = '';
+  if (s.hasDocUpload) {
+    docUpload = '<div class="studio-options-label">📄 Upload Your Document</div>'
+      + '<div class="doc-upload-zone" id="docDropZone"'
+      + ' onclick="document.getElementById(\'docFileInput\').click()"'
+      + ' ondragover="docDragOver(event)" ondrop="docDrop(event)">'
+      + '<div style="font-size:40px">📄</div>'
+      + '<div style="font-size:14px;font-weight:700;color:#fff;margin-top:8px">Tap to upload document</div>'
+      + '<div style="font-size:12px;color:rgba(255,255,255,0.45);margin-top:6px">PDF, DOCX, or TXT • Max 10MB</div>'
+      + '</div>'
+      + '<div class="doc-file-status" id="docFileStatus"></div>'
+      + '<div class="doc-file-name" id="docFileName"></div>'
+      + '<input type="file" id="docFileInput"'
+      + ' accept=".pdf,.docx,.txt,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain"'
+      + ' style="display:none" onchange="docFileSelected(this.files[0])">';
+  }
+
   /* Options — index-based onclick avoids ALL special char issues */
   var opts = '';
   var grpKeys = Object.keys(s.options || {});
@@ -482,18 +526,20 @@ function buildStudioModal() {
     + '</div>';
 
   /* Output */
-  var out = '<div class="studio-output" id="studioOutput">'
-    + '<div class="studio-output-label">✨ AI Generated — Choose your variation</div>'
-    + '<div id="studioVariations"></div>'
-    + (s.id === 'cultural' ? '<div id="festivalCardCanvas" class="festival-canvas-wrap"></div>' : '')
-    + '<button class="studio-send-to-write" onclick="sendStudioToWrite()">✍️ Open in Write for more customization →</button>'
-    + '</div>';
+  var out = s.id === 'docanalyzer'
+    ? '<div class="studio-output" id="studioOutput"><div id="docAnalyzerOutput"></div></div>'
+    : '<div class="studio-output" id="studioOutput">'
+      + '<div class="studio-output-label">✨ AI Generated — Choose your variation</div>'
+      + '<div id="studioVariations"></div>'
+      + (s.id === 'cultural' ? '<div id="festivalCardCanvas" class="festival-canvas-wrap"></div>' : '')
+      + '<button class="studio-send-to-write" onclick="sendStudioToWrite()">✍️ Open in Write for more customization →</button>'
+      + '</div>';
 
   document.querySelector('.studio-modal').innerHTML =
     '<button class="studio-modal-close-top" onclick="closeStudio()">✕ Close</button>'
     + hero
     + '<div class="studio-modal-body">'
-    + tips + kidsGallery + festSection + upload + opts + ctx
+    + tips + kidsGallery + festSection + upload + docUpload + opts + ctx
     + '<button class="studio-analyze-btn" id="studioAnalyzeBtn" onclick="runStudio()">' + s.analyzeLabel + '</button>'
     + out
     + '</div>';
@@ -666,6 +712,11 @@ async function runStudio() {
 
   /* In blank canvas mode OR when template text is provided, skip festival requirement.
      promptCultural() already defaults to 'Diwali' when selectedFestival is null. */
+  /* Document Analyzer: need uploaded doc */
+  if (s.id === 'docanalyzer' && !docExtractedText) {
+    Toast.show('📄 Please upload a document first', 'error'); return;
+  }
+
   if (s.hasFestivals && !selectedFestival && !blankCanvasMode && !context) {
     Toast.show('Please select a festival first 🎉', 'error'); return;
   }
@@ -686,6 +737,7 @@ async function runStudio() {
     else if (s.promptFn === 'corporate')   result = await promptCorporate(base64, mime, context);
     else if (s.promptFn === 'cultural')    result = await promptCultural(context);
     else if (s.promptFn === 'multilingual')result = await promptMultilingual(base64, mime, context);
+    else if (s.promptFn === 'docanalyzer') result = await promptDocAnalyzer(context);
 
     /* ── DEDUCT USAGE after success (not before - so failed calls don't waste credits) ── */
     ClarixState.incUsage();
@@ -701,10 +753,13 @@ async function runStudio() {
       Toast.show('✅ Done! Pick a variation below.', 'success', 3000);
     }
 
-    renderStudioOutput(result);
+    if (s.id === 'docanalyzer') {
+      renderDocAnalyzerOutput(result);
+    } else {
+      renderStudioOutput(result);
+    }
     saveStudioGenerationToHistory(result);
-    /* Show Continue or Change modal after 1.5s */
-    setTimeout(showStudioContinueModal, 1500);
+    if (s.id !== 'docanalyzer') setTimeout(showStudioContinueModal, 1500);
   } catch(err) {
     console.error('[Studio]', err);
     Toast.show('❌ ' + (err.message || 'Something went wrong. Try again.'), 'error');
@@ -1540,6 +1595,435 @@ async function promptMultilingual(base64, mime, context) {
     variation1: '🌐 Language: ' + (raw.detected_language || 'Detected') + '\n📝 Text: "' + (raw.text_found || '') + '"\n🔤 Meaning: ' + (raw.translation || '') + '\n\n' + (raw.variation1 || ''),
     variation2: raw.variation2 || ''
   };
+}
+
+/* ═══════════════════════════════════════════════
+   DOCUMENT ANALYZER ENGINE
+   TXT / DOCX / PDF → AI → GAMMA-style slide deck
+═══════════════════════════════════════════════ */
+
+/* ── Lazy CDN script loader ── */
+function loadScript(url) {
+  return new Promise(function(resolve, reject) {
+    if (document.querySelector('script[src="' + url + '"]')) { resolve(); return; }
+    var s = document.createElement('script');
+    s.src = url; s.onload = resolve; s.onerror = reject;
+    document.head.appendChild(s);
+  });
+}
+
+/* ── TXT parser ── */
+function parseTxtDoc(file) {
+  return new Promise(function(resolve, reject) {
+    var reader = new FileReader();
+    reader.onload = function(e) { resolve(e.target.result || ''); };
+    reader.onerror = reject;
+    reader.readAsText(file);
+  });
+}
+
+/* ── DOCX parser (via JSZip CDN) ── */
+async function parseDocxDoc(file) {
+  await loadScript('https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js');
+  var buf = await file.arrayBuffer();
+  var zip = await JSZip.loadAsync(buf);
+  var xmlFile = zip.file('word/document.xml');
+  if (!xmlFile) throw new Error('Invalid DOCX file — could not read content.');
+  var xml = await xmlFile.async('string');
+  /* Strip XML tags and normalise whitespace */
+  var text = xml.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+  if (!text) throw new Error('No readable text found in this DOCX file.');
+  return text;
+}
+
+/* ── PDF parser (via PDF.js CDN) ── */
+async function parsePdfDoc(file) {
+  var PDFJS_URL    = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
+  var PDFJS_WORKER = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+  if (!window.pdfjsLib) {
+    await loadScript(PDFJS_URL);
+    window.pdfjsLib.GlobalWorkerOptions.workerSrc = PDFJS_WORKER;
+  }
+  var buf = await file.arrayBuffer();
+  var pdf;
+  try {
+    pdf = await window.pdfjsLib.getDocument({ data: buf }).promise;
+  } catch(e) {
+    if (e.name === 'PasswordException') {
+      throw new Error('This PDF is password-protected. Please use an unlocked version.');
+    }
+    throw new Error('Could not read PDF. Please try a different file.');
+  }
+  var text = '';
+  var maxPages = Math.min(pdf.numPages, 25);
+  for (var i = 1; i <= maxPages; i++) {
+    var page = await pdf.getPage(i);
+    var content = await page.getTextContent();
+    text += content.items.map(function(item) { return item.str; }).join(' ') + '\n';
+  }
+  if (!text.trim()) throw new Error('No readable text in this PDF — it may be a scanned image.');
+  return text;
+}
+
+/* ── File format router ── */
+async function parseUploadedDoc(file) {
+  var name = (file.name || '').toLowerCase();
+  if (name.endsWith('.txt')  || file.type === 'text/plain')                        return parseTxtDoc(file);
+  if (name.endsWith('.docx') || file.type.includes('wordprocessingml'))             return parseDocxDoc(file);
+  if (name.endsWith('.pdf')  || file.type === 'application/pdf')                   return parsePdfDoc(file);
+  if (name.endsWith('.doc'))  throw new Error('Old .doc format not supported. Please save as .docx and try again.');
+  throw new Error('Unsupported file type. Please upload PDF, DOCX, or TXT.');
+}
+
+/* ── Drag & Drop handlers (for doc upload zone) ── */
+function docDragOver(e) { e.preventDefault(); var z = document.getElementById('docDropZone'); if (z) z.classList.add('dragover'); }
+function docDrop(e) {
+  e.preventDefault();
+  var z = document.getElementById('docDropZone');
+  if (z) z.classList.remove('dragover');
+  var f = e.dataTransfer.files[0];
+  if (f) docFileSelected(f);
+}
+
+/* ── File selected handler ── */
+function docFileSelected(file) {
+  if (!file) return;
+  var statusEl = document.getElementById('docFileStatus');
+  var nameEl   = document.getElementById('docFileName');
+  if (nameEl)   nameEl.textContent   = file.name;
+  if (statusEl) { statusEl.textContent = '\u23f3 Reading file\u2026'; statusEl.style.color = 'rgba(255,255,255,0.6)'; }
+
+  parseUploadedDoc(file).then(function(text) {
+    docExtractedText = text.substring(0, 8000);
+    docFileName      = file.name;
+    var wordCount    = text.split(/\s+/).length;
+    if (statusEl) {
+      statusEl.textContent = '\u2705 Ready \u2014 ~' + wordCount.toLocaleString() + ' words extracted';
+      statusEl.style.color = '#4ade80';
+    }
+    Toast.show('\ud83d\udcc4 Document loaded! Click Analyze to generate insights.', 'success', 3500);
+  }).catch(function(err) {
+    docExtractedText = '';
+    if (statusEl) { statusEl.textContent = '\u274c ' + (err.message || 'Could not read file'); statusEl.style.color = '#f87171'; }
+    Toast.show('\u274c ' + (err.message || 'Could not read file'), 'error');
+  });
+}
+
+/* ── AI prompt builder for Document Analyzer ── */
+async function promptDocAnalyzer(context) {
+  if (!docExtractedText) throw new Error('Please upload a document first.');
+
+  var outputStyle = selectedOptions['Output Style'] || 'Slide Deck';
+  var tone        = selectedOptions['Tone']         || 'Professional';
+  var chartHint   = (docChartMode !== 'auto') ? 'Preferred chart type: ' + docChartMode + '. ' : '';
+  var textSample  = docExtractedText.substring(0, 3000);
+  var truncated   = docExtractedText.length > 3000;
+
+  var p = 'You are an expert business analyst and presentation designer.\n'
+    + 'Analyze this document carefully:\n\n'
+    + '--- DOCUMENT START ---\n' + textSample + '\n'
+    + (truncated ? '[Document continues \u2014 this is an excerpt]\n' : '')
+    + '--- DOCUMENT END ---\n\n'
+    + (context ? 'User context: "' + context + '"\n\n' : '')
+    + 'Output Style: ' + outputStyle + ' | Tone: ' + tone + '\n'
+    + chartHint + '\n'
+    + 'Return ONLY valid JSON — no extra text, no markdown fences:\n'
+    + '{'
+    + '"title":"short doc title (max 8 words)",'
+    + '"summary":"3-sentence executive summary",'
+    + '"keyPoints":["insight 1","insight 2","insight 3","insight 4","insight 5"],'
+    + '"stats":['
+    +   '{"label":"Metric name","value":"number or %","trend":"up|down|neutral"},'
+    +   '{"label":"Metric 2","value":"value","trend":"neutral"}'
+    + '],'
+    + '"chartData":{"type":"bar","labels":["label1","label2","label3"],"values":[40,60,30],"unit":"%"},'
+    + '"recommendations":["action 1","action 2","action 3"],'
+    + '"hashtags":["#tag1","#tag2","#tag3","#tag4","#tag5"]'
+    + '}\n\n'
+    + 'RULES: Extract real numbers from the document. If no numeric data exists, infer plausible metrics. Always return valid JSON only.';
+
+  return groqCall(null, null, p);
+}
+
+/* ── Render GAMMA-style output ── */
+function renderDocAnalyzerOutput(result) {
+  _currentDocResult   = result;
+  _currentDocSlideIdx = 0;
+
+  /* Apply manual chart type override */
+  if (docChartMode !== 'auto' && result.chartData) result.chartData.type = docChartMode;
+
+  var out       = document.getElementById('studioOutput');
+  var container = document.getElementById('docAnalyzerOutput');
+  if (!out || !container) return;
+
+  out.classList.add('visible');
+  container.innerHTML = buildDocOutputHTML(result);
+  out.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+  /* Render charts after DOM is ready */
+  setTimeout(function() { renderDocChart(result); }, 250);
+}
+
+/* ── Build full output HTML ── */
+function buildDocOutputHTML(result) {
+  var title           = result.title           || 'Document Analysis';
+  var summary         = result.summary         || '';
+  var keyPoints       = result.keyPoints       || [];
+  var stats           = result.stats           || [];
+  var recommendations = result.recommendations || [];
+  var hashtags        = result.hashtags        || [];
+
+  /* Stats strip */
+  var statsHtml = '';
+  if (stats.length > 0) {
+    statsHtml = '<div class="doc-stats-row">';
+    stats.forEach(function(s) {
+      var icons = { up: '\u2191', down: '\u2193', neutral: '\u2192' };
+      var classes = { up: 'trend-up', down: 'trend-down', neutral: 'trend-neutral' };
+      statsHtml += '<div class="doc-stat-card">'
+        + '<div class="doc-stat-value">' + s.value
+        + ' <span class="doc-stat-trend ' + (classes[s.trend] || 'trend-neutral') + '">' + (icons[s.trend] || '\u2192') + '</span></div>'
+        + '<div class="doc-stat-label">' + s.label + '</div>'
+        + '</div>';
+    });
+    statsHtml += '</div>';
+  }
+
+  /* Slides data */
+  var slides = [
+    { idx: 0, type: 'title',  heading: title,                   content: summary },
+    { idx: 1, type: 'points', heading: '\ud83d\udd11 Key Insights',       content: keyPoints },
+    { idx: 2, type: 'chart',  heading: '\ud83d\udcca Data Analysis',       content: null },
+    { idx: 3, type: 'recs',   heading: '\ud83d\ude80 Recommendations',     content: recommendations }
+  ];
+
+  var slidesHtml = '<div class="doc-slide-deck" id="docSlideDeck">';
+  slides.forEach(function(slide) {
+    slidesHtml += '<div class="doc-slide' + (slide.idx === 0 ? ' active' : '') + '" data-idx="' + slide.idx + '">';
+    slidesHtml += '<div class="doc-slide-num">Slide ' + (slide.idx + 1) + ' / ' + slides.length + '</div>';
+    slidesHtml += '<div class="doc-slide-heading">' + slide.heading + '</div>';
+
+    if (slide.type === 'title') {
+      slidesHtml += '<div class="doc-slide-summary">' + slide.content + '</div>';
+    } else if (slide.type === 'points') {
+      slidesHtml += '<ul class="doc-slide-points">';
+      (slide.content || []).forEach(function(pt) { slidesHtml += '<li>' + pt + '</li>'; });
+      slidesHtml += '</ul>';
+    } else if (slide.type === 'chart') {
+      slidesHtml += '<div class="doc-chart-wrap"><canvas id="docMainChart" height="220"></canvas></div>';
+      /* Chart type picker — auto + manual options */
+      slidesHtml += '<div class="doc-chart-picker"><span class="doc-chart-picker-label">Chart:</span>';
+      [['auto','\ud83d\udd04 Auto'],['bar','\ud83d\udcca Bar'],['pie','\ud83e\udd67 Pie'],['line','\ud83d\udcc8 Line'],['none','\u2296 None']].forEach(function(t) {
+        slidesHtml += '<button class="doc-chart-type-btn' + (docChartMode === t[0] ? ' active' : '') + '" onclick="setDocChartMode(\'' + t[0] + '\')">' + t[1] + '</button>';
+      });
+      slidesHtml += '</div>';
+    } else if (slide.type === 'recs') {
+      slidesHtml += '<ol class="doc-slide-recs">';
+      (slide.content || []).forEach(function(r) { slidesHtml += '<li>' + r + '</li>'; });
+      slidesHtml += '</ol>';
+      if (hashtags.length > 0) slidesHtml += '<div class="doc-hashtags">' + hashtags.join(' ') + '</div>';
+    }
+    slidesHtml += '</div>'; /* .doc-slide */
+  });
+  slidesHtml += '</div>'; /* .doc-slide-deck */
+
+  /* Navigator */
+  var navHtml = '<div class="doc-slide-nav">'
+    + '<button class="doc-nav-btn" onclick="navDocSlide(-1)">\u25c4</button>'
+    + '<span class="doc-nav-indicator" id="docNavIndicator">Slide 1 / ' + slides.length + '</span>'
+    + '<button class="doc-nav-btn" onclick="navDocSlide(1)">\u25ba</button>'
+    + '</div>';
+
+  /* Action row */
+  var actHtml = '<div class="doc-action-row">'
+    + '<button class="doc-action-btn doc-action-primary" onclick="downloadDocChart()">\u2b07\ufe0f Download Chart PNG</button>'
+    + '<button class="doc-action-btn" onclick="downloadHtmlDeck()">\ud83d\udcc4 Download HTML Deck</button>'
+    + '<button class="doc-action-btn" onclick="copyDocSummary()">\ud83d\udccb Copy Summary</button>'
+    + '</div>';
+
+  return '<div class="doc-output-title">\u2728 ' + title + '</div>'
+    + statsHtml + slidesHtml + navHtml + actHtml;
+}
+
+/* ── Slide navigation ── */
+function navDocSlide(dir) {
+  var slides = document.querySelectorAll('.doc-slide');
+  if (!slides.length) return;
+  slides[_currentDocSlideIdx].classList.remove('active');
+  _currentDocSlideIdx = (_currentDocSlideIdx + dir + slides.length) % slides.length;
+  slides[_currentDocSlideIdx].classList.add('active');
+  var ind = document.getElementById('docNavIndicator');
+  if (ind) ind.textContent = 'Slide ' + (_currentDocSlideIdx + 1) + ' / ' + slides.length;
+  /* Re-render chart if chart slide is now active */
+  if (_currentDocResult && document.querySelector('.doc-slide.active #docMainChart')) {
+    setTimeout(function() { renderDocChart(_currentDocResult); }, 100);
+  }
+}
+
+/* ── Switch chart type (both auto + manual) ── */
+function setDocChartMode(type) {
+  docChartMode = type;
+  document.querySelectorAll('.doc-chart-type-btn').forEach(function(btn) {
+    var btnType = btn.getAttribute('onclick').match(/'([^']+)'/);
+    btn.classList.toggle('active', btnType && btnType[1] === type);
+  });
+  if (_currentDocResult) {
+    if (_currentDocResult.chartData && type !== 'auto' && type !== 'none') {
+      _currentDocResult.chartData.type = type;
+    }
+    renderDocChart(_currentDocResult);
+  }
+}
+
+/* ── Render Chart.js chart ── */
+async function renderDocChart(result) {
+  if (!result || !result.chartData) return;
+  var canvas = document.getElementById('docMainChart');
+  if (!canvas) return;
+  if (docChartMode === 'none') { canvas.style.display = 'none'; return; }
+  canvas.style.display = 'block';
+
+  /* Load Chart.js lazily */
+  if (!window.Chart) {
+    await loadScript('https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js');
+  }
+
+  /* Destroy existing chart instance */
+  if (window._docChartInstance) {
+    try { window._docChartInstance.destroy(); } catch(e) {}
+    window._docChartInstance = null;
+  }
+
+  var cd        = result.chartData;
+  var chartType = (docChartMode === 'auto') ? (cd.type || 'bar') : docChartMode;
+  var labels    = cd.labels || ['A', 'B', 'C'];
+  var values    = cd.values || [40, 60, 30];
+  var unit      = cd.unit   || '';
+  var palette   = ['rgba(255,112,67,0.85)','rgba(56,189,248,0.85)','rgba(74,222,128,0.85)','rgba(246,173,85,0.85)','rgba(167,139,250,0.85)'];
+
+  window._docChartInstance = new Chart(canvas, {
+    type: chartType,
+    data: {
+      labels: labels,
+      datasets: [{
+        label: result.title || 'Data',
+        data: values,
+        backgroundColor: chartType === 'line' ? 'rgba(255,112,67,0.1)' : palette,
+        borderColor:     chartType === 'line' ? '#ff7043' : palette,
+        borderWidth:     chartType === 'line' ? 2 : 1,
+        fill:            chartType === 'line',
+        tension:         0.4,
+        pointRadius:     chartType === 'line' ? 5 : 0,
+        pointBackgroundColor: '#ff7043'
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: chartType === 'pie', labels: { color: '#e0e0e0', font: { size: 12 } } },
+        tooltip: {
+          callbacks: {
+            label: function(ctx) {
+              return chartType === 'pie'
+                ? ctx.label + ': ' + ctx.parsed + unit
+                : ctx.parsed.y + unit;
+            }
+          }
+        }
+      },
+      scales: chartType === 'pie' ? {} : {
+        x: { ticks: { color: 'rgba(255,255,255,0.65)', font: { size: 11 } }, grid: { color: 'rgba(255,255,255,0.05)' } },
+        y: {
+          ticks: { color: 'rgba(255,255,255,0.65)', font: { size: 11 }, callback: function(v) { return v + unit; } },
+          grid:  { color: 'rgba(255,255,255,0.05)' }
+        }
+      }
+    }
+  });
+}
+
+/* ── Download chart as PNG ── */
+function downloadDocChart() {
+  var canvas = document.getElementById('docMainChart');
+  if (!canvas) { Toast.show('Generate analysis first', 'error'); return; }
+  var a = document.createElement('a');
+  a.download = 'clarix-doc-chart.png';
+  a.href = canvas.toDataURL('image/png');
+  a.click();
+  Toast.show('\ud83d\udcca Chart downloaded!', 'success');
+}
+
+/* ── Download full HTML deck ── */
+function downloadHtmlDeck() {
+  var result = _currentDocResult;
+  if (!result) { Toast.show('Generate analysis first', 'error'); return; }
+  var title = result.title || 'Document Analysis';
+
+  var html = '<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8">'
+    + '<meta name="viewport" content="width=device-width,initial-scale=1">'
+    + '<title>' + title + ' \u2014 Clarix AI</title>'
+    + '<style>'
+    + 'body{font-family:-apple-system,BlinkMacSystemFont,Arial,sans-serif;background:#0d0d0d;color:#fff;margin:0;padding:32px 24px;max-width:800px;margin:0 auto;}'
+    + 'h1{font-size:30px;font-weight:900;color:#ff7043;margin-bottom:6px;line-height:1.2;}'
+    + '.summary{font-size:15px;line-height:1.8;color:#e0e0e0;margin:16px 0 28px;padding:18px;background:rgba(255,255,255,0.04);border-radius:14px;border-left:4px solid #ff7043;}'
+    + '.section-title{font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#38bdf8;margin-bottom:12px;}'
+    + 'ul,ol{padding-left:20px;}'
+    + 'li{margin-bottom:10px;line-height:1.7;color:#e0e0e0;font-size:14px;}'
+    + '.stats{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:28px;}'
+    + '.stat{background:rgba(56,189,248,0.08);border:1px solid rgba(56,189,248,0.2);border-radius:14px;padding:16px;min-width:120px;text-align:center;}'
+    + '.stat-val{font-size:26px;font-weight:900;color:#38bdf8;}'
+    + '.stat-label{font-size:12px;color:rgba(255,255,255,0.55);margin-top:5px;}'
+    + '.hashtags{color:rgba(255,255,255,0.4);font-size:13px;margin-top:16px;}'
+    + '.section{margin-bottom:28px;padding-bottom:28px;border-bottom:1px solid rgba(255,255,255,0.06);}'
+    + '.footer{margin-top:40px;text-align:center;font-size:12px;color:rgba(255,255,255,0.25);padding-top:16px;}'
+    + '</style></head><body>'
+    + '<h1>' + title + '</h1>'
+    + '<div class="summary">' + (result.summary || '') + '</div>';
+
+  if ((result.stats || []).length > 0) {
+    html += '<div class="stats">';
+    result.stats.forEach(function(s) {
+      html += '<div class="stat"><div class="stat-val">' + s.value + '</div><div class="stat-label">' + s.label + '</div></div>';
+    });
+    html += '</div>';
+  }
+  if ((result.keyPoints || []).length > 0) {
+    html += '<div class="section"><div class="section-title">\ud83d\udd11 Key Insights</div><ul>';
+    result.keyPoints.forEach(function(p) { html += '<li>' + p + '</li>'; });
+    html += '</ul></div>';
+  }
+  if ((result.recommendations || []).length > 0) {
+    html += '<div class="section"><div class="section-title">\ud83d\ude80 Recommendations</div><ol>';
+    result.recommendations.forEach(function(r) { html += '<li>' + r + '</li>'; });
+    html += '</ol></div>';
+  }
+  if ((result.hashtags || []).length > 0) {
+    html += '<div class="hashtags">' + result.hashtags.join(' ') + '</div>';
+  }
+  html += '<div class="footer">Made with Clarix AI \u00b7 clarix.digital</div></body></html>';
+
+  var blob = new Blob([html], { type: 'text/html' });
+  var a = document.createElement('a');
+  a.download = 'clarix-' + (title.toLowerCase().replace(/[^a-z0-9]+/g, '-')) + '.html';
+  a.href = URL.createObjectURL(blob);
+  a.click();
+  URL.revokeObjectURL(a.href);
+  Toast.show('\ud83d\udcc4 HTML deck downloaded!', 'success');
+}
+
+/* ── Copy summary to clipboard ── */
+function copyDocSummary() {
+  var result = _currentDocResult;
+  if (!result) return;
+  var text = (result.title || 'Analysis') + '\n\n'
+    + (result.summary || '') + '\n\n'
+    + 'Key Insights:\n' + (result.keyPoints || []).map(function(p, i) { return (i + 1) + '. ' + p; }).join('\n') + '\n\n'
+    + 'Recommendations:\n' + (result.recommendations || []).map(function(r, i) { return (i + 1) + '. ' + r; }).join('\n');
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(text).then(function() { Toast.show('\u2705 Summary copied to clipboard!', 'success'); });
+  }
 }
 
 /* ── Init ── */

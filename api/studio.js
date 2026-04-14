@@ -99,7 +99,7 @@ module.exports = async function handler(req, res) {
       {
         model: 'meta-llama/llama-4-scout-17b-16e-instruct',
         messages: [{ role: 'user', content }],
-        max_tokens: 900,
+        max_tokens: 2000,
         temperature: 0.55
       }
     );
