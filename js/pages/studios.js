@@ -468,27 +468,9 @@ function buildStudioModal() {
     opts += '</div>';
   }
 
-  /* Context + Templates + Voice */
-  var studioId = s.id;
-  var tpls = (STUDIO_TEMPLATES[studioId] || []);
-  var tplDropdown = '';
-  if (tpls.length) {
-    tplDropdown = '<div style="position:relative;margin-bottom:8px" id="studioTplWrap">'
-      + '<button class="btn btn-ghost btn-sm" id="studioTplBtn" onclick="studioToggleTemplates()" style="font-size:12px">\uD83D\uDCCB Templates \u25BE</button>'
-      + '<div id="studioTplDropdown" style="display:none;position:absolute;top:calc(100%+6px);left:0;z-index:60;background:#111;border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:8px;min-width:260px;box-shadow:0 12px 40px rgba(0,0,0,0.6)">'
-      + '<div style="font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,0.35);padding:4px 8px 8px;border-bottom:1px solid rgba(255,255,255,0.06);margin-bottom:6px">Quick Templates</div>';
-    for (var ti = 0; ti < tpls.length; ti++) {
-      var tp = tpls[ti];
-      tplDropdown += '<div onclick="studioApplyTemplate(\'' + studioId + '\',' + ti + ')"'
-        + ' style="display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;cursor:pointer;transition:background .15s;font-size:13px;color:rgba(255,255,255,0.8)"'
-        + ' onmouseover="this.style.background=\'rgba(255,112,67,0.1)\'" onmouseout="this.style.background=\'\'">'
-        + '<span style="font-size:16px;width:22px;text-align:center;flex-shrink:0">' + tp.icon + '</span>'
-        + '<span>' + tp.name + '</span></div>';
-    }
-    tplDropdown += '</div></div>';
-  }
-  var ctx = '<div class="studio-options-label">Add Your Personal Touch</div>'
-    + tplDropdown
+  /* Context + Voice — no templates dropdown, just clean textarea */
+  var ctx = '<div class="studio-options-label" style="font-size:13px;font-weight:700;color:rgba(255,255,255,0.9);margin-bottom:8px;">&#10024; Add Your Personal Touch</div>'
+    + '<div style="font-size:12px;color:rgba(255,255,255,0.45);margin-bottom:10px;line-height:1.5;">Add your name, message, or any personal detail to make the output uniquely yours.</div>'
     + '<div class="studio-voice-row">'
     + '<textarea id="studioContext" rows="3" class="studio-textarea" placeholder="' + s.placeholder + '"></textarea>'
     + '<button class="studio-mic-btn" id="studioMicBtn" onclick="toggleStudioVoice()" title="Voice input">🎤</button>'
@@ -498,18 +480,6 @@ function buildStudioModal() {
     + '<button class="studio-ctx-btn" onclick="reuseLastContext()" title="Reuse last input">🔄 Reuse Last</button>'
     + '<button class="studio-ctx-btn" onclick="saveStudioDraft()" title="Save as draft" style="color:var(--accent);">💾 Save Draft</button>'
     + '</div>';
-
-  /* Close templates dropdown when clicking outside */
-  setTimeout(function() {
-    document.addEventListener('click', function _studioTplClose(e) {
-      var wrap = document.getElementById('studioTplWrap');
-      if (!wrap || !wrap.contains(e.target)) {
-        var dd = document.getElementById('studioTplDropdown');
-        if (dd) dd.style.display = 'none';
-        document.removeEventListener('click', _studioTplClose);
-      }
-    });
-  }, 100);
 
   /* Output */
   var out = '<div class="studio-output" id="studioOutput">'
@@ -807,22 +777,7 @@ function clearStudioContext() {
   Toast.show('Cleared', 'info', 1500);
 }
 
-/* ── Studio Template Helpers ── */
-function studioToggleTemplates() {
-  var dd = document.getElementById('studioTplDropdown');
-  if (!dd) return;
-  dd.style.display = dd.style.display === 'none' ? 'block' : 'none';
-}
 
-function studioApplyTemplate(studioId, idx) {
-  var tpls = STUDIO_TEMPLATES[studioId] || [];
-  if (idx >= tpls.length) return;
-  var ta = document.getElementById('studioContext');
-  if (ta) { ta.value = tpls[idx].text; ta.focus(); }
-  var dd = document.getElementById('studioTplDropdown');
-  if (dd) dd.style.display = 'none';
-  Toast.show('Template "' + tpls[idx].name + '" loaded', 'success', 2000);
-}
 
 
 function reuseLastContext() {
@@ -1569,3 +1524,4 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
 });
+

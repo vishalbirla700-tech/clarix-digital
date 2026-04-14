@@ -31,19 +31,19 @@
   <meta name="apple-mobile-web-app-title" content="Clarix">
   <link rel="apple-touch-icon" href="icons/icon-192.png">
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%23ff7043'/><text x='50%' y='55%' font-size='18' text-anchor='middle' dominant-baseline='middle' fill='white'>&#10022;</text></svg>">
-  <link rel="stylesheet" href="css/design.css?v=20260413Q">
-  <link rel="stylesheet" href="css/components.css?v=20260413Q">
-  <link rel="stylesheet" href="css/sidebar.css?v=20260413Q">
-  <link rel="stylesheet" href="css/onboarding.css?v=20260413Q">
-  <link rel="stylesheet" href="css/pages/write.css?v=20260413Q">
-  <link rel="stylesheet" href="css/auth.css?v=20260413Q">
+  <link rel="stylesheet" href="css/design.css?v=20260414A">
+  <link rel="stylesheet" href="css/components.css?v=20260414A">
+  <link rel="stylesheet" href="css/sidebar.css?v=20260414A">
+  <link rel="stylesheet" href="css/onboarding.css?v=20260414A">
+  <link rel="stylesheet" href="css/pages/write.css?v=20260414A">
+  <link rel="stylesheet" href="css/auth.css?v=20260414A">
   <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
   <!-- Firebase SDKs -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
   <!-- Clarix Auth CSS -->
-  <link rel="stylesheet" href="/css/auth.css?v=20260413Q"></head>
+  <link rel="stylesheet" href="/css/auth.css?v=20260414A"></head>
 <body class="theme-light">
 
   <!-- TOP NAV -->
@@ -182,18 +182,10 @@
             <span class="char-counter" id="charCounter">0 / 2000</span>
           </div>
         </div>
-        <!-- Templates -->
-        <div class="templates-wrap" id="templatesWrap" style="margin-bottom:8px">
-          <button class="btn btn-ghost btn-sm" id="templatesBtn" onclick="toggleTemplates()">&#128220; Templates &#8250;</button>
-          <div class="templates-dropdown" id="templatesDropdown">
-            <div class="templates-title">Quick Templates</div>
-            <div class="templates-list" id="templatesList"></div>
-          </div>
-        </div>
         <div class="prompt-textarea-wrap">
           <textarea id="promptInput" class="prompt-textarea"
             placeholder="Type in your language &mdash; ek dragon ka cinematic photo chahiye..."
-            maxlength="2000" oninput="onPromptInput(this)" rows="7"></textarea>
+            maxlength="2000" oninput="onPromptInput(this)" rows="8"></textarea>
           <button class="voice-btn" id="voiceBtn"
             onclick="Voice.start(document.getElementById('promptInput'), onVoiceFinal)"
             title="Voice input">&#127897;&#65039;</button>
@@ -302,23 +294,24 @@
     </div>
   </nav>
 
-  <script src="config.js?v=20260413Q"></script>
-  <script src="js/languages.js?v=20260413Q"></script>
-  <script src="js/core.js?v=20260413Q"></script>
-  <script src="js/ai.js?v=20260413Q"></script>
-  <script src="js/voice.js?v=20260413Q"></script>
-  <script src="js/share.js?v=20260413Q"></script>
-  <script src="js/onboarding.js?v=20260413Q"></script>
-  <script src="js/sidebar.js?v=20260413Q"></script>
-  <script src="js/firebase.js?v=20260413Q"></script>
-  <script src="js/firebase-auth.js?v=20260413Q"></script>
-  <script src="js/pages/write.js?v=20260413Q"></script>
+  <script src="config.js?v=20260414A"></script>
+  <script src="js/languages.js?v=20260414A"></script>
+  <script src="js/core.js?v=20260414A"></script>
+  <script src="js/ai.js?v=20260414A"></script>
+  <script src="js/voice.js?v=20260414A"></script>
+  <script src="js/share.js?v=20260414A"></script>
+  <script src="js/onboarding.js?v=20260414A"></script>
+  <script src="js/sidebar.js?v=20260414A"></script>
+  <script src="js/firebase.js?v=20260414A"></script>
+  <script src="js/firebase-auth.js?v=20260414A"></script>
+  <script src="js/pages/write.js?v=20260414A"></script>
   <script>
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('/sw.js').catch(() => {});
     }
     document.addEventListener('DOMContentLoaded', () => { if (window.Sidebar) Sidebar.init(); });
   </script>
-  <script src="js/pwa.js?v=20260413Q"></script>
+  <script src="js/pwa.js?v=20260414A"></script>
 </body>
 </html>
+

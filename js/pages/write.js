@@ -135,7 +135,6 @@ let selectedVariIdx = 0;
 document.addEventListener('DOMContentLoaded', () => {
   Sidebar.init();
   Onboarding.init();
-  renderTemplates();
   renderPlatforms();
   renderSocialPlatforms();
   restoreLang();
@@ -575,15 +574,30 @@ function renderResults(r, aiPlatform, socialPlatform) {
   // Breakdown CTA
   document.getElementById('breakdownCta').style.display = 'flex';
 
-  // After results appear: change button to "Enhance Again" but keep it FULLY active
+  // After results appear: replace Enhance button with two clear post-output actions
+  // injected below results — "Add Personal Touch" and "Start Fresh"
   var enhBtn = document.getElementById('enhanceBtn');
   if (enhBtn) {
     enhBtn.style.opacity = '';
     enhBtn.style.transform = '';
-    enhBtn.title = 'Enhance again for a fresh result';
     enhBtn.dataset.state = 'done';
-    enhBtn.innerHTML = '\u26A1 Enhance Again';
+    enhBtn.innerHTML = '&#9889; Re-Enhance';
+    enhBtn.title = 'Run enhancement again for a fresh result';
   }
+
+  // Inject post-output action bar (Start Fresh + Add Personal Touch)
+  var existingPostBar = document.getElementById('postOutputBar');
+  if (existingPostBar) existingPostBar.remove();
+  var postBar = document.createElement('div');
+  postBar.id = 'postOutputBar';
+  postBar.style.cssText = 'display:flex;gap:10px;margin-bottom:16px;animation:fadeUp 0.4s var(--ease) both;flex-wrap:wrap;';
+  postBar.innerHTML =
+    '<button class="btn btn-secondary light" style="flex:1;min-width:140px;padding:12px 16px;font-size:13px;border-radius:12px;display:flex;align-items:center;justify-content:center;gap:6px;" onclick="addPersonalTouch()">'+
+    '&#10024; Add Personal Touch</button>'+
+    '<button class="btn" style="flex:1;min-width:140px;padding:12px 16px;font-size:13px;font-weight:700;border-radius:12px;background:rgba(34,197,94,0.09);border:1.5px solid rgba(34,197,94,0.25);color:#15803d;display:flex;align-items:center;justify-content:center;gap:6px;cursor:pointer;" onclick="clearWrite()">'+
+    '&#128260; Start Fresh</button>';
+  var scoresRow = document.getElementById('scoresRow');
+  if (scoresRow) scoresRow.insertAdjacentElement('beforebegin', postBar);
 }
 
 
@@ -638,6 +652,66 @@ function modifySelected() {
   }
   Toast.show('Loaded into editor — modify and re-enhance! ↑', 'success');
   setStep(3);
+}
+
+/* ─── ADD PERSONAL TOUCH ─────────────────────── */
+function addPersonalTouch() {
+  // Remove existing panel if open (toggle)
+  var existing = document.getElementById('personalTouchPanel');
+  if (existing) { existing.remove(); return; }
+
+  var panel = document.createElement('div');
+  panel.id = 'personalTouchPanel';
+  panel.style.cssText = 'background:linear-gradient(135deg,rgba(255,112,67,0.06),rgba(255,152,0,0.04));border:1.5px solid rgba(255,112,67,0.25);border-radius:16px;padding:18px 20px;margin-bottom:14px;animation:fadeUp 0.3s var(--ease) both;';
+  panel.innerHTML =
+    '<div style="font-size:12px;font-weight:700;color:var(--accent);letter-spacing:.06em;text-transform:uppercase;margin-bottom:10px;">&#10024; Add Your Personal Touch</div>'+
+    '<div style="font-size:13px;color:#555;margin-bottom:12px;line-height:1.6;">Add your name, brand, message or any personal note — AI will weave it into the output.</div>'+
+    '<textarea id="personalTouchInput" rows="3" style="width:100%;padding:12px 14px;border:1.5px solid rgba(255,112,67,0.25);border-radius:10px;background:#fff;font-size:14px;line-height:1.6;color:#222;font-family:var(--font-body);resize:vertical;box-sizing:border-box;outline:none;" placeholder="e.g. \"From our family to yours\" or \"For my brand CoolBrand, tone: playful\""></textarea>'+
+    '<div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;">'+
+    '<button class="btn btn-primary" style="flex:1;min-width:140px;" onclick="applyPersonalTouch()">&#9889; Refine with Touch</button>'+
+    '<button class="btn btn-secondary light btn-sm" onclick="document.getElementById(\'personalTouchPanel\').remove()">Cancel</button>'+
+    '</div>';
+
+  var scoresRow = document.getElementById('scoresRow');
+  if (scoresRow) scoresRow.insertAdjacentElement('afterend', panel);
+  setTimeout(() => { var ta = document.getElementById('personalTouchInput'); if (ta) ta.focus(); }, 100);
+}
+
+async function applyPersonalTouch() {
+  var note = (document.getElementById('personalTouchInput')?.value || '').trim();
+  if (!note) { Toast.show('Type your personal note first!', 'info'); return; }
+  if (!currentResult) return;
+
+  var selectedText = document.getElementById('selectedText')?.textContent || currentResult.enhanced;
+  var aiPlatform   = document.getElementById('platformSelect')?.value || 'ChatGPT';
+  var langCode     = LangState.code || 'en';
+  var langName     = LangState.name || 'English';
+
+  if (!ClarixState.canEnhance()) { UpgradeModal.show(); return; }
+
+  var refineBtn = document.querySelector('#personalTouchPanel .btn-primary');
+  if (refineBtn) { refineBtn.textContent = '⏳ Refining...'; refineBtn.disabled = true; }
+
+  try {
+    var result = await enhancePrompt(
+      'Refine this prompt by seamlessly incorporating this personal detail: "' + note + '". Keep the same style and intent but make it feel personal and authentic: ' + selectedText,
+      aiPlatform, currentMode, langCode, langName
+    );
+    if (result && result.enhanced) {
+      currentResult.enhanced = result.enhanced;
+      document.getElementById('selectedText').textContent = result.enhanced;
+      var vc0Text = document.querySelector('#vc-0 .variation-card-text');
+      if (vc0Text) vc0Text.textContent = result.enhanced;
+      if (!result._serverCounted) { ClarixState.incUsage(); ClarixState.inc(); }
+      updateUsageCounter();
+      Toast.show('✨ Personal touch applied!', 'success');
+      document.getElementById('personalTouchPanel')?.remove();
+    }
+  } catch(e) {
+    Toast.show('Refinement failed. Try again.', 'error');
+  } finally {
+    if (refineBtn) { refineBtn.textContent = '⚡ Refine with Touch'; refineBtn.disabled = false; }
+  }
 }
 
 /* ─── AI REWRITE SELECTED ─────────────────── */
@@ -758,10 +832,10 @@ function openBreakdown() {
   window.open('breakdown.html', '_blank');
 }
 
-/* ─── CLEAR ───────────────────────────────────── */
+/* ─── CLEAR (Start Fresh) ─────────────────────── */
 function clearWrite() {
   const ta = document.getElementById('promptInput');
-  if (ta) { ta.value = ''; ta.style.border = ''; }
+  if (ta) { ta.value = ''; ta.style.border = ''; ta.style.background = '#fff'; ta.style.borderColor = ''; }
   document.getElementById('charCounter').textContent = '0 / 2000';
   document.getElementById('autosuggestStrip').innerHTML = '';
   document.getElementById('resultsEmpty').style.display  = 'flex';
@@ -770,8 +844,20 @@ function clearWrite() {
   document.getElementById('profanityInlineStrip')?.remove();
   document.getElementById('langChangeNudge')?.remove();
   document.getElementById('apiLanguageNote')?.remove();
+  document.getElementById('postOutputBar')?.remove();
+  document.getElementById('personalTouchPanel')?.remove();
+  document.getElementById('intentModeBadge')?.remove();
+  document.getElementById('directionSection')?.remove();
+  // Reset enhance button to original state
+  var enhBtn = document.getElementById('enhanceBtn');
+  if (enhBtn) { enhBtn.dataset.state = ''; enhBtn.innerHTML = '&#9889; Enhance with AI'; }
   currentResult = null;
+  selectedVariIdx = 0;
   setStep(1);
+  // Scroll back to top of input on mobile
+  if (window.innerWidth <= 900) {
+    document.getElementById('langBlock')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
 }
 
 /* ─── UTILS ───────────────────────────────────── */
@@ -811,3 +897,4 @@ function saveToHistory(item) {
   if (history.length > 200) history.pop();
   localStorage.setItem('clarix_history', JSON.stringify(history));
 }
+
