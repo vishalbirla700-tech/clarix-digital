@@ -1739,7 +1739,46 @@ function extractXlsxChartData(workbook) {
   }
   if (datasets.length === 0) return null;
 
-  return { labels: labels, datasets: datasets, sheetName: bestName };
+  /* ── Smart data type detection ── */
+  var detectedType   = 'bar';
+  var detectedReason = 'Comparison data — Grouped bar chart';
+  var logScaleRec    = false;
+
+  /* Check if first column looks like time / dates */
+  var timeRx = /^(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec|q[1-4]|fy|week|day|hour|min|time|date|\d{4})/i;
+  var isTime = labels.some(function(l) { return timeRx.test(String(l).trim()); })
+    || dataRows.some(function(r) { var v = r[0]; return typeof v === 'number' && v > 40000 && v < 55000; });
+
+  /* Check if first column is numeric (potential XY scatter) */
+  var firstNumeric = dataRows.slice(0, Math.min(dataRows.length, 6)).filter(function(r) { return r[0] !== undefined && r[0] !== ''; }).every(function(r) {
+    return typeof r[0] === 'number' || (!isNaN(parseFloat(String(r[0]))) && String(r[0]).trim() !== '');
+  });
+
+  /* Collect positive values to check range */
+  var posVals = [];
+  datasets.forEach(function(ds) { ds.data.forEach(function(v) { if (v > 0) posVals.push(v); }); });
+  if (posVals.length > 1) {
+    var maxV = Math.max.apply(null, posVals);
+    var minV = Math.min.apply(null, posVals);
+    logScaleRec = (maxV / minV) > 1000;
+  }
+
+  if (isTime) {
+    detectedType   = 'line';
+    detectedReason = 'Time series detected — Line chart';
+  } else if (firstNumeric && datasets.length === 1) {
+    detectedType   = 'scatter';
+    detectedReason = 'XY / Correlation data detected — Scatter plot';
+  } else if (datasets.length > 2) {
+    detectedType   = 'bar';
+    detectedReason = 'Multi-series comparison (' + datasets.length + ' series) — Grouped bar chart';
+  } else {
+    detectedType   = 'bar';
+    detectedReason = 'Comparison data — Bar chart';
+  }
+  if (logScaleRec) detectedReason += ' · ⚠️ Wide value range — Log scale may help';
+
+  return { labels: labels, datasets: datasets, sheetName: bestName, detectedType: detectedType, detectedReason: detectedReason, logScaleRec: logScaleRec };
 }
 
 /* ── File format router ── */
@@ -1778,7 +1817,14 @@ function docFileSelected(file) {
     docFileName      = file.name;
     var wordCount    = text.split(/\s+/).length;
     if (statusEl) {
-      statusEl.textContent = '\u2705 Ready \u2014 ~' + wordCount.toLocaleString() + ' words extracted';
+      var baseMsg = '\u2705 Ready \u2014 ~' + wordCount.toLocaleString() + ' words extracted';
+      /* For Excel: show data shape + detected chart type */
+      if (docDirectChartData) {
+        var rows = docDirectChartData.labels.length;
+        var cols = docDirectChartData.datasets.length + 1;
+        baseMsg = '\u2705 ' + rows + ' rows \u00d7 ' + cols + ' columns \u2014 ' + docDirectChartData.detectedReason;
+      }
+      statusEl.textContent = baseMsg;
       statusEl.style.color = '#4ade80';
     }
     Toast.show('\ud83d\udcc4 Document loaded! Click Analyze to generate insights.', 'success', 3500);
@@ -1891,12 +1937,19 @@ function buildDocOutputHTML(result) {
       (slide.content || []).forEach(function(pt) { slidesHtml += '<li>' + pt + '</li>'; });
       slidesHtml += '</ul>';
     } else if (slide.type === 'chart') {
-      slidesHtml += '<div class="doc-chart-wrap"><canvas id="docMainChart" height="220"></canvas></div>';
+      /* Detection banner — shown for Excel uploads */
+      slidesHtml += '<div class="doc-detect-banner" id="docDetectBanner">';
+      if (docDirectChartData && docDirectChartData.detectedReason) {
+        slidesHtml += '\ud83d\udd0d ' + docDirectChartData.detectedReason;
+      }
+      slidesHtml += '</div>';
+      slidesHtml += '<div class="doc-chart-wrap"><canvas id="docMainChart" height="200"></canvas></div>';
       slidesHtml += '<div class="doc-chart-source" id="docChartSource"></div>';
-      /* Chart type picker — auto + manual options */
-      slidesHtml += '<div class="doc-chart-picker"><span class="doc-chart-picker-label">Chart:</span>';
-      [['auto','\ud83d\udd04 Auto'],['bar','\ud83d\udcca Bar'],['pie','\ud83e\udd67 Pie'],['line','\ud83d\udcc8 Line'],['none','\u2296 None']].forEach(function(t) {
-        slidesHtml += '<button class="doc-chart-type-btn' + (docChartMode === t[0] ? ' active' : '') + '" onclick="setDocChartMode(\'' + t[0] + '\')">' + t[1] + '</button>';
+      /* Chart type picker — includes Scatter */
+      slidesHtml += '<div class="doc-chart-picker"><span class="doc-chart-picker-label">Chart type:</span>';
+      [['auto','\ud83d\udd04 Auto'],['bar','\ud83d\udcca Bar'],['line','\ud83d\udcc8 Line'],['scatter','\u25e6 Scatter'],['pie','\ud83e\udd67 Pie'],['none','\u2296 Hide']].forEach(function(t) {
+        slidesHtml += '<button class="doc-chart-type-btn' + (docChartMode === t[0] ? ' active' : '') + '" onclick="setDocChartMode(\'' + t[0] + '\')">'
+          + t[1] + '</button>';
       });
       slidesHtml += '</div>';
     } else if (slide.type === 'recs') {
@@ -1984,8 +2037,10 @@ async function renderDocChart(result) {
   /* Decide chart type */
   var chartType;
   if (docChartMode === 'auto') {
-    /* For real Excel data default to bar; for AI data use whatever AI suggested */
-    chartType = docDirectChartData ? 'bar' : ((result && result.chartData && result.chartData.type) || 'bar');
+    /* For Excel: use detected type. For AI data: use AI suggestion. */
+    chartType = docDirectChartData
+      ? (docDirectChartData.detectedType || 'bar')
+      : ((result && result.chartData && result.chartData.type) || 'bar');
   } else {
     chartType = docChartMode;
   }
@@ -1996,7 +2051,26 @@ async function renderDocChart(result) {
     /* ╔═ REAL Excel data ═╗ */
     labels = docDirectChartData.labels;
 
-    if (chartType === 'pie') {
+    /* Scatter: combine labels (X) + values (Y) into XY pairs */
+    if (chartType === 'scatter') {
+      datasets = docDirectChartData.datasets.map(function(ds, i) {
+        var c = palette6[i % palette6.length];
+        var xVals = docDirectChartData.labels.map(function(l, idx) {
+          var n = parseFloat(String(l).replace(/[,%$₹£€]/g, ''));
+          return isNaN(n) ? idx : n; /* fall back to row index if X is text */
+        });
+        return {
+          label:           ds.label,
+          data:            xVals.map(function(x, idx) { return { x: x, y: ds.data[idx] || 0 }; }),
+          backgroundColor: c,
+          borderColor:     c,
+          pointRadius:     7,
+          pointHoverRadius:10,
+          showLine:        false
+        };
+      });
+      labels = []; /* Scatter uses numeric X axis, not category labels */
+    } else if (chartType === 'pie') {
       /* Pie uses only first series; row labels become slice labels */
       datasets = [{
         label: docDirectChartData.datasets[0].label,
@@ -2067,9 +2141,17 @@ async function renderDocChart(result) {
           intersect: chartType === 'pie'
         }
       },
-      scales: chartType === 'pie' ? {} : {
-        x: { ticks: { color: 'rgba(255,255,255,0.65)', font: { size: 11 }, maxRotation: 45 }, grid: { color: 'rgba(255,255,255,0.05)' } },
-        y: { ticks: { color: 'rgba(255,255,255,0.65)', font: { size: 11 } },                  grid: { color: 'rgba(255,255,255,0.05)' } }
+      scales: (chartType === 'pie') ? {} : {
+        x: {
+          type: chartType === 'scatter' ? 'linear' : 'category',
+          ticks: { color: 'rgba(255,255,255,0.65)', font: { size: 11 }, maxRotation: 45 },
+          grid:  { color: 'rgba(255,255,255,0.05)' }
+        },
+        y: {
+          type: (docDirectChartData && docDirectChartData.logScaleRec && chartType !== 'pie') ? 'logarithmic' : 'linear',
+          ticks: { color: 'rgba(255,255,255,0.65)', font: { size: 11 } },
+          grid:  { color: 'rgba(255,255,255,0.05)' }
+        }
       }
     }
   });
