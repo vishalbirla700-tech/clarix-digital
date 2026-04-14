@@ -488,12 +488,12 @@ function buildStudioModal() {
       + ' ondragover="docDragOver(event)" ondrop="docDrop(event)">'
       + '<div style="font-size:40px">📄</div>'
       + '<div style="font-size:14px;font-weight:700;color:#fff;margin-top:8px">Tap to upload document</div>'
-      + '<div style="font-size:12px;color:rgba(255,255,255,0.45);margin-top:6px">PDF, DOCX, or TXT • Max 10MB</div>'
+      + '<div style="font-size:12px;color:rgba(255,255,255,0.45);margin-top:6px">PDF, DOCX, TXT, XLSX, XLS, CSV • Max 10MB</div>'
       + '</div>'
       + '<div class="doc-file-status" id="docFileStatus"></div>'
       + '<div class="doc-file-name" id="docFileName"></div>'
       + '<input type="file" id="docFileInput"'
-      + ' accept=".pdf,.docx,.txt,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain"'
+      + ' accept=".pdf,.docx,.txt,.xlsx,.xls,.csv,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,text/plain,text/csv"'
       + ' style="display:none" onchange="docFileSelected(this.files[0])">';
   }
 
@@ -1665,14 +1665,35 @@ async function parsePdfDoc(file) {
   return text;
 }
 
+/* ── Excel parser (via SheetJS CDN) ── */
+async function parseXlsxDoc(file) {
+  await loadScript('https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js');
+  var buf = await file.arrayBuffer();
+  var workbook = XLSX.read(buf, { type: 'array' });
+  var text = '';
+  workbook.SheetNames.forEach(function(sheetName) {
+    var sheet = workbook.Sheets[sheetName];
+    var csv   = XLSX.utils.sheet_to_csv(sheet);
+    /* Skip completely empty sheets */
+    if (csv.replace(/,+/g, '').trim()) {
+      text += '=== Sheet: ' + sheetName + ' ===\n' + csv + '\n\n';
+    }
+  });
+  if (!text.trim()) throw new Error('No data found in this Excel file.');
+  return text;
+}
+
 /* ── File format router ── */
 async function parseUploadedDoc(file) {
   var name = (file.name || '').toLowerCase();
-  if (name.endsWith('.txt')  || file.type === 'text/plain')                        return parseTxtDoc(file);
-  if (name.endsWith('.docx') || file.type.includes('wordprocessingml'))             return parseDocxDoc(file);
-  if (name.endsWith('.pdf')  || file.type === 'application/pdf')                   return parsePdfDoc(file);
+  if (name.endsWith('.txt')  || file.type === 'text/plain')                                   return parseTxtDoc(file);
+  if (name.endsWith('.csv')  || file.type === 'text/csv')                                      return parseTxtDoc(file); /* CSV is plain text */
+  if (name.endsWith('.docx') || file.type.includes('wordprocessingml'))                        return parseDocxDoc(file);
+  if (name.endsWith('.pdf')  || file.type === 'application/pdf')                               return parsePdfDoc(file);
+  if (name.endsWith('.xlsx') || file.type.includes('spreadsheetml'))                           return parseXlsxDoc(file);
+  if (name.endsWith('.xls')  || file.type === 'application/vnd.ms-excel')                     return parseXlsxDoc(file);
   if (name.endsWith('.doc'))  throw new Error('Old .doc format not supported. Please save as .docx and try again.');
-  throw new Error('Unsupported file type. Please upload PDF, DOCX, or TXT.');
+  throw new Error('Unsupported file type. Please upload PDF, DOCX, TXT, XLSX, XLS, or CSV.');
 }
 
 /* ── Drag & Drop handlers (for doc upload zone) ── */
