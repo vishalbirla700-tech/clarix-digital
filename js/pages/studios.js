@@ -159,6 +159,7 @@ var docFileName = '';
 var docChartMode = 'auto';
 var _currentDocResult = null;
 var _currentDocSlideIdx = 0;
+var docDirectChartData   = null; /* Real Excel cell data — bypasses AI chart estimation */
 
 /* ── Studio Templates (shown as dropdown in each studio) ── */
 var STUDIO_TEMPLATES = {
@@ -247,7 +248,7 @@ function openStudio(id) {
   studioFile = null; studioDataUrl = null;
   selectedOptions = {}; selectedFestival = null; selectedVariation = null;
   docExtractedText = ''; docFileName = '';
-  docChartMode = 'auto'; _currentDocResult = null; _currentDocSlideIdx = 0;
+  docChartMode = 'auto'; _currentDocResult = null; _currentDocSlideIdx = 0; docDirectChartData = null;
   /* pre-select first option in each group */
   var keys = Object.keys(activeStudio.options || {});
   for (var k = 0; k < keys.length; k++) {
@@ -1680,7 +1681,65 @@ async function parseXlsxDoc(file) {
     }
   });
   if (!text.trim()) throw new Error('No data found in this Excel file.');
+  /* ╔══ Extract real chart data directly from cells (bypasses AI for charting) ══╗ */
+  docDirectChartData = extractXlsxChartData(workbook);
   return text;
+}
+
+
+/* ── Extract real chart-ready data directly from Excel cells ── */
+function extractXlsxChartData(workbook) {
+  /* Find the sheet with the most numeric values */
+  var bestSheet = null, bestScore = -1, bestName = '';
+  workbook.SheetNames.forEach(function(name) {
+    var sheet = workbook.Sheets[name];
+    var rows  = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+    var count = 0;
+    rows.forEach(function(row) {
+      row.forEach(function(cell) { if (typeof cell === 'number') count++; });
+    });
+    if (count > bestScore) { bestScore = count; bestSheet = sheet; bestName = name; }
+  });
+  if (!bestSheet || bestScore === 0) return null;
+
+  var rows = XLSX.utils.sheet_to_json(bestSheet, { header: 1 });
+  /* Filter out completely empty rows */
+  rows = rows.filter(function(r) { return r.some(function(c) { return c !== undefined && c !== ''; }); });
+  if (rows.length < 2) return null;
+
+  var headerRow = rows[0];
+  var dataRows  = rows.slice(1);
+  if (!headerRow || headerRow.length < 2 || dataRows.length === 0) return null;
+
+  /* Row labels = first column */
+  var labels = dataRows.map(function(r) {
+    var v = r[0];
+    if (v === undefined || v === '') return '';
+    /* Format date serial numbers (Excel dates) */
+    if (typeof v === 'number' && v > 20000) {
+      try { return XLSX.SSF.format('d-mmm', v); } catch(e) { return String(v); }
+    }
+    return String(v);
+  }).filter(Boolean).slice(0, 24);
+
+  /* Data series = remaining numeric columns (max 6 series) */
+  var datasets = [];
+  var maxCols  = Math.min(headerRow.length, 7);
+  for (var col = 1; col < maxCols; col++) {
+    var seriesLabel = String(headerRow[col] !== undefined ? headerRow[col] : ('Series ' + col));
+    var values = dataRows.slice(0, labels.length).map(function(r) {
+      var v = r[col];
+      if (typeof v === 'number') return v;
+      var f = parseFloat(String(v).replace(/[,%$₹£€]/g, ''));
+      return isNaN(f) ? 0 : f;
+    });
+    if (values.some(function(v) { return v !== 0; })) {
+      datasets.push({ label: seriesLabel, data: values });
+    }
+  }
+  if (datasets.length === 0) return null;
+
+  return { labels: labels, datasets: datasets, sheetName: bestName };
 }
 
 /* ── File format router ── */
@@ -1833,6 +1892,7 @@ function buildDocOutputHTML(result) {
       slidesHtml += '</ul>';
     } else if (slide.type === 'chart') {
       slidesHtml += '<div class="doc-chart-wrap"><canvas id="docMainChart" height="220"></canvas></div>';
+      slidesHtml += '<div class="doc-chart-source" id="docChartSource"></div>';
       /* Chart type picker — auto + manual options */
       slidesHtml += '<div class="doc-chart-picker"><span class="doc-chart-picker-label">Chart:</span>';
       [['auto','\ud83d\udd04 Auto'],['bar','\ud83d\udcca Bar'],['pie','\ud83e\udd67 Pie'],['line','\ud83d\udcc8 Line'],['none','\u2296 None']].forEach(function(t) {
@@ -1897,9 +1957,8 @@ function setDocChartMode(type) {
   }
 }
 
-/* ── Render Chart.js chart ── */
+/* ── Render Chart.js chart — uses REAL Excel cell data when available ── */
 async function renderDocChart(result) {
-  if (!result || !result.chartData) return;
   var canvas = document.getElementById('docMainChart');
   if (!canvas) return;
   if (docChartMode === 'none') { canvas.style.display = 'none'; return; }
@@ -1910,56 +1969,106 @@ async function renderDocChart(result) {
     await loadScript('https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js');
   }
 
-  /* Destroy existing chart instance */
+  /* Destroy previous chart instance */
   if (window._docChartInstance) {
     try { window._docChartInstance.destroy(); } catch(e) {}
     window._docChartInstance = null;
   }
 
-  var cd        = result.chartData;
-  var chartType = (docChartMode === 'auto') ? (cd.type || 'bar') : docChartMode;
-  var labels    = cd.labels || ['A', 'B', 'C'];
-  var values    = cd.values || [40, 60, 30];
-  var unit      = cd.unit   || '';
-  var palette   = ['rgba(255,112,67,0.85)','rgba(56,189,248,0.85)','rgba(74,222,128,0.85)','rgba(246,173,85,0.85)','rgba(167,139,250,0.85)'];
+  var palette6 = [
+    'rgba(255,112,67,0.85)','rgba(56,189,248,0.85)','rgba(74,222,128,0.85)',
+    'rgba(246,173,85,0.85)','rgba(167,139,250,0.85)','rgba(244,114,182,0.85)'
+  ];
+
+  /* Decide chart type */
+  var chartType;
+  if (docChartMode === 'auto') {
+    /* For real Excel data default to bar; for AI data use whatever AI suggested */
+    chartType = docDirectChartData ? 'bar' : ((result && result.chartData && result.chartData.type) || 'bar');
+  } else {
+    chartType = docChartMode;
+  }
+
+  var labels, datasets;
+
+  if (docDirectChartData) {
+    /* ╔═ REAL Excel data ═╗ */
+    labels = docDirectChartData.labels;
+
+    if (chartType === 'pie') {
+      /* Pie uses only first series; row labels become slice labels */
+      datasets = [{
+        label: docDirectChartData.datasets[0].label,
+        data:  docDirectChartData.datasets[0].data,
+        backgroundColor: palette6,
+        borderColor:     'rgba(255,255,255,0.12)',
+        borderWidth: 1
+      }];
+    } else {
+      /* Bar / Line: render ALL series (grouped bars or multi-line) */
+      datasets = docDirectChartData.datasets.map(function(ds, i) {
+        var c = palette6[i % palette6.length];
+        return {
+          label:           ds.label,
+          data:            ds.data,
+          backgroundColor: chartType === 'line' ? c.replace('0.85', '0.15') : c,
+          borderColor:     c,
+          borderWidth:     chartType === 'line' ? 2 : 1,
+          fill:            false,
+          tension:         0.4,
+          pointRadius:     chartType === 'line' ? 4 : 0,
+          pointBackgroundColor: c,
+          borderRadius:    chartType === 'bar' ? 5 : 0
+        };
+      });
+    }
+
+    /* Update source label */
+    var src = document.getElementById('docChartSource');
+    if (src) src.textContent = '📊 Real data from sheet: “' + docDirectChartData.sheetName + '”';
+
+  } else if (result && result.chartData) {
+    /* ╔═ AI-inferred data (non-Excel files) ═╗ */
+    var cd  = result.chartData;
+    labels  = cd.labels || ['A','B','C'];
+    var unit = cd.unit || '';
+    datasets = [{
+      label:           result.title || 'Data',
+      data:            cd.values   || [40,60,30],
+      backgroundColor: chartType === 'line' ? 'rgba(255,112,67,0.1)' : palette6,
+      borderColor:     chartType === 'line' ? '#ff7043' : palette6,
+      borderWidth:     chartType === 'line' ? 2 : 1,
+      fill:            chartType === 'line',
+      tension:         0.4,
+      pointRadius:     chartType === 'line' ? 5 : 0,
+      pointBackgroundColor: '#ff7043'
+    }];
+
+    var src2 = document.getElementById('docChartSource');
+    if (src2) src2.textContent = '🤖 AI-analyzed data (upload an Excel file for real numbers)';
+  } else {
+    return; /* Nothing to chart */
+  }
 
   window._docChartInstance = new Chart(canvas, {
     type: chartType,
-    data: {
-      labels: labels,
-      datasets: [{
-        label: result.title || 'Data',
-        data: values,
-        backgroundColor: chartType === 'line' ? 'rgba(255,112,67,0.1)' : palette,
-        borderColor:     chartType === 'line' ? '#ff7043' : palette,
-        borderWidth:     chartType === 'line' ? 2 : 1,
-        fill:            chartType === 'line',
-        tension:         0.4,
-        pointRadius:     chartType === 'line' ? 5 : 0,
-        pointBackgroundColor: '#ff7043'
-      }]
-    },
+    data: { labels: labels, datasets: datasets },
     options: {
       responsive: true,
       maintainAspectRatio: false,
       plugins: {
-        legend: { display: chartType === 'pie', labels: { color: '#e0e0e0', font: { size: 12 } } },
+        legend: {
+          display: chartType === 'pie' || datasets.length > 1,
+          labels:  { color: '#e0e0e0', font: { size: 11 }, padding: 12 }
+        },
         tooltip: {
-          callbacks: {
-            label: function(ctx) {
-              return chartType === 'pie'
-                ? ctx.label + ': ' + ctx.parsed + unit
-                : ctx.parsed.y + unit;
-            }
-          }
+          mode:      chartType === 'pie' ? 'nearest' : 'index',
+          intersect: chartType === 'pie'
         }
       },
       scales: chartType === 'pie' ? {} : {
-        x: { ticks: { color: 'rgba(255,255,255,0.65)', font: { size: 11 } }, grid: { color: 'rgba(255,255,255,0.05)' } },
-        y: {
-          ticks: { color: 'rgba(255,255,255,0.65)', font: { size: 11 }, callback: function(v) { return v + unit; } },
-          grid:  { color: 'rgba(255,255,255,0.05)' }
-        }
+        x: { ticks: { color: 'rgba(255,255,255,0.65)', font: { size: 11 }, maxRotation: 45 }, grid: { color: 'rgba(255,255,255,0.05)' } },
+        y: { ticks: { color: 'rgba(255,255,255,0.65)', font: { size: 11 } },                  grid: { color: 'rgba(255,255,255,0.05)' } }
       }
     }
   });

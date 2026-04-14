@@ -488,9 +488,13 @@
 /* ── Chart area ── */
 .doc-chart-wrap {
   padding:16px; background:rgba(255,255,255,.02);
-  border-radius:12px; margin-bottom:14px; height:220px; position:relative;
+  border-radius:12px; margin-bottom:8px; height:220px; position:relative;
 }
 .doc-chart-wrap canvas { max-height:190px; }
+.doc-chart-source {
+  font-size:11px; color:rgba(255,255,255,.35); font-style:italic;
+  margin-bottom:10px; min-height:16px;
+}
 
 /* ── Chart type picker ── */
 .doc-chart-picker { display:flex; align-items:center; gap:8px; flex-wrap:wrap; padding:4px 0; }
