@@ -358,19 +358,7 @@ function renderProfanityInline(text) {
   '</div>';
 }
 
-/* ─── TEMPLATES ───────────────────────────────── */
-function renderTemplates() {
-  document.getElementById('templatesList').innerHTML = TEMPLATES.map((t, i) =>
-    '<div class="template-item" onclick="applyTemplate(' + i + ')">' +
-    '<span class="template-icon">' + t.icon + '</span><span>' + t.name + '</span></div>'
-  ).join('');
-}
-function toggleTemplates() { document.getElementById('templatesDropdown')?.classList.toggle('open'); }
-function applyTemplate(idx) {
-  const ta = document.getElementById('promptInput');
-  ta.value = TEMPLATES[idx].text; onPromptInput(ta); toggleTemplates(); setStep(3);
-  Toast.show('Template "' + TEMPLATES[idx].name + '" loaded', 'success');
-}
+
 
 /* ─── AUTO-SUGGEST ────────────────────────────── */
 function renderAutoSuggest(text) {
