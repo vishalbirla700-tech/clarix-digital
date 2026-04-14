@@ -1687,84 +1687,147 @@ async function parseXlsxDoc(file) {
 }
 
 
+/* ── Statistics for one data series ── */
+function _computeStats(values) {
+  var nonZero = values.filter(function(v) { return v !== 0 && !isNaN(v); });
+  if (nonZero.length === 0) return null;
+  var n    = values.length;
+  var mean = values.reduce(function(a, b) { return a + b; }, 0) / n;
+  var variance = values.reduce(function(a, v) { return a + Math.pow(v - mean, 2); }, 0) / n;
+  var std  = Math.sqrt(variance);
+  var min  = Math.min.apply(null, values);
+  var max  = Math.max.apply(null, values);
+  var ucl  = mean + 3 * std;
+  var lcl  = Math.max(0, mean - 3 * std);
+  /* Trend: compare first 10% vs last 10% */
+  var slice = Math.max(1, Math.floor(n * 0.1));
+  var firstAvg = values.slice(0, slice).reduce(function(a,b){return a+b;},0)/slice;
+  var lastAvg  = values.slice(n - slice).reduce(function(a,b){return a+b;},0)/slice;
+  var trend    = lastAvg > firstAvg * 1.05 ? 'up' : lastAvg < firstAvg * 0.95 ? 'down' : 'stable';
+  var pctChange = firstAvg !== 0 ? ((lastAvg - firstAvg) / firstAvg * 100).toFixed(1) : '0';
+  return { mean: mean, std: std, ucl: ucl, lcl: lcl, min: min, max: max, trend: trend, pctChange: pctChange, n: n };
+}
+
+/* ── Find the real header row in an Excel sheet (skips title/blank rows) ── */
+function _findHeaderRow(rows) {
+  /* Look for the row that has the most numeric-column-label pattern:
+     A good header row has >= 2 non-empty cells and at least one looks like a column label (non-numeric short string) */
+  for (var i = 0; i < Math.min(rows.length - 1, 10); i++) {
+    var row = rows[i];
+    var nonEmpty = row.filter(function(c) { return c !== undefined && c !== ''; });
+    if (nonEmpty.length < 2) continue;
+    /* Check if the NEXT row has numeric data in columns 2+ */
+    var nextRow = rows[i + 1];
+    if (!nextRow) continue;
+    var hasNumericData = false;
+    for (var c = 1; c < Math.min(nextRow.length, 6); c++) {
+      var v = nextRow[c];
+      if (typeof v === 'number' || (!isNaN(parseFloat(v)) && String(v).trim() !== '')) {
+        hasNumericData = true; break;
+      }
+    }
+    if (hasNumericData) return i; /* This is the header row index */
+  }
+  return 0; /* fallback: first row */
+}
+
 /* ── Extract data from ONE worksheet (helper) ── */
 function _parseOneSheet(ws, sheetName) {
-  var rows = XLSX.utils.sheet_to_json(ws, { header: 1, raw: true, blankrows: false });
-  rows = rows.filter(function(r) { return r.some(function(c) { return c !== undefined && c !== ''; }); });
-  if (rows.length < 2) return null;
+  var allRows = XLSX.utils.sheet_to_json(ws, { header: 1, raw: true, blankrows: false });
+  allRows = allRows.filter(function(r) { return r.some(function(c) { return c !== undefined && c !== ''; }); });
+  if (allRows.length < 2) return null;
 
-  var headerRow = rows[0];
-  var dataRows  = rows.slice(1);
+  /* Find the real header row (robust: handles title rows above data) */
+  var headerIdx = _findHeaderRow(allRows);
+  var headerRow = allRows[headerIdx];
+  var dataRows  = allRows.slice(headerIdx + 1);
+
   if (!headerRow || headerRow.length < 2 || dataRows.length === 0) return null;
 
   /* Row labels = first column */
   var labels = dataRows.map(function(r) {
     var v = r[0];
-    if (v === undefined || v === '') return '';
+    if (v === undefined || v === null || v === '') return '';
+    /* Format Excel date serial numbers */
     if (typeof v === 'number' && v > 20000) {
       try { return XLSX.SSF.format('d-mmm', v); } catch(e) { return String(v); }
     }
     return String(v);
-  }).filter(Boolean).slice(0, 200);   /* up to 200 rows — handles 90-hour lab data */
+  }).filter(function(l) { return l !== ''; }).slice(0, 200);
 
-  /* Data series = remaining numeric columns (max 12 series) */
+  if (labels.length === 0) return null;
+
+  /* Data series = remaining numeric columns (max 12) */
   var datasets = [];
   var maxCols  = Math.min(headerRow.length, 13);
   for (var col = 1; col < maxCols; col++) {
-    var seriesLabel = String(headerRow[col] !== undefined ? headerRow[col] : ('Series ' + col));
+    var seriesLabel = String(headerRow[col] !== undefined && headerRow[col] !== '' ? headerRow[col] : ('Series ' + col));
     var values = dataRows.slice(0, labels.length).map(function(r) {
       var v = r[col];
       if (typeof v === 'number') return v;
-      var f = parseFloat(String(v).replace(/[,%$\u20b9\u00a3\u20ac]/g, ''));
+      var f = parseFloat(String(v != null ? v : '').replace(/[,%$\u20b9\u00a3\u20ac\s]/g, ''));
       return isNaN(f) ? 0 : f;
     });
     if (values.some(function(v) { return v !== 0; })) {
-      datasets.push({ label: seriesLabel, data: values });
+      var stats = _computeStats(values);
+      datasets.push({ label: seriesLabel, data: values, stats: stats });
     }
   }
   if (datasets.length === 0) return null;
 
-  /* ── Smart data type detection ── */
-  var detectedType   = 'bar';
-  var detectedReason = 'Comparison data — Bar chart';
-  var logScaleRec    = false;
-
-  var timeRx = /^(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec|q[1-4]|fy|week|day|hour|min|time|date|\d{4})/i;
-  /* Also check if the COLUMN HEADER itself is a time keyword (e.g. 'HOUR', 'TIME', 'DAY') */
+  /* ── Industry + chart type detection ── */
   var col0Header = String(headerRow[0] || '').toLowerCase().trim();
-  var col0IsTime = /^(hour|hours|time|day|days|week|weeks|month|months|year|years|period|quarter|minute|second|reading|sample|sr\b|no\b)/.test(col0Header);
-  var isTime = col0IsTime
+  var col0IsTime = /^(hour|hours|time|day|days|week|month|year|period|quarter|minute|second|reading|sample|date|sr|no\b)/.test(col0Header);
+  var timeRx     = /^(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec|q[1-4]|fy|week|day|hour|min|time|date|\d{4})/i;
+  var isTime     = col0IsTime
     || labels.some(function(l) { return timeRx.test(String(l).trim()); })
     || dataRows.some(function(r) { var v = r[0]; return typeof v === 'number' && v > 40000 && v < 55000; });
 
+  /* Industry detection from ALL header names */
+  var allHeaders = headerRow.map(function(h) { return String(h || '').toLowerCase(); }).join(' ');
+  var industry   = 'general';
+  if (/\b(bbl|bopd|bwpd|gor|wcut|choke|psi|mcf|reservoir)\b/.test(allHeaders))       industry = 'oil';
+  else if (/\b(open|high|low|close|volume|ticker|ohlc)\b/.test(allHeaders))            industry = 'stock';
+  else if (/\b(revenue|npa|crar|loan|deposit|interest|profit|ebitda|roe)\b/.test(allHeaders)) industry = 'finance';
+  else if (/\b(ph|absorbance|titration|concentration|molarity|turbidity)\b/.test(allHeaders))  industry = 'lab';
+  else if (/\b(cw|steam|temp|pressure|flow|kg|m3|bar|rpm|kwh|mw)\b/.test(allHeaders)) industry = 'process';
+  else if (/\b(qty|item|bom|material|part|description|unit cost)\b/.test(allHeaders))  industry = 'engineering';
+
   var firstNumeric = dataRows.slice(0, Math.min(dataRows.length, 6))
     .filter(function(r) { return r[0] !== undefined && r[0] !== ''; })
-    .every(function(r) {
-      return typeof r[0] === 'number' || (!isNaN(parseFloat(String(r[0]))) && String(r[0]).trim() !== '');
-    });
+    .every(function(r) { return typeof r[0] === 'number' || (!isNaN(parseFloat(String(r[0]))) && String(r[0]).trim() !== ''); });
 
+  /* Wide value range check */
   var posVals = [];
   datasets.forEach(function(ds) { ds.data.forEach(function(v) { if (v > 0) posVals.push(v); }); });
+  var logScaleRec = false;
   if (posVals.length > 1) {
-    var maxV = Math.max.apply(null, posVals);
-    var minV = Math.min.apply(null, posVals);
+    var maxV = Math.max.apply(null, posVals), minV = Math.min.apply(null, posVals);
     logScaleRec = (maxV / minV) > 1000;
   }
 
-  if (isTime) {
-    detectedType = 'line'; detectedReason = 'Time series — Line chart';
+  var detectedType, detectedReason;
+  if (industry === 'stock' && datasets.length >= 4) {
+    detectedType = 'candlestick'; detectedReason = 'Stock OHLCV — Candlestick chart';
+  } else if (isTime) {
+    detectedType = 'line'; detectedReason = 'Time series — Line chart per column';
   } else if (firstNumeric && datasets.length === 1) {
-    detectedType = 'scatter'; detectedReason = 'XY / Correlation data — Scatter plot';
+    detectedType = 'scatter'; detectedReason = 'XY correlation — Scatter plot';
   } else if (datasets.length > 2) {
-    detectedType = 'bar'; detectedReason = 'Multi-series (' + datasets.length + ' series) — Grouped bar chart';
+    detectedType = 'bar'; detectedReason = 'Multi-series (' + datasets.length + ') — Grouped bar';
   } else {
-    detectedType = 'bar'; detectedReason = 'Comparison data — Bar chart';
+    detectedType = 'bar'; detectedReason = 'Comparison — Bar chart';
   }
-  if (logScaleRec) detectedReason += ' \u00b7 \u26a0\ufe0f Wide value range';
+  if (logScaleRec) detectedReason += ' · ⚠️ Wide value range';
 
-  return { labels: labels, datasets: datasets, sheetName: sheetName,
-           detectedType: detectedType, detectedReason: detectedReason, logScaleRec: logScaleRec };
+  return {
+    labels: labels, datasets: datasets, sheetName: sheetName,
+    detectedType: detectedType, detectedReason: detectedReason,
+    logScaleRec: logScaleRec, industry: industry,
+    headerRow: headerRow, col0Label: String(headerRow[0] || 'X')
+  };
 }
+
 
 /* ── Extract real chart-ready data from ALL Excel sheets ── */
 function extractXlsxChartData(workbook) {
@@ -1980,7 +2043,9 @@ function buildDocOutputHTML(result) {
         });
         slidesHtml += '</div>';
       }
-      slidesHtml += '<div class="doc-chart-wrap"><canvas id="docMainChart" height="200"></canvas></div>';
+      /* Multi-chart grid (real Excel) OR single canvas (AI fallback) */
+      slidesHtml += '<div id="docMultiChartWrap"></div>';
+      slidesHtml += '<canvas id="docMainChart" style="display:none;max-height:240px"></canvas>';
       slidesHtml += '<div class="doc-chart-source" id="docChartSource"></div>';
       slidesHtml += '<div class="doc-chart-picker"><span class="doc-chart-picker-label">Chart type:</span>';
       [['auto','\ud83d\udd04 Auto'],['bar','\ud83d\udcca Bar'],['line','\ud83d\udcc8 Line'],['scatter','\u25e6 Scatter'],['pie','\ud83e\udd67 Pie'],['none','\u2296 Hide']].forEach(function(t) {
@@ -2089,9 +2154,247 @@ function toggleDocSeries(idx) {
   renderDocChart(_currentDocResult);
 }
 
-/* ── Render Chart.js chart — uses REAL Excel cell data when available ── */
+/* ── Multi-chart dashboard: one chart per data series ── */
 async function renderDocChart(result) {
+  /* Load Chart.js + datalabels */
+  if (!window.Chart) {
+    await loadScript('https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js');
+  }
+  if (!window.ChartDataLabels) {
+    await loadScript('https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js');
+    if (window.ChartDataLabels) Chart.register(ChartDataLabels);
+  }
+
+  /* ── CASE 1: Real Excel data → multi-chart per series ── */
+  if (docDirectChartData && docDirectChartData.datasets && docDirectChartData.datasets.length > 0) {
+    _renderMultiCharts(docDirectChartData, docChartMode);
+    return;
+  }
+
+  /* ── CASE 2: AI-inferred data (non-Excel or failed parse) → single chart ── */
   var canvas = document.getElementById('docMainChart');
+  if (!canvas) return;
+  if (docChartMode === 'none') { canvas.style.display = 'none'; return; }
+  canvas.style.display = 'block';
+
+  if (window._docChartInstance) {
+    try { window._docChartInstance.destroy(); } catch(e) {}
+    window._docChartInstance = null;
+  }
+
+  if (!result || !result.chartData) return;
+  var cd = result.chartData;
+  var chartType = (docChartMode === 'auto' || docChartMode === 'none') ? (cd.type || 'bar') : docChartMode;
+  var palette6  = ['rgba(255,112,67,0.85)','rgba(56,189,248,0.85)','rgba(74,222,128,0.85)',
+                   'rgba(246,173,85,0.85)','rgba(167,139,250,0.85)','rgba(244,114,182,0.85)'];
+  var labels   = cd.labels || ['A','B','C'];
+  var datasets = [{
+    label: result.title || 'Data', data: cd.values || [40,60,30],
+    backgroundColor: palette6, borderColor: palette6, borderWidth: 1.5,
+    fill: false, tension: 0, pointRadius: 4, pointHoverRadius: 7
+  }];
+  var src2 = document.getElementById('docChartSource');
+  if (src2) src2.textContent = '⚠️ AI-estimated data — upload the actual .xlsx file for real chart';
+
+  window._docChartInstance = new Chart(canvas, {
+    type: chartType, data: { labels: labels, datasets: datasets },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: { mode: 'index', intersect: false },
+        datalabels: { display: true, color: 'rgba(255,255,255,0.8)', font: { size: 9, weight: '700' },
+                      formatter: function(v) { return v; }, anchor: 'end', align: 'top', offset: 2 }
+      },
+      scales: {
+        x: { ticks: { color: 'rgba(255,255,255,0.6)', font: { size: 10 } }, grid: { color: 'rgba(255,255,255,0.05)' } },
+        y: { ticks: { color: 'rgba(255,255,255,0.6)', font: { size: 10 } }, grid: { color: 'rgba(255,255,255,0.05)' } }
+      }
+    }
+  });
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   MULTI-CHART ENGINE — one Chart.js panel per data series
+   Each panel: line chart + UCL (red dashed) + Mean (green dashed) + LCL (red dashed)
+══════════════════════════════════════════════════════════════════ */
+var _multiChartInstances = [];
+
+function _renderMultiCharts(data, mode) {
+  /* Destroy all previous instances */
+  _multiChartInstances.forEach(function(c) { try { c.destroy(); } catch(e) {} });
+  _multiChartInstances = [];
+
+  var wrap = document.getElementById('docMultiChartWrap');
+  if (!wrap) return;
+
+  var labels   = data.labels;
+  var xLabel   = data.col0Label || 'X';
+  var chartType = (mode === 'auto' || !mode) ? (data.detectedType || 'line') : mode;
+  if (chartType === 'none') { wrap.innerHTML = ''; return; }
+  /* Candlestick falls back to line until financial plugin loaded */
+  if (chartType === 'candlestick') chartType = 'line';
+
+  var nPts = labels.length;
+  var palette = ['rgba(56,189,248,0.9)','rgba(255,112,67,0.9)','rgba(74,222,128,0.9)',
+                 'rgba(246,173,85,0.9)','rgba(167,139,250,0.9)','rgba(244,114,182,0.9)'];
+
+  /* Filter hidden series */
+  var visibleSeries = data.datasets.filter(function(_, i) { return !_hiddenSeries[i]; });
+  if (visibleSeries.length === 0) { wrap.innerHTML = '<p style="color:rgba(255,255,255,.4);padding:16px">All series hidden — click a column button above to show</p>'; return; }
+
+  /* Build HTML: one chart-panel per series */
+  var panelH = nPts > 60 ? 300 : (nPts > 30 ? 270 : 240);
+  var html = '<div class="doc-multi-grid" style="--panel-h:' + panelH + 'px">';
+  visibleSeries.forEach(function(ds, i) {
+    html += '<div class="doc-chart-panel">';
+    html += '<div class="doc-chart-panel-title">' + ds.label + '</div>';
+    if (ds.stats) {
+      var s = ds.stats;
+      var trendIcon = s.trend === 'up' ? '↑' : s.trend === 'down' ? '↓' : '→';
+      var trendCls  = s.trend === 'up' ? 'stat-up' : s.trend === 'down' ? 'stat-dn' : 'stat-neu';
+      html += '<div class="doc-panel-kpi">'
+        + '<span>Avg: <b>' + s.mean.toFixed(1) + '</b></span>'
+        + '<span>Max: <b>' + s.max.toFixed(1) + '</b></span>'
+        + '<span>Min: <b>' + s.min.toFixed(1) + '</b></span>'
+        + '<span class="' + trendCls + '">' + trendIcon + ' ' + s.pctChange + '%</span>'
+        + '</div>';
+    }
+    html += '<div class="doc-panel-canvas-wrap"><canvas id="docPanelChart_' + i + '"></canvas></div>';
+    html += '</div>';
+  });
+  html += '</div>';
+
+  /* Stats summary table */
+  html += '<div class="doc-stats-table-wrap">';
+  html += '<div class="doc-stats-table-title">📊 Statistical Summary</div>';
+  html += '<table class="doc-stats-table"><thead><tr>'
+    + '<th>Column</th><th>Points</th><th>Mean</th><th>Std Dev</th>'
+    + '<th>Min</th><th>Max</th><th>UCL (+3σ)</th><th>LCL (−3σ)</th><th>Trend</th>'
+    + '</tr></thead><tbody>';
+  data.datasets.forEach(function(ds) {
+    if (!ds.stats) return;
+    var s = ds.stats;
+    var trendTxt = s.trend === 'up' ? '↑ +' + s.pctChange + '%' : s.trend === 'down' ? '↓ ' + s.pctChange + '%' : '→ Stable';
+    var trendCls = s.trend === 'up' ? 'stat-up' : s.trend === 'down' ? 'stat-dn' : '';
+    html += '<tr>'
+      + '<td><b>' + ds.label + '</b></td>'
+      + '<td>' + s.n + '</td>'
+      + '<td>' + s.mean.toFixed(2) + '</td>'
+      + '<td>' + s.std.toFixed(2) + '</td>'
+      + '<td>' + s.min.toFixed(2) + '</td>'
+      + '<td>' + s.max.toFixed(2) + '</td>'
+      + '<td class="ucl-cell">' + s.ucl.toFixed(2) + '</td>'
+      + '<td class="lcl-cell">' + (s.lcl > 0 ? s.lcl.toFixed(2) : '0') + '</td>'
+      + '<td class="' + trendCls + '">' + trendTxt + '</td>'
+      + '</tr>';
+  });
+  html += '</tbody></table></div>';
+
+  wrap.innerHTML = html;
+
+  /* Update source label */
+  var src = document.getElementById('docChartSource');
+  if (src) src.textContent = '📊 Real data · Sheet: "' + data.sheetName + '" · ' + nPts + ' data points × ' + data.datasets.length + ' columns';
+
+  /* Now render each Chart.js instance */
+  visibleSeries.forEach(function(ds, i) {
+    var canvas = document.getElementById('docPanelChart_' + i);
+    if (!canvas) return;
+
+    var st = ds.stats;
+    var c  = palette[i % palette.length];
+
+    /* Build datasets: main line + UCL + Mean + LCL */
+    var chartDatasets = [{
+      label:               ds.label,
+      data:                ds.data,
+      borderColor:         c,
+      backgroundColor:     c.replace('0.9', '0.1'),
+      borderWidth:         2,
+      fill:                true,
+      tension:             0,
+      pointRadius:         nPts > 80 ? 2 : (nPts > 40 ? 3 : 4),
+      pointHoverRadius:    7,
+      pointBackgroundColor: c,
+      order: 0
+    }];
+
+    if (st && chartType === 'line') {
+      /* UCL — red dashed */
+      chartDatasets.push({ label: 'UCL (' + st.ucl.toFixed(1) + ')',
+        data: labels.map(function() { return st.ucl; }),
+        borderColor: 'rgba(239,68,68,0.75)', borderWidth: 1.5,
+        borderDash: [6,4], pointRadius: 0, fill: false, tension: 0, order: 1,
+        datalabels: { display: false } });
+      /* Mean — green dashed */
+      chartDatasets.push({ label: 'Mean (' + st.mean.toFixed(1) + ')',
+        data: labels.map(function() { return st.mean; }),
+        borderColor: 'rgba(74,222,128,0.75)', borderWidth: 1.5,
+        borderDash: [4,3], pointRadius: 0, fill: false, tension: 0, order: 1,
+        datalabels: { display: false } });
+      /* LCL — red dashed (only if > 0) */
+      if (st.lcl > 0) {
+        chartDatasets.push({ label: 'LCL (' + st.lcl.toFixed(1) + ')',
+          data: labels.map(function() { return st.lcl; }),
+          borderColor: 'rgba(239,68,68,0.75)', borderWidth: 1.5,
+          borderDash: [6,4], pointRadius: 0, fill: false, tension: 0, order: 1,
+          datalabels: { display: false } });
+      }
+    }
+
+    /* Data labels config for main series */
+    var dlCfg = {
+      display: function(ctx) {
+        if (ctx.datasetIndex !== 0) return false; /* only on main series */
+        if (nPts > 120) return false;
+        if (nPts > 60)  return ctx.dataIndex % 3 === 0;
+        if (nPts > 30)  return ctx.dataIndex % 2 === 0;
+        return true;
+      },
+      color:     'rgba(255,255,255,0.85)',
+      font:      { size: nPts > 60 ? 7 : (nPts > 30 ? 8 : 9), weight: '700' },
+      formatter: function(v) { return (v === 0 || v == null) ? '' : (typeof v === 'number' ? v.toFixed(v % 1 === 0 ? 0 : 1) : v); },
+      anchor: 'end', align: 'top', offset: 1,
+      rotation: nPts > 30 ? -60 : 0, clip: false
+    };
+
+    var inst = new Chart(canvas, {
+      type: chartType === 'scatter' ? 'scatter' : 'line',
+      data: { labels: labels, datasets: chartDatasets },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        layout: { padding: { top: nPts > 30 ? 30 : 18, right: 8 } },
+        interaction: { mode: 'index', intersect: false },
+        plugins: {
+          legend: { display: true, labels: { color: 'rgba(255,255,255,0.6)', font: { size: 10 }, padding: 10,
+            filter: function(item) { return item.datasetIndex === 0 || (st && chartType === 'line'); } } },
+          tooltip: { mode: 'index', intersect: false,
+            callbacks: { label: function(ctx) {
+              var v = ctx.parsed.y;
+              return ctx.dataset.label + ': ' + (typeof v === 'number' ? v.toFixed(2) : v);
+            }}},
+          datalabels: dlCfg
+        },
+        scales: {
+          x: {
+            title: { display: true, text: xLabel, color: 'rgba(255,255,255,0.45)', font: { size: 10 } },
+            ticks: { color: 'rgba(255,255,255,0.5)', font: { size: 9 },
+              maxTicksLimit: Math.min(nPts, 15), maxRotation: 45 },
+            grid: { color: 'rgba(255,255,255,0.04)' }
+          },
+          y: {
+            title: { display: true, text: ds.label, color: 'rgba(255,255,255,0.45)', font: { size: 10 } },
+            ticks: { color: 'rgba(255,255,255,0.5)', font: { size: 9 } },
+            grid: { color: 'rgba(255,255,255,0.04)' }
+          }
+        }
+      }
+    });
+    _multiChartInstances.push(inst);
+  });
+}
+
   if (!canvas) return;
   if (docChartMode === 'none') { canvas.style.display = 'none'; return; }
   canvas.style.display = 'block';

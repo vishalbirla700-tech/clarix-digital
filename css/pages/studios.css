@@ -533,6 +533,65 @@
   color:rgba(251,191,36,.9) !important;
 }
 
+/* ══ Multi-chart grid ══ */
+#docMultiChartWrap { margin-bottom: 12px; }
+.doc-multi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr));
+  gap: 14px;
+  margin-bottom: 14px;
+}
+.doc-chart-panel {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 14px;
+  padding: 14px 14px 10px;
+  display: flex; flex-direction: column; gap: 8px;
+}
+.doc-chart-panel-title {
+  font-size: 13px; font-weight: 700; color: rgba(255,255,255,0.9);
+  border-bottom: 1px solid rgba(255,255,255,0.07); padding-bottom: 6px;
+}
+.doc-panel-kpi {
+  display: flex; gap: 12px; flex-wrap: wrap;
+  font-size: 11px; color: rgba(255,255,255,0.5);
+}
+.doc-panel-kpi b { color: rgba(255,255,255,0.85); }
+.doc-panel-canvas-wrap {
+  position: relative; height: var(--panel-h, 260px); min-height: 200px;
+}
+.doc-panel-canvas-wrap canvas { position: absolute; inset: 0; width: 100% !important; height: 100% !important; }
+
+/* ══ Statistical summary table ══ */
+.doc-stats-table-wrap {
+  margin-top: 12px; border-radius: 12px; overflow: hidden;
+  border: 1px solid rgba(255,255,255,0.08);
+}
+.doc-stats-table-title {
+  font-size: 11px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase;
+  color: rgba(56,189,248,.8); padding: 10px 14px 8px;
+  background: rgba(56,189,248,0.05); border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+.doc-stats-table {
+  width: 100%; border-collapse: collapse; font-size: 11px;
+  background: rgba(255,255,255,0.02);
+}
+.doc-stats-table th {
+  padding: 7px 10px; text-align: left;
+  color: rgba(255,255,255,0.4); font-weight: 700; font-size: 10px;
+  border-bottom: 1px solid rgba(255,255,255,0.06); white-space: nowrap;
+}
+.doc-stats-table td {
+  padding: 6px 10px; color: rgba(255,255,255,0.75);
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+.doc-stats-table tr:last-child td { border-bottom: none; }
+.doc-stats-table td.ucl-cell { color: rgba(239,68,68,0.85); font-weight: 700; }
+.doc-stats-table td.lcl-cell { color: rgba(239,68,68,0.75); font-weight: 700; }
+.stat-up  { color: #4ade80 !important; font-weight: 700; }
+.stat-dn  { color: #f87171 !important; font-weight: 700; }
+.stat-neu { color: rgba(255,255,255,0.4) !important; }
+
 /* ── Chart type picker ── */
 .doc-chart-picker { display:flex; align-items:center; gap:8px; flex-wrap:wrap; padding:4px 0; }
 .doc-chart-picker-label {
