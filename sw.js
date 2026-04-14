@@ -1,9 +1,9 @@
 /* ═══════════════════════════════════════════════
-   CLARIX SERVICE WORKER v20260414D
+   CLARIX SERVICE WORKER v20260414E
    Handles: offline cache + instant update notifications
 ═══════════════════════════════════════════════ */
 
-const CACHE_VERSION = 'clarix-v20260414D';
+const CACHE_VERSION = 'clarix-v20260414E';
 const STATIC_CACHE  = CACHE_VERSION + '-static';
 
 /* Assets to pre-cache for offline */

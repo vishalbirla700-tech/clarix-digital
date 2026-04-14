@@ -1687,23 +1687,9 @@ async function parseXlsxDoc(file) {
 }
 
 
-/* ── Extract real chart-ready data directly from Excel cells ── */
-function extractXlsxChartData(workbook) {
-  /* Find the sheet with the most numeric values */
-  var bestSheet = null, bestScore = -1, bestName = '';
-  workbook.SheetNames.forEach(function(name) {
-    var sheet = workbook.Sheets[name];
-    var rows  = XLSX.utils.sheet_to_json(sheet, { header: 1 });
-    var count = 0;
-    rows.forEach(function(row) {
-      row.forEach(function(cell) { if (typeof cell === 'number') count++; });
-    });
-    if (count > bestScore) { bestScore = count; bestSheet = sheet; bestName = name; }
-  });
-  if (!bestSheet || bestScore === 0) return null;
-
-  var rows = XLSX.utils.sheet_to_json(bestSheet, { header: 1 });
-  /* Filter out completely empty rows */
+/* ── Extract data from ONE worksheet (helper) ── */
+function _parseOneSheet(ws, sheetName) {
+  var rows = XLSX.utils.sheet_to_json(ws, { header: 1, raw: true, blankrows: false });
   rows = rows.filter(function(r) { return r.some(function(c) { return c !== undefined && c !== ''; }); });
   if (rows.length < 2) return null;
 
@@ -1715,22 +1701,21 @@ function extractXlsxChartData(workbook) {
   var labels = dataRows.map(function(r) {
     var v = r[0];
     if (v === undefined || v === '') return '';
-    /* Format date serial numbers (Excel dates) */
     if (typeof v === 'number' && v > 20000) {
       try { return XLSX.SSF.format('d-mmm', v); } catch(e) { return String(v); }
     }
     return String(v);
-  }).filter(Boolean).slice(0, 24);
+  }).filter(Boolean).slice(0, 30);
 
-  /* Data series = remaining numeric columns (max 6 series) */
+  /* Data series = remaining numeric columns (max 8 series) */
   var datasets = [];
-  var maxCols  = Math.min(headerRow.length, 7);
+  var maxCols  = Math.min(headerRow.length, 9);
   for (var col = 1; col < maxCols; col++) {
     var seriesLabel = String(headerRow[col] !== undefined ? headerRow[col] : ('Series ' + col));
     var values = dataRows.slice(0, labels.length).map(function(r) {
       var v = r[col];
       if (typeof v === 'number') return v;
-      var f = parseFloat(String(v).replace(/[,%$₹£€]/g, ''));
+      var f = parseFloat(String(v).replace(/[,%$\u20b9\u00a3\u20ac]/g, ''));
       return isNaN(f) ? 0 : f;
     });
     if (values.some(function(v) { return v !== 0; })) {
@@ -1741,20 +1726,19 @@ function extractXlsxChartData(workbook) {
 
   /* ── Smart data type detection ── */
   var detectedType   = 'bar';
-  var detectedReason = 'Comparison data — Grouped bar chart';
+  var detectedReason = 'Comparison data — Bar chart';
   var logScaleRec    = false;
 
-  /* Check if first column looks like time / dates */
   var timeRx = /^(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec|q[1-4]|fy|week|day|hour|min|time|date|\d{4})/i;
   var isTime = labels.some(function(l) { return timeRx.test(String(l).trim()); })
     || dataRows.some(function(r) { var v = r[0]; return typeof v === 'number' && v > 40000 && v < 55000; });
 
-  /* Check if first column is numeric (potential XY scatter) */
-  var firstNumeric = dataRows.slice(0, Math.min(dataRows.length, 6)).filter(function(r) { return r[0] !== undefined && r[0] !== ''; }).every(function(r) {
-    return typeof r[0] === 'number' || (!isNaN(parseFloat(String(r[0]))) && String(r[0]).trim() !== '');
-  });
+  var firstNumeric = dataRows.slice(0, Math.min(dataRows.length, 6))
+    .filter(function(r) { return r[0] !== undefined && r[0] !== ''; })
+    .every(function(r) {
+      return typeof r[0] === 'number' || (!isNaN(parseFloat(String(r[0]))) && String(r[0]).trim() !== '');
+    });
 
-  /* Collect positive values to check range */
   var posVals = [];
   datasets.forEach(function(ds) { ds.data.forEach(function(v) { if (v > 0) posVals.push(v); }); });
   if (posVals.length > 1) {
@@ -1764,21 +1748,50 @@ function extractXlsxChartData(workbook) {
   }
 
   if (isTime) {
-    detectedType   = 'line';
-    detectedReason = 'Time series detected — Line chart';
+    detectedType = 'line'; detectedReason = 'Time series — Line chart';
   } else if (firstNumeric && datasets.length === 1) {
-    detectedType   = 'scatter';
-    detectedReason = 'XY / Correlation data detected — Scatter plot';
+    detectedType = 'scatter'; detectedReason = 'XY / Correlation data — Scatter plot';
   } else if (datasets.length > 2) {
-    detectedType   = 'bar';
-    detectedReason = 'Multi-series comparison (' + datasets.length + ' series) — Grouped bar chart';
+    detectedType = 'bar'; detectedReason = 'Multi-series (' + datasets.length + ' series) — Grouped bar chart';
   } else {
-    detectedType   = 'bar';
-    detectedReason = 'Comparison data — Bar chart';
+    detectedType = 'bar'; detectedReason = 'Comparison data — Bar chart';
   }
-  if (logScaleRec) detectedReason += ' · ⚠️ Wide value range — Log scale may help';
+  if (logScaleRec) detectedReason += ' \u00b7 \u26a0\ufe0f Wide value range';
 
-  return { labels: labels, datasets: datasets, sheetName: bestName, detectedType: detectedType, detectedReason: detectedReason, logScaleRec: logScaleRec };
+  return { labels: labels, datasets: datasets, sheetName: sheetName,
+           detectedType: detectedType, detectedReason: detectedReason, logScaleRec: logScaleRec };
+}
+
+/* ── Extract real chart-ready data from ALL Excel sheets ── */
+function extractXlsxChartData(workbook) {
+  var allSheets = [];
+
+  workbook.SheetNames.forEach(function(name) {
+    var ws = workbook.Sheets[name];
+    if (!ws) return;
+    var result = _parseOneSheet(ws, name);
+    if (result) allSheets.push(result);
+  });
+
+  if (allSheets.length === 0) return null;
+
+  /* Set active to the sheet with the most data rows */
+  var bestIdx = 0;
+  allSheets.forEach(function(s, i) {
+    if (s.labels.length > allSheets[bestIdx].labels.length) bestIdx = i;
+  });
+
+  var active = allSheets[bestIdx];
+  return {
+    labels:          active.labels,
+    datasets:        active.datasets,
+    sheetName:       active.sheetName,
+    detectedType:    active.detectedType,
+    detectedReason:  active.detectedReason,
+    logScaleRec:     active.logScaleRec,
+    allSheets:       allSheets,
+    activeSheetIdx:  bestIdx
+  };
 }
 
 /* ── File format router ── */
@@ -1818,11 +1831,15 @@ function docFileSelected(file) {
     var wordCount    = text.split(/\s+/).length;
     if (statusEl) {
       var baseMsg = '\u2705 Ready \u2014 ~' + wordCount.toLocaleString() + ' words extracted';
-      /* For Excel: show data shape + detected chart type */
       if (docDirectChartData) {
-        var rows = docDirectChartData.labels.length;
-        var cols = docDirectChartData.datasets.length + 1;
-        baseMsg = '\u2705 ' + rows + ' rows \u00d7 ' + cols + ' columns \u2014 ' + docDirectChartData.detectedReason;
+        var sc = docDirectChartData.allSheets ? docDirectChartData.allSheets.length : 1;
+        if (sc > 1) {
+          var names = docDirectChartData.allSheets.map(function(s) { return s.sheetName; }).join(', ');
+          baseMsg = '\u2705 ' + sc + ' sheets found: ' + names;
+        } else {
+          baseMsg = '\u2705 ' + docDirectChartData.labels.length + ' rows \u00d7 '
+            + (docDirectChartData.datasets.length + 1) + ' columns \u2014 ' + docDirectChartData.detectedReason;
+        }
       }
       statusEl.textContent = baseMsg;
       statusEl.style.color = '#4ade80';
@@ -2009,6 +2026,38 @@ function setDocChartMode(type) {
     }
     renderDocChart(_currentDocResult);
   }
+}
+
+/* ── Switch active sheet tab ── */
+function selectDocSheet(idx) {
+  if (!docDirectChartData || !docDirectChartData.allSheets) return;
+  var sheet = docDirectChartData.allSheets[idx];
+  if (!sheet) return;
+
+  /* Update active data */
+  docDirectChartData.activeSheetIdx = idx;
+  docDirectChartData.labels        = sheet.labels;
+  docDirectChartData.datasets      = sheet.datasets;
+  docDirectChartData.sheetName     = sheet.sheetName;
+  docDirectChartData.detectedType  = sheet.detectedType;
+  docDirectChartData.detectedReason = sheet.detectedReason;
+  docDirectChartData.logScaleRec   = sheet.logScaleRec;
+
+  /* Update tab active states */
+  document.querySelectorAll('.doc-sheet-tab').forEach(function(btn, i) {
+    btn.classList.toggle('active', i === idx);
+  });
+
+  /* Update detection banner */
+  var banner = document.getElementById('docDetectBanner');
+  if (banner) banner.textContent = sheet.detectedReason ? ('🔍 ' + sheet.detectedReason) : '';
+
+  /* Update chart source */
+  var src = document.getElementById('docChartSource');
+  if (src) src.textContent = '📊 Real data from sheet: "' + sheet.sheetName + '"';
+
+  /* Re-render chart with new sheet data */
+  renderDocChart(_currentDocResult);
 }
 
 /* ── Render Chart.js chart — uses REAL Excel cell data when available ── */

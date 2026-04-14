@@ -501,6 +501,18 @@
   border-radius:8px; padding:8px 14px; margin-bottom:10px;
   color:rgba(255,255,255,.7); min-height:14px;
 }
+.doc-sheet-tabs {
+  display:flex; align-items:center; gap:6px; flex-wrap:wrap;
+  margin-bottom:10px;
+}
+.doc-sheet-tabs-label { font-size:11px; color:rgba(255,255,255,.4); margin-right:2px; white-space:nowrap; }
+.doc-sheet-tab {
+  padding:4px 12px; border-radius:20px; font-size:11px; font-weight:700; cursor:pointer;
+  background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.1);
+  color:rgba(255,255,255,.45); transition:all .18s; font-family:inherit;
+}
+.doc-sheet-tab:hover { background:rgba(56,189,248,.1); border-color:rgba(56,189,248,.3); color:rgba(255,255,255,.8); }
+.doc-sheet-tab.active { background:rgba(56,189,248,.18); border-color:#38bdf8; color:#38bdf8; }
 
 /* ── Chart type picker ── */
 .doc-chart-picker { display:flex; align-items:center; gap:8px; flex-wrap:wrap; padding:4px 0; }
