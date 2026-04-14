@@ -1705,11 +1705,11 @@ function _parseOneSheet(ws, sheetName) {
       try { return XLSX.SSF.format('d-mmm', v); } catch(e) { return String(v); }
     }
     return String(v);
-  }).filter(Boolean).slice(0, 30);
+  }).filter(Boolean).slice(0, 200);   /* up to 200 rows — handles 90-hour lab data */
 
-  /* Data series = remaining numeric columns (max 8 series) */
+  /* Data series = remaining numeric columns (max 12 series) */
   var datasets = [];
-  var maxCols  = Math.min(headerRow.length, 9);
+  var maxCols  = Math.min(headerRow.length, 13);
   for (var col = 1; col < maxCols; col++) {
     var seriesLabel = String(headerRow[col] !== undefined ? headerRow[col] : ('Series ' + col));
     var values = dataRows.slice(0, labels.length).map(function(r) {
@@ -1958,15 +1958,30 @@ function buildDocOutputHTML(result) {
       (slide.content || []).forEach(function(pt) { slidesHtml += '<li>' + pt + '</li>'; });
       slidesHtml += '</ul>';
     } else if (slide.type === 'chart') {
-      /* Detection banner — shown for Excel uploads */
-      slidesHtml += '<div class="doc-detect-banner" id="docDetectBanner">';
-      if (docDirectChartData && docDirectChartData.detectedReason) {
-        slidesHtml += '\ud83d\udd0d ' + docDirectChartData.detectedReason;
+      /* No-Excel warning OR detection banner */
+      if (!docDirectChartData) {
+        slidesHtml += '<div class="doc-detect-banner doc-detect-warn" id="docDetectBanner">\u26a0\ufe0f Upload the actual <strong>.xlsx</strong> file (not PDF) to see all real data points plotted here</div>';
+      } else {
+        slidesHtml += '<div class="doc-detect-banner" id="docDetectBanner">\ud83d\udd0d ' + (docDirectChartData.detectedReason || '') + '</div>';
       }
-      slidesHtml += '</div>';
+      /* Series toggles — shown only when multiple data columns exist */
+      if (docDirectChartData && docDirectChartData.datasets && docDirectChartData.datasets.length > 1) {
+        slidesHtml += '<div class="doc-series-toggles" id="docSeriesToggleRow"><span class="doc-sheet-tabs-label">Columns:</span>';
+        docDirectChartData.datasets.forEach(function(ds, i) {
+          slidesHtml += '<button class="doc-series-btn active" id="docSeriesBtn_' + i + '" onclick="toggleDocSeries(' + i + ')">' + ds.label + '</button>';
+        });
+        slidesHtml += '</div>';
+      }
+      /* Sheet tabs */
+      if (docDirectChartData && docDirectChartData.allSheets && docDirectChartData.allSheets.length > 1) {
+        slidesHtml += '<div class="doc-sheet-tabs" id="docSheetTabs"><span class="doc-sheet-tabs-label">\ud83d\uddc2 Sheets:</span>';
+        docDirectChartData.allSheets.forEach(function(sheet, i) {
+          slidesHtml += '<button class="doc-sheet-tab' + (i === (docDirectChartData.activeSheetIdx || 0) ? ' active' : '') + '" onclick="selectDocSheet(' + i + ')">' + sheet.sheetName + '</button>';
+        });
+        slidesHtml += '</div>';
+      }
       slidesHtml += '<div class="doc-chart-wrap"><canvas id="docMainChart" height="200"></canvas></div>';
       slidesHtml += '<div class="doc-chart-source" id="docChartSource"></div>';
-      /* Chart type picker — includes Scatter */
       slidesHtml += '<div class="doc-chart-picker"><span class="doc-chart-picker-label">Chart type:</span>';
       [['auto','\ud83d\udd04 Auto'],['bar','\ud83d\udcca Bar'],['line','\ud83d\udcc8 Line'],['scatter','\u25e6 Scatter'],['pie','\ud83e\udd67 Pie'],['none','\u2296 Hide']].forEach(function(t) {
         slidesHtml += '<button class="doc-chart-type-btn' + (docChartMode === t[0] ? ' active' : '') + '" onclick="setDocChartMode(\'' + t[0] + '\')">'
@@ -2064,6 +2079,16 @@ function selectDocSheet(idx) {
   renderDocChart(_currentDocResult);
 }
 
+/* ── Toggle individual data series visibility ── */
+var _hiddenSeries = {};
+function toggleDocSeries(idx) {
+  _hiddenSeries[idx] = !_hiddenSeries[idx];
+  var btn = document.getElementById('docSeriesBtn_' + idx);
+  if (btn) btn.classList.toggle('active', !_hiddenSeries[idx]);
+  /* Re-render with hidden series filtered out */
+  renderDocChart(_currentDocResult);
+}
+
 /* ── Render Chart.js chart — uses REAL Excel cell data when available ── */
 async function renderDocChart(result) {
   var canvas = document.getElementById('docMainChart');
@@ -2138,23 +2163,27 @@ async function renderDocChart(result) {
         borderWidth: 1
       }];
     } else {
-      /* Bar / Line: render ALL series (grouped bars or multi-line) */
-      datasets = docDirectChartData.datasets.map(function(ds, i) {
-        var c = palette6[i % palette6.length];
-        return {
-          label:           ds.label,
-          data:            ds.data,
-          backgroundColor: chartType === 'line' ? c.replace('0.85', '0.15') : c,
-          borderColor:     c,
-          borderWidth:     chartType === 'line' ? 2.5 : 1,
-          fill:            false,
-          tension:         0,          /* straight lines like MS Excel */
-          pointRadius:     chartType === 'line' ? 4 : 0,
-          pointHoverRadius: chartType === 'line' ? 7 : 4,
-          pointBackgroundColor: c,
-          borderRadius:    chartType === 'bar' ? 4 : 0
-        };
-      });
+      /* Bar / Line: render ALL series (grouped bars or multi-line), respecting hidden toggles */
+      datasets = docDirectChartData.datasets
+        .filter(function(_, i) { return !_hiddenSeries[i]; })
+        .map(function(ds, i) {
+          /* Use original palette index to keep colours stable */
+          var originalIdx = docDirectChartData.datasets.indexOf(ds);
+          var c = palette6[originalIdx % palette6.length];
+          return {
+            label:           ds.label,
+            data:            ds.data,
+            backgroundColor: chartType === 'line' ? c.replace('0.85', '0.15') : c,
+            borderColor:     c,
+            borderWidth:     chartType === 'line' ? 2.5 : 1,
+            fill:            false,
+            tension:         0,
+            pointRadius:     chartType === 'line' ? 4 : 0,
+            pointHoverRadius: chartType === 'line' ? 7 : 4,
+            pointBackgroundColor: c,
+            borderRadius:    chartType === 'bar' ? 4 : 0
+          };
+        });
     }
 
     /* Update source label */

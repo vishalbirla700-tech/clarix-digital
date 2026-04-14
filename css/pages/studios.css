@@ -514,6 +514,25 @@
 .doc-sheet-tab:hover { background:rgba(56,189,248,.1); border-color:rgba(56,189,248,.3); color:rgba(255,255,255,.8); }
 .doc-sheet-tab.active { background:rgba(56,189,248,.18); border-color:#38bdf8; color:#38bdf8; }
 
+/* ── Series visibility toggles ── */
+.doc-series-toggles {
+  display:flex; align-items:center; gap:6px; flex-wrap:wrap; margin-bottom:8px;
+}
+.doc-series-btn {
+  padding:3px 11px; border-radius:20px; font-size:11px; font-weight:700; cursor:pointer;
+  background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.1);
+  color:rgba(255,255,255,.35); transition:all .18s; font-family:inherit;
+}
+.doc-series-btn.active {
+  background:rgba(255,112,67,.18); border-color:rgba(255,112,67,.5); color:#ff7043;
+}
+.doc-series-btn:hover { filter:brightness(1.15); }
+/* Warning variant of detection banner */
+.doc-detect-warn {
+  background:rgba(251,191,36,.07) !important; border-color:rgba(251,191,36,.25) !important;
+  color:rgba(251,191,36,.9) !important;
+}
+
 /* ── Chart type picker ── */
 .doc-chart-picker { display:flex; align-items:center; gap:8px; flex-wrap:wrap; padding:4px 0; }
 .doc-chart-picker-label {
