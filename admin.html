@@ -1,0 +1,843 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <meta name="googlebot" content="noindex, nofollow">
+  <title>Admin Portal — Clarix</title>
+  <link rel="icon" href="/icons/icon-192.png" type="image/png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+
+  <style>
+    /* ═══════════════════════════════════════════════
+       RESET & BASE
+    ═══════════════════════════════════════════════ */
+    *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+
+    :root {
+      --bg:        #0d0d1a;
+      --bg2:       #12121f;
+      --surface:   rgba(255,255,255,0.04);
+      --surface-h: rgba(255,255,255,0.07);
+      --border:    rgba(255,255,255,0.08);
+      --accent:    #ff7043;
+      --accent2:   #ff8a65;
+      --green:     #22c55e;
+      --red:       #ef4444;
+      --blue:      #60a5fa;
+      --text:      rgba(255,255,255,0.9);
+      --text-sub:  rgba(255,255,255,0.5);
+      --text-dim:  rgba(255,255,255,0.3);
+      --radius:    14px;
+      --sidebar-w: 240px;
+    }
+
+    html, body {
+      height:100%; overflow:hidden;
+      font-family:'Inter',sans-serif;
+      background:var(--bg);
+      color:var(--text);
+    }
+
+    /* ═══════════════════════════════════════════════
+       GATE — shown while checking auth
+    ═══════════════════════════════════════════════ */
+    #adminGate {
+      position:fixed; inset:0; z-index:9999;
+      background:linear-gradient(135deg,#0d0d1a 0%,#1a0825 50%,#0a1a0f 100%);
+      display:flex; align-items:center; justify-content:center;
+      transition:opacity 0.4s;
+    }
+    .gate-box {
+      text-align:center;
+      background:rgba(255,255,255,0.04);
+      border:1px solid rgba(255,255,255,0.09);
+      border-radius:24px;
+      padding:48px 40px;
+      max-width:400px; width:90%;
+      backdrop-filter:blur(24px);
+    }
+    .gate-icon  { font-size:48px; margin-bottom:16px; }
+    .gate-logo  { font-size:22px; font-weight:900; color:#fff; letter-spacing:-0.5px; margin-bottom:12px; }
+    .logo-star  { color:var(--accent); }
+    .gate-title { font-size:20px; font-weight:700; margin-bottom:8px; }
+    .gate-sub   { font-size:14px; color:var(--text-sub); line-height:1.7; margin-bottom:28px; }
+    .gate-btn   {
+      background:var(--accent); color:#fff;
+      border:none; border-radius:10px; padding:12px 28px;
+      font-size:14px; font-weight:600; cursor:pointer;
+      transition:all 0.2s;
+    }
+    .gate-btn:hover { background:var(--accent2); transform:translateY(-1px); }
+
+    /* Loading pulse on gate */
+    .gate-loading { animation:gatePulse 1.5s ease-in-out infinite; }
+    @keyframes gatePulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
+
+    /* ═══════════════════════════════════════════════
+       MAIN LAYOUT
+    ═══════════════════════════════════════════════ */
+    #adminMain {
+      display:none; /* shown after auth */
+      width:100%; height:100%;
+      overflow:hidden;
+    }
+
+    .admin-layout {
+      display:flex;
+      height:100%;
+      width:100%;
+    }
+
+    /* ═══════════════════════════════════════════════
+       SIDEBAR
+    ═══════════════════════════════════════════════ */
+    .admin-sidebar {
+      width:var(--sidebar-w);
+      flex-shrink:0;
+      background:rgba(255,255,255,0.025);
+      border-right:1px solid var(--border);
+      display:flex; flex-direction:column;
+      height:100%; overflow-y:auto;
+      padding:24px 0;
+    }
+
+    .sidebar-logo {
+      padding:0 20px 24px;
+      border-bottom:1px solid var(--border);
+      margin-bottom:16px;
+    }
+    .sidebar-logo-text {
+      font-size:20px; font-weight:900; color:#fff; letter-spacing:-0.5px;
+    }
+    .sidebar-logo-sub {
+      font-size:10px; letter-spacing:2.5px; text-transform:uppercase;
+      color:var(--accent); margin-top:3px; font-weight:600;
+    }
+
+    .nav-group-label {
+      font-size:10px; letter-spacing:2px; text-transform:uppercase;
+      color:var(--text-dim); font-weight:600;
+      padding:0 20px; margin:16px 0 6px;
+    }
+
+    .nav-item {
+      display:flex; align-items:center; gap:12px;
+      padding:10px 20px; cursor:pointer;
+      color:var(--text-sub); font-size:13px; font-weight:500;
+      border-radius:0; transition:all 0.15s;
+      border-left:2px solid transparent;
+      user-select:none;
+    }
+    .nav-item:hover { color:var(--text); background:var(--surface-h); }
+    .nav-item.active {
+      color:var(--accent); background:rgba(255,112,67,0.08);
+      border-left-color:var(--accent); font-weight:600;
+    }
+    .nav-item .nav-icon { font-size:16px; width:20px; text-align:center; }
+
+    .sidebar-admin-profile {
+      margin-top:auto;
+      padding:16px 20px;
+      border-top:1px solid var(--border);
+      display:flex; align-items:center; gap:10px;
+    }
+    #adminAvatar {
+      width:36px; height:36px; border-radius:50%;
+      background:linear-gradient(135deg,var(--accent),#e53935);
+      display:flex; align-items:center; justify-content:center;
+      font-size:14px; font-weight:700; color:#fff; flex-shrink:0;
+    }
+    .admin-profile-info { flex:1; overflow:hidden; }
+    #adminUserName  { font-size:13px; font-weight:600; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    #adminUserEmail { font-size:11px; color:var(--text-dim); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+
+    .sidebar-signout {
+      background:none; border:none; cursor:pointer;
+      color:var(--text-dim); font-size:18px; padding:4px;
+      transition:color 0.2s;
+    }
+    .sidebar-signout:hover { color:var(--red); }
+
+    /* ═══════════════════════════════════════════════
+       MAIN CONTENT
+    ═══════════════════════════════════════════════ */
+    .admin-content {
+      flex:1; overflow-y:auto;
+      padding:32px;
+      display:flex; flex-direction:column;
+      gap:0;
+    }
+
+    .section-header {
+      margin-bottom:28px;
+    }
+    .section-title {
+      font-size:24px; font-weight:800; color:#fff; letter-spacing:-0.5px;
+    }
+    .section-subtitle {
+      font-size:13px; color:var(--text-sub); margin-top:4px;
+    }
+
+    /* ─── Admin section visibility ─── */
+    .admin-section { display:none; }
+    .admin-section.visible { display:block; }
+
+    /* ═══════════════════════════════════════════════
+       STAT CARDS
+    ═══════════════════════════════════════════════ */
+    .stats-grid {
+      display:grid;
+      grid-template-columns:repeat(auto-fill,minmax(200px,1fr));
+      gap:16px;
+      margin-bottom:32px;
+    }
+
+    .stat-card {
+      background:var(--surface);
+      border:1px solid var(--border);
+      border-radius:var(--radius);
+      padding:20px 24px;
+      position:relative;
+      overflow:hidden;
+      transition:transform 0.2s, border-color 0.2s;
+    }
+    .stat-card:hover { transform:translateY(-2px); border-color:rgba(255,255,255,0.14); }
+    .stat-card::before {
+      content:''; position:absolute; inset:0;
+      background:linear-gradient(135deg,rgba(255,112,67,0.04) 0%,transparent 60%);
+      pointer-events:none;
+    }
+
+    .stat-icon  { font-size:22px; margin-bottom:10px; }
+    .stat-label { font-size:11px; letter-spacing:1.5px; text-transform:uppercase; color:var(--text-sub); font-weight:600; margin-bottom:6px; }
+    .stat-value { font-size:32px; font-weight:800; color:#fff; letter-spacing:-1px; font-variant-numeric:tabular-nums; }
+    .stat-delta { font-size:12px; color:var(--green); margin-top:4px; }
+
+    /* ═══════════════════════════════════════════════
+       PANEL (generic card)
+    ═══════════════════════════════════════════════ */
+    .panel {
+      background:var(--surface);
+      border:1px solid var(--border);
+      border-radius:var(--radius);
+      overflow:hidden;
+    }
+    .panel-header {
+      padding:16px 20px;
+      border-bottom:1px solid var(--border);
+      display:flex; align-items:center; justify-content:space-between;
+      gap:12px;
+    }
+    .panel-title { font-size:14px; font-weight:700; color:#fff; }
+    .panel-sub   { font-size:12px; color:var(--text-dim); }
+
+    /* ═══════════════════════════════════════════════
+       TOOLBAR
+    ═══════════════════════════════════════════════ */
+    .toolbar {
+      padding:14px 20px;
+      border-bottom:1px solid var(--border);
+      display:flex; align-items:center; gap:10px; flex-wrap:wrap;
+    }
+
+    .search-input {
+      flex:1; min-width:200px;
+      background:rgba(255,255,255,0.05);
+      border:1px solid var(--border);
+      border-radius:8px; padding:8px 14px;
+      color:#fff; font-size:13px; font-family:inherit;
+      outline:none; transition:border-color 0.2s;
+    }
+    .search-input::placeholder { color:var(--text-dim); }
+    .search-input:focus { border-color:rgba(255,112,67,0.5); }
+
+    .toolbar-btn {
+      background:var(--surface);
+      border:1px solid var(--border);
+      border-radius:8px; padding:8px 14px;
+      color:var(--text-sub); font-size:12px; font-weight:600;
+      cursor:pointer; transition:all 0.15s; white-space:nowrap;
+      font-family:inherit;
+    }
+    .toolbar-btn:hover { border-color:rgba(255,255,255,0.2); color:#fff; background:var(--surface-h); }
+    .toolbar-btn.orange { border-color:rgba(255,112,67,0.3); color:var(--accent); }
+    .toolbar-btn.orange:hover { background:rgba(255,112,67,0.1); border-color:var(--accent); }
+
+    /* ═══════════════════════════════════════════════
+       TABLE
+    ═══════════════════════════════════════════════ */
+    .table-wrap {
+      overflow-x:auto;
+      position:relative;
+    }
+
+    #tableLoader {
+      display:none;
+      position:absolute; inset:0;
+      background:rgba(13,13,26,0.7);
+      align-items:center; justify-content:center;
+      z-index:10; font-size:13px; color:var(--text-sub);
+      gap:10px; backdrop-filter:blur(4px);
+    }
+    .spinner {
+      width:20px; height:20px;
+      border:2px solid rgba(255,112,67,0.2);
+      border-top-color:var(--accent);
+      border-radius:50%;
+      animation:spin 0.7s linear infinite;
+    }
+    @keyframes spin { to{transform:rotate(360deg)} }
+
+    table { width:100%; border-collapse:collapse; }
+    thead th {
+      font-size:11px; letter-spacing:1px; text-transform:uppercase;
+      color:var(--text-dim); font-weight:600;
+      padding:12px 16px; text-align:left;
+      border-bottom:1px solid var(--border);
+      white-space:nowrap;
+    }
+    tbody tr {
+      border-bottom:1px solid rgba(255,255,255,0.04);
+      transition:background 0.15s;
+    }
+    tbody tr:hover { background:rgba(255,255,255,0.03); }
+    tbody tr:last-child { border-bottom:none; }
+    tbody td {
+      padding:12px 16px;
+      font-size:13px; color:var(--text-sub);
+      vertical-align:middle;
+    }
+
+    /* ─── Badges ─── */
+    .badge {
+      display:inline-flex; align-items:center;
+      padding:3px 8px; border-radius:6px;
+      font-size:10px; font-weight:700;
+      letter-spacing:0.5px; text-transform:uppercase;
+    }
+    .badge-pro   { background:rgba(255,112,67,0.15); color:var(--accent); border:1px solid rgba(255,112,67,0.3); }
+    .badge-free  { background:rgba(255,255,255,0.05); color:var(--text-dim); border:1px solid var(--border); }
+    .badge-admin { background:rgba(96,165,250,0.15); color:var(--blue); border:1px solid rgba(96,165,250,0.3); margin-left:4px; }
+
+    /* ─── Usage bar ─── */
+    .usage-bar-wrap {
+      width:60px; height:4px;
+      background:rgba(255,255,255,0.08);
+      border-radius:2px; overflow:hidden;
+    }
+    .usage-bar {
+      height:100%; background:var(--accent);
+      border-radius:2px; transition:width 0.5s;
+    }
+
+    /* ─── User initials ─── */
+    .user-initials {
+      width:32px; height:32px; border-radius:50%;
+      background:linear-gradient(135deg,#ff7043,#e53935);
+      display:inline-flex; align-items:center; justify-content:center;
+      font-size:13px; font-weight:700; color:#fff; flex-shrink:0;
+    }
+
+    /* ─── Action buttons ─── */
+    .action-btn {
+      padding:5px 10px; border-radius:6px;
+      font-size:11px; font-weight:600;
+      cursor:pointer; border:1px solid; transition:all 0.15s;
+      font-family:inherit; white-space:nowrap;
+    }
+    .action-btn-orange { background:rgba(255,112,67,0.1); color:var(--accent); border-color:rgba(255,112,67,0.3); }
+    .action-btn-orange:hover { background:rgba(255,112,67,0.2); }
+    .action-btn-green { background:rgba(34,197,94,0.1); color:var(--green); border-color:rgba(34,197,94,0.3); }
+    .action-btn-green:hover { background:rgba(34,197,94,0.2); }
+    .action-btn-red { background:rgba(239,68,68,0.1); color:var(--red); border-color:rgba(239,68,68,0.3); }
+    .action-btn-red:hover { background:rgba(239,68,68,0.2); }
+
+    /* ═══════════════════════════════════════════════
+       INSIGHTS SECTION
+    ═══════════════════════════════════════════════ */
+    .insights-grid {
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:20px;
+      margin-bottom:24px;
+    }
+    .chart-panel {
+      background:var(--surface);
+      border:1px solid var(--border);
+      border-radius:var(--radius);
+      padding:20px;
+    }
+    .chart-title {
+      font-size:13px; font-weight:700; color:#fff; margin-bottom:16px;
+    }
+    .chart-wrap { height:220px; position:relative; }
+
+    .lang-row {
+      display:flex; align-items:center; gap:10px;
+      padding:6px 0; border-bottom:1px solid rgba(255,255,255,0.04);
+    }
+    .lang-row:last-child { border-bottom:none; }
+    .lang-name  { width:90px; font-size:12px; color:var(--text-sub); flex-shrink:0; }
+    .lang-bar-wrap { flex:1; height:4px; background:rgba(255,255,255,0.06); border-radius:2px; overflow:hidden; }
+    .lang-bar   { height:100%; background:var(--accent); border-radius:2px; }
+    .lang-count { font-size:12px; color:var(--text-dim); width:24px; text-align:right; flex-shrink:0; }
+
+    .signup-chart-panel {
+      background:var(--surface);
+      border:1px solid var(--border);
+      border-radius:var(--radius);
+      padding:20px;
+      margin-bottom:24px;
+    }
+    .signup-chart-wrap { height:180px; position:relative; }
+
+    /* ═══════════════════════════════════════════════
+       DANGER ZONE
+    ═══════════════════════════════════════════════ */
+    .danger-card {
+      background:rgba(239,68,68,0.04);
+      border:1px solid rgba(239,68,68,0.2);
+      border-radius:var(--radius);
+      padding:24px;
+      margin-bottom:16px;
+    }
+    .danger-card-title { font-size:15px; font-weight:700; color:var(--red); margin-bottom:6px; }
+    .danger-card-sub   { font-size:13px; color:var(--text-sub); margin-bottom:16px; line-height:1.6; }
+    .danger-btn {
+      background:rgba(239,68,68,0.1); color:var(--red);
+      border:1px solid rgba(239,68,68,0.35);
+      border-radius:8px; padding:10px 20px;
+      font-size:13px; font-weight:700; cursor:pointer;
+      transition:all 0.2s; font-family:inherit;
+    }
+    .danger-btn:hover { background:rgba(239,68,68,0.2); }
+
+    /* ═══════════════════════════════════════════════
+       TOAST ANIMATION
+    ═══════════════════════════════════════════════ */
+    @keyframes toastIn { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+
+    /* ═══════════════════════════════════════════════
+       SCROLLBAR
+    ═══════════════════════════════════════════════ */
+    ::-webkit-scrollbar { width:6px; height:6px; }
+    ::-webkit-scrollbar-track { background:transparent; }
+    ::-webkit-scrollbar-thumb { background:rgba(255,255,255,0.1); border-radius:3px; }
+    ::-webkit-scrollbar-thumb:hover { background:rgba(255,255,255,0.2); }
+
+    /* ═══════════════════════════════════════════════
+       RESPONSIVE
+    ═══════════════════════════════════════════════ */
+    @media (max-width:900px) {
+      .admin-sidebar { width:60px; }
+      .nav-item span:not(.nav-icon) { display:none; }
+      .nav-group-label { display:none; }
+      .sidebar-logo-sub { display:none; }
+      .sidebar-logo-text { font-size:16px; }
+      .admin-profile-info { display:none; }
+      .sidebar-signout { display:none; }
+      .admin-content { padding:20px 16px; }
+      .insights-grid { grid-template-columns:1fr; }
+    }
+    @media (max-width:600px) {
+      .stats-grid { grid-template-columns:1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════
+     AUTH GATE (shown while verifying auth)
+══════════════════════════════════════════ -->
+<div id="adminGate">
+  <div class="gate-box">
+    <div class="gate-icon gate-loading">🔐</div>
+    <div class="gate-logo"><span class="logo-star">✦</span> clarix admin</div>
+    <div class="gate-title">Verifying Access…</div>
+    <div class="gate-sub">Checking your admin credentials. Please wait.</div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     ADMIN MAIN (shown after auth check)
+══════════════════════════════════════════ -->
+<div id="adminMain">
+  <div class="admin-layout">
+
+    <!-- ── SIDEBAR ── -->
+    <nav class="admin-sidebar">
+      <div class="sidebar-logo">
+        <div class="sidebar-logo-text"><span style="color:var(--accent)">✦</span> clarix</div>
+        <div class="sidebar-logo-sub">Admin Portal</div>
+      </div>
+
+      <div class="nav-group-label">Dashboard</div>
+      <div class="nav-item active" data-section="overview" onclick="showSection('overview')">
+        <span class="nav-icon">📊</span><span>Overview</span>
+      </div>
+      <div class="nav-item" data-section="users" onclick="showSection('users')">
+        <span class="nav-icon">👥</span><span>Users</span>
+      </div>
+      <div class="nav-item" data-section="insights" onclick="showSection('insights')">
+        <span class="nav-icon">📈</span><span>Insights</span>
+      </div>
+
+      <div class="nav-group-label">System</div>
+      <div class="nav-item" data-section="config" onclick="showSection('config')">
+        <span class="nav-icon">⚙️</span><span>Config</span>
+      </div>
+      <div class="nav-item" data-section="danger" onclick="showSection('danger')">
+        <span class="nav-icon">⚠️</span><span>Danger Zone</span>
+      </div>
+
+      <!-- Admin profile at bottom -->
+      <div class="sidebar-admin-profile">
+        <div id="adminAvatar">A</div>
+        <div class="admin-profile-info">
+          <div id="adminUserName">Admin</div>
+          <div id="adminUserEmail">—</div>
+        </div>
+        <button class="sidebar-signout" onclick="window._adminSignOut && window._adminSignOut()" title="Sign Out">↩</button>
+      </div>
+    </nav>
+
+    <!-- ── CONTENT ── -->
+    <main class="admin-content">
+
+      <!-- ════════════════════════════════════
+           SECTION: OVERVIEW
+      ════════════════════════════════════ -->
+      <div id="section-overview" class="admin-section" style="display:block;">
+        <div class="section-header">
+          <div style="display:flex;align-items:center;justify-content:space-between;">
+            <div>
+              <div class="section-title">Overview</div>
+              <div class="section-subtitle">Live platform metrics — refreshes on load</div>
+            </div>
+            <button class="toolbar-btn orange" onclick="adminRefresh()" style="display:flex;align-items:center;gap:6px;">
+              🔄 Refresh
+            </button>
+          </div>
+        </div>
+
+        <!-- KPI Cards -->
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-icon">👥</div>
+            <div class="stat-label">Total Users</div>
+            <div class="stat-value" id="statTotalUsers">—</div>
+            <div class="stat-delta">All registered accounts</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">✦</div>
+            <div class="stat-label">Pro Members</div>
+            <div class="stat-value" id="statProUsers">—</div>
+            <div class="stat-delta" style="color:var(--accent);">Active subscriptions</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">⚡</div>
+            <div class="stat-label">Total Prompts</div>
+            <div class="stat-value" id="statTotalPrompts">—</div>
+            <div class="stat-delta">Lifetime AI generations</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">🆕</div>
+            <div class="stat-label">New Today</div>
+            <div class="stat-value" id="statNewToday">—</div>
+            <div class="stat-delta">Signups in last 24h</div>
+          </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="panel" style="margin-bottom:24px;">
+          <div class="panel-header">
+            <div>
+              <div class="panel-title">Quick Actions</div>
+              <div class="panel-sub">Common admin operations</div>
+            </div>
+          </div>
+          <div style="padding:20px;display:flex;gap:12px;flex-wrap:wrap;">
+            <button class="toolbar-btn orange" onclick="showSection('users')">👥 Manage Users</button>
+            <button class="toolbar-btn" onclick="exportCSV()">📥 Export CSV</button>
+            <button class="toolbar-btn" onclick="showSection('insights')">📈 View Insights</button>
+            <button class="toolbar-btn" onclick="adminRefresh()">🔄 Refresh Data</button>
+          </div>
+        </div>
+
+        <!-- Recent Users Preview -->
+        <div class="panel">
+          <div class="panel-header">
+            <div>
+              <div class="panel-title">Recent Signups</div>
+              <div class="panel-sub">Last 5 users to join</div>
+            </div>
+            <button class="toolbar-btn" onclick="showSection('users')" style="font-size:11px;">View All →</button>
+          </div>
+          <div id="recentUsersPreview" style="padding:8px 0;">
+            <div style="text-align:center;padding:32px;color:var(--text-dim);font-size:13px;">Loading…</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ════════════════════════════════════
+           SECTION: USERS
+      ════════════════════════════════════ -->
+      <div id="section-users" class="admin-section">
+        <div class="section-header">
+          <div class="section-title">Users</div>
+          <div class="section-subtitle">All registered accounts, searchable and manageable</div>
+        </div>
+
+        <div class="panel" style="margin-bottom:0;">
+          <!-- Toolbar -->
+          <div class="toolbar">
+            <input
+              type="search" id="searchInput"
+              class="search-input"
+              placeholder="🔍  Search by name, email or country…"
+              oninput="adminSearch(this.value)"
+            >
+            <button class="toolbar-btn" onclick="loadUsers(document.getElementById('searchInput').value)">Reload</button>
+            <button class="toolbar-btn orange" onclick="exportCSV()">📥 Export CSV</button>
+            <span id="usersCount" style="font-size:12px;color:var(--text-dim);white-space:nowrap;"></span>
+          </div>
+
+          <!-- Table -->
+          <div class="table-wrap">
+            <div id="tableLoader">
+              <div class="spinner"></div>
+              <span>Loading users…</span>
+            </div>
+            <table>
+              <thead>
+                <tr>
+                  <th>User</th>
+                  <th>Country</th>
+                  <th>Language</th>
+                  <th>Trial Used</th>
+                  <th>Status</th>
+                  <th>Joined</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="usersTableBody">
+                <tr><td colspan="7" style="text-align:center;padding:40px;color:var(--text-dim);">Loading users…</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ════════════════════════════════════
+           SECTION: INSIGHTS
+      ════════════════════════════════════ -->
+      <div id="section-insights" class="admin-section">
+        <div class="section-header">
+          <div class="section-title">Insights</div>
+          <div class="section-subtitle">User growth, geography, and language distribution</div>
+        </div>
+
+        <!-- Signup timeline chart -->
+        <div class="signup-chart-panel">
+          <div class="chart-title">📅 Daily Signups (Last 14 Days)</div>
+          <div class="signup-chart-wrap">
+            <canvas id="signupChart"></canvas>
+          </div>
+        </div>
+
+        <!-- Country + Language -->
+        <div class="insights-grid">
+          <div class="chart-panel">
+            <div class="chart-title">🌍 Users by Country</div>
+            <div class="chart-wrap">
+              <canvas id="countryChart"></canvas>
+            </div>
+          </div>
+          <div class="chart-panel">
+            <div class="chart-title">🗣️ Languages</div>
+            <div id="languageList" style="padding-top:4px;">
+              <div style="text-align:center;padding:32px;color:var(--text-dim);font-size:13px;">Loading…</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ════════════════════════════════════
+           SECTION: CONFIG
+      ════════════════════════════════════ -->
+      <div id="section-config" class="admin-section">
+        <div class="section-header">
+          <div class="section-title">Config</div>
+          <div class="section-subtitle">Platform settings and feature flags</div>
+        </div>
+
+        <div class="panel" style="margin-bottom:20px;">
+          <div class="panel-header">
+            <div class="panel-title">📋 Platform Info</div>
+          </div>
+          <div style="padding:20px;display:grid;gap:16px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 16px;background:rgba(255,255,255,0.03);border-radius:10px;border:1px solid var(--border);">
+              <div>
+                <div style="font-size:13px;font-weight:600;color:var(--text);">Free Trial Limit</div>
+                <div style="font-size:12px;color:var(--text-sub);">Lifetime prompts given on signup</div>
+              </div>
+              <div style="font-size:20px;font-weight:800;color:var(--accent);">25</div>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 16px;background:rgba(255,255,255,0.03);border-radius:10px;border:1px solid var(--border);">
+              <div>
+                <div style="font-size:13px;font-weight:600;color:var(--text);">Daily Free Limit</div>
+                <div style="font-size:12px;color:var(--text-sub);">Prompts per day after trial exhausted</div>
+              </div>
+              <div style="font-size:20px;font-weight:800;color:var(--accent);">5</div>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 16px;background:rgba(255,255,255,0.03);border-radius:10px;border:1px solid var(--border);">
+              <div>
+                <div style="font-size:13px;font-weight:600;color:var(--text);">Pro Price</div>
+                <div style="font-size:12px;color:var(--text-sub);">Monthly subscription</div>
+              </div>
+              <div style="font-size:20px;font-weight:800;color:var(--green);">₹299</div>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 16px;background:rgba(255,255,255,0.03);border-radius:10px;border:1px solid var(--border);">
+              <div>
+                <div style="font-size:13px;font-weight:600;color:var(--text);">Admin Email</div>
+                <div style="font-size:12px;color:var(--text-sub);">Primary admin account</div>
+              </div>
+              <div style="font-size:13px;color:var(--text-sub);">vishalbirla700@gmail.com</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-title">🔗 Admin API Endpoints</div>
+          </div>
+          <div style="padding:20px;display:grid;gap:10px;">
+            <div style="padding:12px 16px;background:rgba(255,255,255,0.03);border-radius:8px;border:1px solid var(--border);font-family:monospace;font-size:12px;color:var(--text-sub);">
+              GET /api/admin-action?action=getStats&secret=***
+            </div>
+            <div style="padding:12px 16px;background:rgba(255,255,255,0.03);border-radius:8px;border:1px solid var(--border);font-family:monospace;font-size:12px;color:var(--text-sub);">
+              GET /api/admin-action?action=getUsers&secret=***
+            </div>
+            <div style="padding:12px 16px;background:rgba(255,255,255,0.03);border-radius:8px;border:1px solid var(--border);font-family:monospace;font-size:12px;color:var(--text-sub);">
+              POST /api/admin-action  { action, uid, value, secret }
+            </div>
+            <div style="padding:12px 16px;background:rgba(255,255,255,0.03);border-radius:8px;border:1px solid var(--border);font-family:monospace;font-size:12px;color:var(--text-sub);">
+              GET /api/admin-reset?secret=***  (legacy admin reset)
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ════════════════════════════════════
+           SECTION: DANGER ZONE
+      ════════════════════════════════════ -->
+      <div id="section-danger" class="admin-section">
+        <div class="section-header">
+          <div class="section-title" style="color:var(--red);">⚠️ Danger Zone</div>
+          <div class="section-subtitle">Irreversible operations — proceed with caution</div>
+        </div>
+
+        <div class="danger-card">
+          <div class="danger-card-title">🔄 Bulk Reset All Free User Trials</div>
+          <div class="danger-card-sub">
+            Resets the trial count to 0 for ALL non-Pro, non-admin users. This gives every free user a fresh start with 25 prompts. Use during promotions or after pushing trial limit changes.
+          </div>
+          <button class="danger-btn" onclick="adminBulkReset()">Run Bulk Trial Reset</button>
+        </div>
+
+        <div class="danger-card">
+          <div class="danger-card-title">📥 Export Full User Database</div>
+          <div class="danger-card-sub">
+            Downloads a CSV file of all users with their UID, email, country, language, trial usage, and Pro status. Useful for analytics and backups.
+          </div>
+          <button class="danger-btn" onclick="exportCSV()" style="background:rgba(239,68,68,0.06);border-color:rgba(239,68,68,0.2);">Export All Users → CSV</button>
+        </div>
+
+        <div class="danger-card" style="border-color:rgba(239,68,68,0.1);background:rgba(239,68,68,0.02);">
+          <div class="danger-card-title" style="color:var(--text-sub);">🏗️ Reset Admin Trial (Self)</div>
+          <div class="danger-card-sub">
+            Uses the <code style="background:rgba(255,255,255,0.06);padding:2px 6px;border-radius:4px;font-size:11px;">/api/admin-reset</code> endpoint to reset your own account's trial counter and set isPro=true. Run this if your dev usage inflated the counter.
+          </div>
+          <button class="danger-btn" onclick="runAdminSelfReset()">Reset My Account</button>
+        </div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     SCRIPTS
+══════════════════════════════════════════ -->
+<script>
+  /* Self-reset helper (calls legacy endpoint) */
+  async function runAdminSelfReset() {
+    if (!confirm('Reset YOUR trial count and set isPro=true?')) return;
+    try {
+      const resp = await fetch('/api/admin-reset?secret=clarix-admin-2024');
+      const data = await resp.json();
+      if (data.success) {
+        showToast('✅ Your account has been reset + isPro=true', 'success');
+      } else {
+        showToast('❌ ' + (data.error || 'Failed'), 'error');
+      }
+    } catch (e) {
+      showToast('❌ Error: ' + e.message, 'error');
+    }
+  }
+
+  /* After users table loads, populate recent users preview */
+  const _origRenderUsersTable = null;
+  function _refreshOverviewRecent() {
+    const recent = [..._allUsers].slice(0, 5);
+    const el = document.getElementById('recentUsersPreview');
+    if (!el) return;
+    if (!recent.length) { el.innerHTML = '<div style="text-align:center;padding:24px;color:var(--text-dim);font-size:13px;">No users yet</div>'; return; }
+    el.innerHTML = recent.map(u => {
+      const date = u.createdAt ? new Date(u.createdAt).toLocaleDateString('en-IN', { day:'numeric', month:'short' }) : '—';
+      const avatar = u.photo
+        ? `<img src="${u.photo}" style="width:36px;height:36px;border-radius:50%;object-fit:cover;" onerror="this.style.display='none'">`
+        : `<div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#ff7043,#e53935);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:#fff;">${(u.name||'?').charAt(0)}</div>`;
+      return `
+        <div style="display:flex;align-items:center;gap:12px;padding:12px 20px;border-bottom:1px solid rgba(255,255,255,0.04);">
+          ${avatar}
+          <div style="flex:1;">
+            <div style="font-size:13px;font-weight:600;color:#fff;">${u.name}</div>
+            <div style="font-size:11px;color:var(--text-dim);">${u.email}</div>
+          </div>
+          <div style="text-align:right;">
+            <div style="font-size:11px;color:var(--text-dim);">${date}</div>
+            <div style="font-size:11px;color:var(--text-sub);">${u.countryFlag} ${u.country||'—'}</div>
+          </div>
+        </div>`;
+    }).join('');
+  }
+
+  /* Hook into renderUsersTable to also refresh overview */
+  document.addEventListener('DOMContentLoaded', function() {
+    const _orig = window.renderUsersTable;
+    /* renderUsersTable is defined in admin.js which loads after, so hook via MutationObserver */
+  });
+</script>
+<script>
+  /* Patch renderUsersTable after admin.js loads to also update overview */
+  window.addEventListener('load', function() {
+    const orig = window.renderUsersTable;
+    if (typeof orig === 'function') {
+      window.renderUsersTable = function(users) {
+        orig(users);
+        _refreshOverviewRecent();
+      };
+    }
+  });
+</script>
+<script src="/js/pages/admin.js" type="module"></script>
+
+</body>
+</html>

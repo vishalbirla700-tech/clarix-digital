@@ -12,6 +12,8 @@ User-agent: DuckDuckBot
 Allow: /
 
 # Disallow internal/private pages
+Disallow: /admin
+Disallow: /admin.html
 Disallow: /config.js
 Disallow: /.git/
 Disallow: /.agents/
