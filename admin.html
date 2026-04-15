@@ -783,61 +783,17 @@
       const resp = await fetch('/api/admin-reset?secret=clarix-admin-2024');
       const data = await resp.json();
       if (data.success) {
-        showToast('✅ Your account has been reset + isPro=true', 'success');
+        showToast('\u2705 Your account has been reset + isPro=true', 'success');
       } else {
-        showToast('❌ ' + (data.error || 'Failed'), 'error');
+        showToast('\u274c ' + (data.error || 'Failed'), 'error');
       }
     } catch (e) {
-      showToast('❌ Error: ' + e.message, 'error');
+      showToast('\u274c Error: ' + e.message, 'error');
     }
   }
-
-  /* After users table loads, populate recent users preview */
-  const _origRenderUsersTable = null;
-  function _refreshOverviewRecent() {
-    const recent = [..._allUsers].slice(0, 5);
-    const el = document.getElementById('recentUsersPreview');
-    if (!el) return;
-    if (!recent.length) { el.innerHTML = '<div style="text-align:center;padding:24px;color:var(--text-dim);font-size:13px;">No users yet</div>'; return; }
-    el.innerHTML = recent.map(u => {
-      const date = u.createdAt ? new Date(u.createdAt).toLocaleDateString('en-IN', { day:'numeric', month:'short' }) : '—';
-      const avatar = u.photo
-        ? `<img src="${u.photo}" style="width:36px;height:36px;border-radius:50%;object-fit:cover;" onerror="this.style.display='none'">`
-        : `<div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#ff7043,#e53935);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:#fff;">${(u.name||'?').charAt(0)}</div>`;
-      return `
-        <div style="display:flex;align-items:center;gap:12px;padding:12px 20px;border-bottom:1px solid rgba(255,255,255,0.04);">
-          ${avatar}
-          <div style="flex:1;">
-            <div style="font-size:13px;font-weight:600;color:#fff;">${u.name}</div>
-            <div style="font-size:11px;color:var(--text-dim);">${u.email}</div>
-          </div>
-          <div style="text-align:right;">
-            <div style="font-size:11px;color:var(--text-dim);">${date}</div>
-            <div style="font-size:11px;color:var(--text-sub);">${u.countryFlag} ${u.country||'—'}</div>
-          </div>
-        </div>`;
-    }).join('');
-  }
-
-  /* Hook into renderUsersTable to also refresh overview */
-  document.addEventListener('DOMContentLoaded', function() {
-    const _orig = window.renderUsersTable;
-    /* renderUsersTable is defined in admin.js which loads after, so hook via MutationObserver */
-  });
 </script>
-<script>
-  /* Patch renderUsersTable after admin.js loads to also update overview */
-  window.addEventListener('load', function() {
-    const orig = window.renderUsersTable;
-    if (typeof orig === 'function') {
-      window.renderUsersTable = function(users) {
-        orig(users);
-        _refreshOverviewRecent();
-      };
-    }
-  });
-</script>
-<script src="/js/pages/admin.js" type="module"></script>
+<script src="/js/pages/admin.js"></script>
 
 </body>
 </html>
+
