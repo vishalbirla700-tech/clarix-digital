@@ -1,4 +1,4 @@
-/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+﻿/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
    CLARIX â€” CREATIVE STUDIOS v3 (clean rewrite)
    Fixed: pill onclick, festival apostrophe, selectPill
 â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
@@ -62,7 +62,7 @@ var KIDS_STYLES = [
 /* â”€â”€ Studios Config â”€â”€ */
 var STUDIOS = [
   {
-    id:'kids', emoji:'ðŸ‘¶', name:'Kids Creator',
+    id:'kids', emoji:'\uD83D\uDC76', name:'Kids Creator',
     sub:'Fun cartoon-style prompts for young ones',
     badge:'Fun Zone', css:'studio-kids',
     heroBg:'https://images.unsplash.com/photo-1618336753974-aae8e04506aa?w=800&q=60',
@@ -77,7 +77,7 @@ var STUDIOS = [
     promptFn:'kids'
   },
   {
-    id:'corporate', emoji:'ðŸ’¼', name:'Corporate Creator',
+    id:'corporate', emoji:'\uD83D\uDCBC', name:'Corporate Creator',
     sub:'Professional content for brands & businesses',
     badge:'Business', css:'studio-corp',
     heroBg:'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=800&q=60',
@@ -92,7 +92,7 @@ var STUDIOS = [
     promptFn:'corporate'
   },
   {
-    id:'cultural', emoji:'ðŸŽ‰', name:'Cultural Creator',
+    id:'cultural', emoji:'\uD83C\uDF89', name:'Cultural Creator',
     sub:'Festival cards with AI text â€” download & share instantly',
     badge:'Festivals', css:'studio-cultural',
     heroBg:'https://images.unsplash.com/photo-1574482620811-1aa16ffe3c82?w=800&q=60',
@@ -109,7 +109,7 @@ var STUDIOS = [
     hasFestivals: true
   },
   {
-    id:'multilingual', emoji:'ðŸ”¤', name:'Multilingual Analyzer',
+    id:'multilingual', emoji:'\uD83D\uDD24', name:'Multilingual Analyzer',
     sub:'Image with any language text â†’ 2 creative prompts',
     badge:'Language AI', css:'studio-multi',
     heroBg:'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=800&q=60',
@@ -124,7 +124,7 @@ var STUDIOS = [
     promptFn:'multilingual'
   },
   {
-    id:'docanalyzer', emoji:'ðŸ“„', name:'Document Analyzer',
+    id:'docanalyzer', emoji:'\uD83D\uDCC4', name:'Document Analyzer',
     sub:'Upload PDF, DOCX or TXT â€” get slides, charts & AI insights',
     badge:'AI Insights', css:'studio-doc',
     heroBg:'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=800&q=60',
