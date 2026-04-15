@@ -13,6 +13,19 @@
   <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore-compat.js"></script>
   <script src="/config.js"></script>
+  <script>
+    /* Initialize Firebase for the shared report viewer */
+    if (!firebase.apps.length) {
+      firebase.initializeApp({
+        apiKey:            "AIzaSyAM4ge2l11JSwtkC4Hzp9PDSjQDw-hAsZU",
+        authDomain:        "clarix-firebase.firebaseapp.com",
+        projectId:         "clarix-firebase",
+        storageBucket:     "clarix-firebase.firebasestorage.app",
+        messagingSenderId: "24399996790",
+        appId:             "1:24399996790:web:1a337ec0707165fa123c57"
+      });
+    }
+  </script>
 
   <!-- Chart.js for rendering the data chart -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
