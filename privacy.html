@@ -26,7 +26,7 @@
     <div class="legal-hero">
       <div class="ai-badge"><span class="badge-star">&#10022;</span> Legal</div>
       <h1 class="display-md" style="margin-top:16px">Privacy Policy</h1>
-      <p class="text-muted" style="margin-top:8px">Last updated: April 2026 &nbsp;|&nbsp; Effective: April 2026</p>
+      <p class="text-muted" style="margin-top:8px">Last updated: 15 April 2026 &nbsp;|&nbsp; Effective: April 2026</p>
     </div>
     <div class="legal-body">
 
@@ -95,9 +95,40 @@
           <li>Language and platform preferences (backup copy)</li>
           <li>Your prompt history (stored locally on your device only)</li>
           <li>Pro/Free status (sync with server)</li>
+          <li>Push notification permission state (<code>clarix_push_subscribed</code>)</li>
+          <li>PWA install and update banner states (<code>clarix_installed</code>, <code>clarix_version</code>)</li>
+          <li>Product tour completion state (<code>clarix_tour_*</code>)</li>
+          <li>Guest usage counter (<code>clarix_guest_used</code>)</li>
         </ul>
         <p><strong>Note:</strong> localStorage data stays on your device and is never transmitted to Clarix servers unless it is also synced to Firestore (as listed in Section 2B above).</p>
       </div>
+
+        <h3 style="font-size:15px;margin:16px 0 8px;color:var(--text-primary)">G. Web Push Notification Data</h3>
+        <ul>
+          <li>If you grant push notification permission, your browser generates a unique <strong>push subscription object</strong> (endpoint URL + encryption keys)</li>
+          <li>This subscription object is stored in our Firestore database linked to your account (or anonymously if you are a guest)</li>
+          <li>We use this data solely to deliver push notifications you have explicitly opted in to receive</li>
+        </ul>
+        <p><strong>Why:</strong> To send you feature updates, campaign alerts, and re-engagement notifications that you have consented to receive.</p>
+        <p><strong>How to unsubscribe:</strong> You can revoke push permission at any time via your browser settings (Settings &rarr; Notifications &rarr; clarix.digital &rarr; Block). Your subscription record will be deactivated within 24 hours.</p>
+        <p><strong>Stored in:</strong> Google Firestore under the <code>push_subscriptions</code> collection.</p>
+
+        <h3 style="font-size:15px;margin:16px 0 8px;color:var(--text-primary)">H. Guest Mode Usage Data</h3>
+        <ul>
+          <li>If you use Clarix without signing in (Guest Mode), we track the number of AI prompts used in your current browser session using <strong>browser localStorage only</strong></li>
+          <li>No personal data is collected from guests &mdash; no name, email, or account is created</li>
+          <li>Guest usage data (prompt count) is stored locally on your device and is cleared when you clear your browser data</li>
+        </ul>
+        <p><strong>Why:</strong> To enforce the 5-prompt guest limit and encourage account creation for full access.</p>
+        <p><strong>Note:</strong> If you sign in after using Guest Mode, your guest usage count is not carried over &mdash; your signed-in account starts fresh.</p>
+
+        <h3 style="font-size:15px;margin:16px 0 8px;color:var(--text-primary)">I. Data Intelligence (Usage Analytics Dashboard)</h3>
+        <ul>
+          <li>Clarix provides a personal analytics dashboard (&ldquo;Data Intelligence&rdquo;) that shows you your own usage patterns &mdash; prompts per day, top platforms used, favourite languages, and creative trends</li>
+          <li>This data is derived entirely from your existing usage data stored in Firestore (Section 2B) &mdash; no additional data collection occurs</li>
+          <li>Your Data Intelligence data is private and visible only to you</li>
+        </ul>
+        <p><strong>Why:</strong> To help you understand your own creative behaviour and get more value from Clarix.</p>
 
       <div class="legal-section">
         <h2>3. What We Do NOT Collect</h2>
@@ -137,6 +168,7 @@
             <tr><td>Anthropic Claude</td><td>AI prompt processing</td><td>Prompt text only</td><td><a href="https://www.anthropic.com/privacy" target="_blank" class="legal-link">Anthropic</a></td></tr>
             <tr><td>Razorpay</td><td>Payment processing (when applicable)</td><td>Payment details</td><td><a href="https://razorpay.com/privacy/" target="_blank" class="legal-link">Razorpay</a></td></tr>
             <tr><td>Vercel</td><td>Web hosting & serverless functions</td><td>Request metadata</td><td><a href="https://vercel.com/legal/privacy-policy" target="_blank" class="legal-link">Vercel</a></td></tr>
+            <tr><td>Web Push API (Browser)</td><td>Push notification delivery</td><td>Push subscription endpoint only (no personal data)</td><td>Your browser&rsquo;s native Push API &mdash; no third-party push service used</td></tr>
           </tbody>
         </table>
       </div>
