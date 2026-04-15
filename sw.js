@@ -107,3 +107,54 @@ self.addEventListener('fetch', function(e) {
     })
   );
 });
+
+/* ── PUSH: Show system notification when a push arrives ── */
+self.addEventListener('push', function(e) {
+  var data = {};
+  try { data = e.data ? e.data.json() : {}; } catch(_) {}
+
+  var title   = data.title || 'Clarix AI';
+  var options = {
+    body:     data.body    || 'Something new is waiting for you at Clarix!',
+    icon:     data.icon    || '/icons/icon-192.png',
+    badge:    data.badge   || '/icons/icon-96.png',
+    tag:      data.tag     || 'clarix-update',
+    renotify: data.renotify !== false,
+    vibrate:  [200, 100, 200],
+    data:     { url: data.url || '/' },
+    actions: [
+      { action: 'open',    title: 'Explore Now' },
+      { action: 'dismiss', title: 'Dismiss' }
+    ]
+  };
+
+  e.waitUntil(
+    self.registration.showNotification(title, options)
+  );
+});
+
+/* ── NOTIFICATION CLICK: Open the target URL ── */
+self.addEventListener('notificationclick', function(e) {
+  e.notification.close();
+  if (e.action === 'dismiss') return;
+
+  var targetUrl = (e.notification.data && e.notification.data.url)
+    ? e.notification.data.url
+    : '/';
+
+  e.waitUntil(
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then(function(clientList) {
+      /* If Clarix is already open, focus it and navigate */
+      for (var i = 0; i < clientList.length; i++) {
+        var c = clientList[i];
+        if (c.url.includes(self.location.origin) && 'focus' in c) {
+          c.focus();
+          if ('navigate' in c) c.navigate(targetUrl);
+          return;
+        }
+      }
+      /* Otherwise open a new tab */
+      if (clients.openWindow) return clients.openWindow(targetUrl);
+    })
+  );
+});

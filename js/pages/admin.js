@@ -466,6 +466,11 @@ function showSection(name) {
   if (name === 'insights' && _allUsers.length) {
     setTimeout(function() { renderInsights(_allUsers); }, 50);
   }
+
+  /* Load push stats when Push Alerts tab becomes visible */
+  if (name === 'push' && typeof loadPushStats === 'function') {
+    loadPushStats();
+  }
 }
 
 /* ═══════════════════════════════════════════════════════

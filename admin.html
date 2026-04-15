@@ -489,6 +489,9 @@
       </div>
 
       <div class="nav-group-label">System</div>
+      <div class="nav-item" data-section="push" onclick="showSection('push')">
+        <span class="nav-icon">📢</span><span>Push Alerts</span>
+      </div>
       <div class="nav-item" data-section="config" onclick="showSection('config')">
         <span class="nav-icon">⚙️</span><span>Config</span>
       </div>
@@ -734,6 +737,181 @@
         </div>
       </div>
 
+      </div>
+
+      <!-- ════════════════════════════════════
+           SECTION: PUSH NOTIFICATIONS
+      ════════════════════════════════════ -->
+      <div id="section-push" class="admin-section">
+        <div class="section-header">
+          <div style="display:flex;align-items:center;justify-content:space-between;">
+            <div>
+              <div class="section-title">📢 Push Notifications</div>
+              <div class="section-subtitle">Re-engage users who haven't seen your new features</div>
+            </div>
+            <div id="pushSubCount" style="background:rgba(255,112,67,0.1);border:1px solid rgba(255,112,67,0.3);
+              border-radius:12px;padding:8px 16px;font-size:13px;color:var(--accent);font-weight:700;">
+              Loading subscribers…
+            </div>
+          </div>
+        </div>
+
+        <!-- Quick Templates -->
+        <div class="panel" style="margin-bottom:20px;">
+          <div class="panel-header">
+            <div>
+              <div class="panel-title">⚡ Quick Templates</div>
+              <div class="panel-sub">One-click campaigns for your new features</div>
+            </div>
+          </div>
+          <div style="padding:16px;display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px;">
+
+            <!-- Template 1: Creative Studios -->
+            <div class="push-template-card" onclick="fillPushTemplate('creative-studios')" style="
+              background:rgba(255,112,67,0.06);border:1px solid rgba(255,112,67,0.2);
+              border-radius:14px;padding:16px;cursor:pointer;transition:all 0.2s;"
+              onmouseenter="this.style.background='rgba(255,112,67,0.12)'" onmouseleave="this.style.background='rgba(255,112,67,0.06)'">
+              <div style="font-size:20px;margin-bottom:8px;">🎨</div>
+              <div style="font-size:13px;font-weight:700;color:#fff;margin-bottom:4px;">Creative Studios</div>
+              <div style="font-size:11px;color:var(--text-sub);line-height:1.6;">
+                "Try our new AI Creative Studios — write kids stories, corporate emails & more!"
+              </div>
+              <div style="margin-top:10px;font-size:10px;color:var(--accent);font-weight:600;">→ /apps.html</div>
+            </div>
+
+            <!-- Template 2: Guest Mode -->
+            <div class="push-template-card" onclick="fillPushTemplate('guest-mode')" style="
+              background:rgba(96,165,250,0.06);border:1px solid rgba(96,165,250,0.2);
+              border-radius:14px;padding:16px;cursor:pointer;transition:all 0.2s;"
+              onmouseenter="this.style.background='rgba(96,165,250,0.12)'" onmouseleave="this.style.background='rgba(96,165,250,0.06)'">
+              <div style="font-size:20px;margin-bottom:8px;">🚀</div>
+              <div style="font-size:13px;font-weight:700;color:#fff;margin-bottom:4px;">Guest Mode — No Sign-up</div>
+              <div style="font-size:11px;color:var(--text-sub);line-height:1.6;">
+                "Try 5 AI prompts FREE — no account needed! Come back and start creating."
+              </div>
+              <div style="margin-top:10px;font-size:10px;color:var(--blue);font-weight:600;">→ /write.html</div>
+            </div>
+
+            <!-- Template 3: Product Tour -->
+            <div class="push-template-card" onclick="fillPushTemplate('product-tour')" style="
+              background:rgba(34,197,94,0.06);border:1px solid rgba(34,197,94,0.2);
+              border-radius:14px;padding:16px;cursor:pointer;transition:all 0.2s;"
+              onmouseenter="this.style.background='rgba(34,197,94,0.12)'" onmouseleave="this.style.background='rgba(34,197,94,0.06)'">
+              <div style="font-size:20px;margin-bottom:8px;">👋</div>
+              <div style="font-size:13px;font-weight:700;color:#fff;margin-bottom:4px;">Guided Product Tour</div>
+              <div style="font-size:11px;color:var(--text-sub);line-height:1.6;">
+                "Did you see everything? Take our 2-minute guided tour of all Clarix features!"
+              </div>
+              <div style="margin-top:10px;font-size:10px;color:var(--green);font-weight:600;">→ /apps.html</div>
+            </div>
+
+            <!-- Template 4: Weekly Inspire -->
+            <div class="push-template-card" onclick="fillPushTemplate('inspire')" style="
+              background:rgba(168,85,247,0.06);border:1px solid rgba(168,85,247,0.2);
+              border-radius:14px;padding:16px;cursor:pointer;transition:all 0.2s;"
+              onmouseenter="this.style.background='rgba(168,85,247,0.12)'" onmouseleave="this.style.background='rgba(168,85,247,0.06)'">
+              <div style="font-size:20px;margin-bottom:8px;">✨</div>
+              <div style="font-size:13px;font-weight:700;color:#fff;margin-bottom:4px;">InspireMe Gallery</div>
+              <div style="font-size:11px;color:var(--text-sub);line-height:1.6;">
+                "Fresh cinematic prompts just added! Browse India's best AI creative gallery."
+              </div>
+              <div style="margin-top:10px;font-size:10px;color:#a855f7;font-weight:600;">→ /inspire.html</div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Compose Notification -->
+        <div class="panel" style="margin-bottom:20px;">
+          <div class="panel-header">
+            <div class="panel-title">✍️ Compose Notification</div>
+            <div class="panel-sub">Customize and preview before sending</div>
+          </div>
+          <div style="padding:20px;display:grid;gap:14px;">
+
+            <!-- Title -->
+            <div>
+              <label style="font-size:12px;font-weight:600;color:var(--text-sub);display:block;margin-bottom:6px;">Notification Title</label>
+              <input id="pushTitle" type="text" placeholder="e.g. ✨ New: Creative Studios!" maxlength="80"
+                style="width:100%;background:rgba(255,255,255,0.05);border:1px solid var(--border);
+                       border-radius:10px;padding:10px 14px;color:#fff;font-size:13px;
+                       font-family:inherit;outline:none;transition:border-color 0.2s;"
+                onfocus="this.style.borderColor='rgba(255,112,67,0.5)'" onblur="this.style.borderColor='var(--border)'"
+                oninput="updatePushPreview()">
+            </div>
+
+            <!-- Body -->
+            <div>
+              <label style="font-size:12px;font-weight:600;color:var(--text-sub);display:block;margin-bottom:6px;">Message Body</label>
+              <textarea id="pushBody" rows="2" placeholder="e.g. Write kids stories, corporate emails & more — try it free!" maxlength="150"
+                style="width:100%;background:rgba(255,255,255,0.05);border:1px solid var(--border);
+                       border-radius:10px;padding:10px 14px;color:#fff;font-size:13px;
+                       font-family:inherit;outline:none;resize:vertical;transition:border-color 0.2s;"
+                onfocus="this.style.borderColor='rgba(255,112,67,0.5)'" onblur="this.style.borderColor='var(--border)'"
+                oninput="updatePushPreview()"></textarea>
+            </div>
+
+            <!-- Target URL -->
+            <div>
+              <label style="font-size:12px;font-weight:600;color:var(--text-sub);display:block;margin-bottom:6px;">Opens This Page</label>
+              <select id="pushUrl"
+                style="width:100%;background:rgba(255,255,255,0.05);border:1px solid var(--border);
+                       border-radius:10px;padding:10px 14px;color:#fff;font-size:13px;
+                       font-family:inherit;outline:none;cursor:pointer;"
+                onchange="updatePushPreview()">
+                <option value="https://clarix.digital/">🏠 Home Page</option>
+                <option value="https://clarix.digital/write.html">✍️ Write — AI Prompt Writer</option>
+                <option value="https://clarix.digital/apps.html">🎨 Apps — Creative Studios</option>
+                <option value="https://clarix.digital/inspire.html">✨ InspireMe Gallery</option>
+                <option value="https://clarix.digital/library.html">📚 Community Library</option>
+              </select>
+            </div>
+
+            <!-- Live Preview -->
+            <div>
+              <label style="font-size:12px;font-weight:600;color:var(--text-sub);display:block;margin-bottom:8px;">Preview</label>
+              <div style="background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:12px;padding:14px;">
+                <div style="display:flex;align-items:flex-start;gap:10px;">
+                  <div style="width:40px;height:40px;border-radius:10px;background:linear-gradient(135deg,#ff7043,#e64a19);
+                              flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:18px;">✦</div>
+                  <div style="flex:1;">
+                    <div id="previewTitle" style="font-size:13px;font-weight:700;color:#fff;margin-bottom:2px;">Tap a template or type a title…</div>
+                    <div id="previewBody"  style="font-size:12px;color:var(--text-sub);line-height:1.5;">Your message will appear here</div>
+                    <div style="font-size:10px;color:var(--text-dim);margin-top:4px;">clarix.digital · now</div>
+                  </div>
+                </div>
+                <div style="display:flex;gap:8px;margin-top:10px;">
+                  <div style="flex:1;text-align:center;padding:6px;background:rgba(255,255,255,0.05);
+                              border-radius:6px;font-size:11px;color:var(--text-sub);">Dismiss</div>
+                  <div style="flex:1;text-align:center;padding:6px;background:rgba(255,112,67,0.1);
+                              border-radius:6px;font-size:11px;color:var(--accent);font-weight:600;">Explore Now</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Send Button -->
+            <button id="pushSendBtn" onclick="sendPushNotification()"
+              style="width:100%;height:48px;background:linear-gradient(135deg,#ff7043,#e64a19);
+                     border:none;border-radius:12px;color:#fff;font-size:15px;font-weight:800;
+                     cursor:pointer;box-shadow:0 4px 20px rgba(255,112,67,0.35);
+                     transition:opacity 0.2s;font-family:inherit;">
+              📢 Send to All Subscribers
+            </button>
+          </div>
+        </div>
+
+        <!-- Campaign History -->
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-title">📋 Campaign History</div>
+            <div class="panel-sub">Last 10 notifications sent</div>
+          </div>
+          <div id="pushCampaignList" style="padding:16px;">
+            <div style="text-align:center;padding:24px;color:var(--text-dim);font-size:13px;">Loading…</div>
+          </div>
+        </div>
+      </div>
+
       <!-- ════════════════════════════════════
            SECTION: DANGER ZONE
       ════════════════════════════════════ -->
@@ -790,6 +968,123 @@
     } catch (e) {
       showToast('\u274c Error: ' + e.message, 'error');
     }
+  }
+</script>
+
+<script>
+  /* ════════════════════════════════════════════
+     PUSH NOTIFICATION ADMIN FUNCTIONS
+  ════════════════════════════════════════════ */
+
+  const PUSH_TEMPLATES = {
+    'creative-studios': {
+      title: '\uD83C\uDFA8 New: Creative Studios!',
+      body:  'Write kids stories, corporate emails, cultural content & more \u2014 try it free!',
+      url:   'https://clarix.digital/apps.html'
+    },
+    'guest-mode': {
+      title: '\uD83D\uDE80 No sign-up needed!',
+      body:  'Try 5 AI prompts FREE right now \u2014 no account required. Come back and create!',
+      url:   'https://clarix.digital/write.html'
+    },
+    'product-tour': {
+      title: '\uD83D\uDC4B Did you see everything?',
+      body:  'Clarix has a guided tour! Explore all features in 2 minutes \u2014 tap to start.',
+      url:   'https://clarix.digital/apps.html'
+    },
+    'inspire': {
+      title: '\u2728 Fresh prompts just added!',
+      body:  "Browse India's best AI creative gallery. New cinematic prompts are waiting!",
+      url:   'https://clarix.digital/inspire.html'
+    }
+  };
+
+  function fillPushTemplate(key) {
+    const t = PUSH_TEMPLATES[key];
+    if (!t) return;
+    document.getElementById('pushTitle').value = t.title;
+    document.getElementById('pushBody').value  = t.body;
+    const sel = document.getElementById('pushUrl');
+    for (let i = 0; i < sel.options.length; i++) {
+      if (sel.options[i].value === t.url) { sel.selectedIndex = i; break; }
+    }
+    updatePushPreview();
+  }
+
+  function updatePushPreview() {
+    const title = document.getElementById('pushTitle').value || 'Tap a template or type a title\u2026';
+    const body  = document.getElementById('pushBody').value  || 'Your message will appear here';
+    document.getElementById('previewTitle').textContent = title;
+    document.getElementById('previewBody').textContent  = body;
+  }
+
+  async function sendPushNotification() {
+    const title = (document.getElementById('pushTitle').value || '').trim();
+    const body  = (document.getElementById('pushBody').value  || '').trim();
+    const url   = document.getElementById('pushUrl').value;
+    if (!title || !body) { showToast('\u26a0\ufe0f Please fill in Title and Message.', 'error'); return; }
+    if (!confirm('Send to ALL subscribers?\n\nTitle: ' + title + '\nBody: ' + body)) return;
+
+    const btn = document.getElementById('pushSendBtn');
+    btn.textContent = '\u23f3 Sending\u2026';
+    btn.style.opacity = '0.6';
+    btn.disabled = true;
+
+    try {
+      const resp = await fetch('/api/send-push', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ secret: 'clarix-admin-2024', title, body, url, icon: '/icons/icon-192.png' })
+      });
+      const data = await resp.json();
+      if (data.success) {
+        showToast('\u2705 Sent to ' + data.sent + ' subscribers! (' + data.failed + ' failed)', 'success');
+        loadPushStats();
+      } else {
+        showToast('\u274c ' + (data.error || 'Send failed'), 'error');
+      }
+    } catch (e) {
+      showToast('\u274c Error: ' + e.message, 'error');
+    } finally {
+      btn.textContent = '\uD83D\uDCE2 Send to All Subscribers';
+      btn.style.opacity = '1';
+      btn.disabled = false;
+    }
+  }
+
+  async function loadPushStats() {
+    try {
+      const resp = await fetch('/api/push-stats?secret=clarix-admin-2024');
+      const data = await resp.json();
+      if (!data.success) return;
+      const countEl = document.getElementById('pushSubCount');
+      if (countEl) countEl.textContent = '\uD83D\uDC65 ' + data.subscribers + ' Subscriber' + (data.subscribers !== 1 ? 's' : '');
+      renderCampaigns(data.campaigns || []);
+    } catch (e) { console.warn('[PushStats]', e.message); }
+  }
+
+  function renderCampaigns(campaigns) {
+    const el = document.getElementById('pushCampaignList');
+    if (!el) return;
+    if (!campaigns.length) {
+      el.innerHTML = '<div style="text-align:center;padding:24px;color:var(--text-dim);font-size:13px;">\uD83D\uDCE4 No campaigns sent yet. Send your first one above!</div>';
+      return;
+    }
+    el.innerHTML = campaigns.map(function(c) {
+      const date = c.sentAt ? new Date(c.sentAt).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' }) : '\u2014';
+      const rate  = c.total > 0 ? Math.round((c.sent / c.total) * 100) : 0;
+      return '<div style="padding:14px 0;border-bottom:1px solid rgba(255,255,255,0.05);">'
+           + '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;">'
+           + '<div style="flex:1;min-width:0;">'
+           + '<div style="font-size:13px;font-weight:700;color:#fff;margin-bottom:3px;">' + c.title + '</div>'
+           + '<div style="font-size:12px;color:var(--text-sub);margin-bottom:4px;">' + c.body + '</div>'
+           + '<div style="font-size:11px;color:var(--text-dim);">' + date + '</div>'
+           + '</div>'
+           + '<div style="text-align:right;flex-shrink:0;">'
+           + '<div style="font-size:13px;font-weight:700;color:var(--green);">' + c.sent + '/' + c.total + '</div>'
+           + '<div style="font-size:10px;color:var(--text-dim);">' + rate + '% delivered</div>'
+           + '</div></div></div>';
+    }).join('');
   }
 </script>
 <script src="/js/pages/admin.js"></script>
