@@ -9,8 +9,8 @@
    before Firebase SDK even loads. No delay. */
 ;(function clarixImmediateGate() {
   var PROTECTED = [
-    '/write','/write.html','/inspire','/inspire.html','/library','/library.html',
-    '/apps','/apps.html','/history','/history.html','/profile','/profile.html',
+    '/library','/library.html',
+    '/history','/history.html','/profile','/profile.html',
     '/breakdown','/breakdown.html','/community','/community.html'
   ];
   var path = window.location.pathname.replace(/\/$/, '') || '/';

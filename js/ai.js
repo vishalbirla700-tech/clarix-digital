@@ -526,7 +526,14 @@ async function enhancePrompt(text, platform, mode, langCode, langName, socialPla
   langName       = langName       || 'English';
   socialPlatform = socialPlatform || '';
 
-  if (!ClarixState.canEnhance()) { UpgradeModal.show('Daily limit reached'); return null; }
+  /* ── Guest mode: 5 free prompts without login ── */
+  var _isGuest = typeof GuestMode !== 'undefined' && GuestMode.isGuest();
+  if (_isGuest) {
+    if (!GuestMode.canUse()) { GuestMode.showLimit(); return null; }
+  } else if (!ClarixState.canEnhance()) {
+    UpgradeModal.show('Daily limit reached');
+    return null;
+  }
 
   const intent = detectIntent(text);
 
@@ -618,6 +625,11 @@ async function enhancePrompt(text, platform, mode, langCode, langName, socialPla
 
   result.intent  = intent;
   result._engine = engineUsed;
+
+  /* Count guest usage */
+  if (_isGuest && result && typeof GuestMode !== 'undefined') {
+    GuestMode.inc();
+  }
 
   if (engineUsed !== 'Local') {
     Toast.show('✦ Enhanced by Clarix AI', 'success', 2000);
