@@ -195,3 +195,228 @@
 .onboard-done-name {
   color: var(--accent); font-family: var(--font-head); font-weight: 800;
 }
+
+/* ═══════════════════════════════════════════════════════════
+   CLARIX — PRODUCT TOUR
+   Spotlight overlay + tooltip + animated hand pointer
+═══════════════════════════════════════════════════════════ */
+
+/* Root container */
+#clarix-tour-root { position: fixed; inset: 0; z-index: 200000; pointer-events: none; }
+
+/* ── Spotlight overlay ── */
+.ct-overlay { position: fixed; inset: 0; pointer-events: all; }
+.ct-quad {
+  position: fixed;
+  background: rgba(0, 0, 0, 0.72);
+  backdrop-filter: blur(1px);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ── Tooltip bubble ── */
+.ct-tooltip {
+  position: fixed;
+  background: #0f0f0f;
+  border: 1px solid rgba(255, 112, 67, 0.35);
+  border-radius: 18px;
+  box-shadow:
+    0 24px 60px rgba(0, 0, 0, 0.7),
+    0 0 0 1px rgba(255,112,67,0.08),
+    inset 0 1px 0 rgba(255,255,255,0.06);
+  pointer-events: all;
+  z-index: 200002;
+  max-width: 300px;
+  min-width: 240px;
+  overflow: hidden;
+}
+
+.ct-tooltip::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255,112,67,0.06) 0%, transparent 60%);
+  border-radius: inherit;
+  pointer-events: none;
+}
+
+/* Arrow variants */
+.ct-tooltip-arrow {
+  display: none; /* Hidden; we use CSS-only placement instead */
+}
+
+.ct-tooltip-inner {
+  padding: 22px 20px 18px;
+}
+
+.ct-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.ct-title {
+  font-family: var(--font-head, 'Outfit', sans-serif);
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--accent, #ff7043);
+  line-height: 1.3;
+  flex: 1;
+}
+
+.ct-skip-btn {
+  font-size: 11px;
+  color: rgba(255,255,255,0.3);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 6px;
+  flex-shrink: 0;
+  font-family: var(--font-body, 'DM Sans', sans-serif);
+  transition: color 0.2s;
+}
+.ct-skip-btn:hover { color: rgba(255,255,255,0.6); }
+
+.ct-body {
+  font-size: 13px;
+  color: rgba(255,255,255,0.72);
+  line-height: 1.65;
+  margin-bottom: 18px;
+}
+
+.ct-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+/* Step dots */
+.ct-dots {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+.ct-dot {
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.15);
+  transition: all 0.3s ease;
+}
+.ct-dot.active {
+  background: var(--accent, #ff7043);
+  width: 14px;
+  border-radius: 3px;
+}
+
+/* Nav buttons */
+.ct-nav { display: flex; gap: 6px; }
+.ct-btn {
+  padding: 8px 16px;
+  border-radius: 24px;
+  font-size: 12px;
+  font-weight: 700;
+  font-family: var(--font-body, 'DM Sans', sans-serif);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+}
+.ct-btn-prev {
+  background: rgba(255,255,255,0.06);
+  color: rgba(255,255,255,0.5);
+  border: 1px solid rgba(255,255,255,0.1);
+}
+.ct-btn-prev:hover { background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.75); }
+
+.ct-btn-next {
+  background: linear-gradient(135deg, var(--accent, #ff7043), #ff9800);
+  color: #fff;
+  box-shadow: 0 4px 16px rgba(255,112,67,0.4);
+}
+.ct-btn-next:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 24px rgba(255,112,67,0.55);
+}
+
+/* ── Animated hand pointer ── */
+.ct-hand {
+  position: fixed;
+  width: 42px;
+  height: 52px;
+  z-index: 200003;
+  pointer-events: none;
+  filter: drop-shadow(0 4px 12px rgba(255,112,67,0.5));
+}
+
+/* Hand ripple pulse effect */
+.ct-hand-ripple {
+  position: absolute;
+  bottom: -4px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: rgba(255, 112, 67, 0.3);
+  animation: ct-ripple 1.4s ease-out infinite;
+}
+
+/* Hand animation variants */
+.ct-hand-tap { animation: ct-tap 1.1s ease-in-out infinite; }
+.ct-hand-point-down { animation: ct-bounce-down 1.2s ease-in-out infinite; }
+.ct-hand-point-right { animation: ct-bounce-right 1.2s ease-in-out infinite; transform: rotate(-90deg); }
+.ct-hand-point-left  { animation: ct-bounce-left 1.2s ease-in-out infinite; transform: rotate(90deg) scaleX(-1); }
+
+/* ── Keyframes ── */
+@keyframes ct-ripple {
+  0%   { transform: translateX(-50%) scale(1);   opacity: 0.6; }
+  100% { transform: translateX(-50%) scale(2.8); opacity: 0; }
+}
+
+@keyframes ct-tap {
+  0%, 100% { transform: scale(1) translateY(0); }
+  50%       { transform: scale(0.88) translateY(5px); }
+}
+
+@keyframes ct-bounce-down {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(10px); }
+}
+
+@keyframes ct-bounce-right {
+  0%, 100% { transform: rotate(-90deg) translateY(0); }
+  50%       { transform: rotate(-90deg) translateY(10px); }
+}
+
+@keyframes ct-bounce-left {
+  0%, 100% { transform: rotate(90deg) scaleX(-1) translateY(0); }
+  50%       { transform: rotate(90deg) scaleX(-1) translateY(10px); }
+}
+
+/* ── Spotlight ring glow around target ── */
+.ct-target-glow {
+  outline: 2.5px solid rgba(255,112,67,0.7) !important;
+  outline-offset: 10px !important;
+  border-radius: 10px;
+  box-shadow: 0 0 0 4px rgba(255,112,67,0.12), 0 0 24px rgba(255,112,67,0.25) !important;
+  transition: outline 0.3s ease, box-shadow 0.3s ease !important;
+  position: relative;
+  z-index: 200001;
+}
+
+/* ── Mobile adjustments ── */
+@media (max-width: 600px) {
+  .ct-tooltip {
+    min-width: 200px;
+    max-width: calc(100vw - 32px);
+    border-radius: 14px;
+  }
+  .ct-tooltip-inner { padding: 16px 14px 14px; }
+  .ct-title  { font-size: 13px; }
+  .ct-body   { font-size: 12px; margin-bottom: 14px; }
+  .ct-btn    { padding: 7px 12px; font-size: 11px; }
+  .ct-hand   { width: 34px; height: 42px; }
+}
+
