@@ -2387,6 +2387,13 @@ async function promptDocAnalyzer(context) {
   /* Build statistical context from real Excel data */
   var statsContext = _buildStatsContext();
 
+  /* ▶ Finance industry: use banking-specific prompt with pre-calculated ratios */
+  if (industry === 'finance') {
+    var finRatios = calcFinancialRatios(docDirectChartData);
+    var finPrompt = _buildFinancePrompt(finRatios, statsContext, textSample, context, tone, truncated);
+    return groqCall(null, null, finPrompt);
+  }
+
   var p = _buildIndustryPrompt(industry, statsContext, textSample, context, tone, truncated);
   return groqCall(null, null, p);
 }
@@ -2395,6 +2402,13 @@ async function promptDocAnalyzer(context) {
 function renderDocAnalyzerOutput(result) {
   _currentDocResult   = result;
   _currentDocSlideIdx = 0;
+
+  /* Route finance data to specialist Banking & Finance renderer */
+  var _industry = (docDirectChartData && docDirectChartData.industry) || '';
+  if (_industry === 'finance') {
+    renderBankingOutput(result);
+    return;
+  }
 
   /* Apply manual chart type override */
   if (docChartMode !== 'auto' && result.chartData) result.chartData.type = docChartMode;
@@ -3236,7 +3250,605 @@ async function shareDocAnalysis(btn) {
   }
 }
 
-/* â”€â”€ Init â”€â”€ */
+/* ═══════════════════════════════════════════════════════════════
+   BANKING & FINANCE INTELLIGENCE ENGINE  (Phase 3)
+   Activated when industry === 'finance' detected from Excel headers
+═══════════════════════════════════════════════════════════════ */
+
+/* ── RBI Benchmark Norms (fixed v1) ── */
+var FINANCE_BENCHMARKS = {
+  'Net Profit Margin':  { good: 15,  warn: 8,   unit: '%',  dir: 'up',   label: 'Industry norm > 15%' },
+  'Revenue CAGR':       { good: 10,  warn: 5,   unit: '%',  dir: 'up',   label: 'Healthy > 10% CAGR' },
+  'ROE':                { good: 15,  warn: 8,   unit: '%',  dir: 'up',   label: 'Industry norm > 15%' },
+  'Current Ratio':      { good: 1.5, warn: 1.0, unit: 'x',  dir: 'up',   label: 'Safe > 1.5x' },
+  'Debt-Equity Ratio':  { good: 2.0, warn: 3.0, unit: 'x',  dir: 'down', label: 'Conservative < 2x' },
+  'NPA %':              { good: 3,   warn: 6,   unit: '%',  dir: 'down', label: 'RBI norm < 3%' },
+  'CRAR %':             { good: 15,  warn: 11,  unit: '%',  dir: 'up',   label: 'RBI minimum > 11%' },
+  'YoY Revenue Growth': { good: 10,  warn: 0,   unit: '%',  dir: 'up',   label: 'Healthy > 10%' }
+};
+
+/* ── Benchmark status: 'good' | 'warn' | 'bad' | 'na' ── */
+function _getBenchmarkStatus(ratioName, value) {
+  var bm = FINANCE_BENCHMARKS[ratioName];
+  if (!bm || value === null || isNaN(value)) return 'na';
+  var v = parseFloat(value);
+  if (bm.dir === 'up') {
+    if (v >= bm.good) return 'good';
+    if (v >= bm.warn) return 'warn';
+    return 'bad';
+  } else {
+    if (v <= bm.good) return 'good';
+    if (v <= bm.warn) return 'warn';
+    return 'bad';
+  }
+}
+
+/* ── Financial Ratio Calculator (pure JS, uses docDirectChartData) ── */
+function calcFinancialRatios(chartData) {
+  if (!chartData || !chartData.datasets || chartData.datasets.length === 0) return null;
+  var ds = chartData.datasets;
+  var labels = chartData.labels || [];
+
+  function findCol(keywords) {
+    var kw = Array.isArray(keywords) ? keywords : [keywords];
+    for (var i = 0; i < ds.length; i++) {
+      var lbl = (ds[i].label || '').toLowerCase();
+      for (var j = 0; j < kw.length; j++) {
+        if (lbl.indexOf(kw[j].toLowerCase()) >= 0) return ds[i];
+      }
+    }
+    return null;
+  }
+
+  var revCol    = findCol(['revenue', 'income', 'sales', 'turnover', 'total income']);
+  var profCol   = findCol(['net profit', 'pat', 'profit after tax', 'net income', 'profit']);
+  var ebitdaCol = findCol(['ebitda', 'operating profit', 'ebit', 'gross profit']);
+  var equityCol = findCol(['equity', 'net worth', 'shareholders']);
+  var debtCol   = findCol(['debt', 'borrowing', 'loan', 'total liabilities']);
+  var caCol     = findCol(['current asset', 'current assets']);
+  var clCol     = findCol(['current liab', 'current liabilities']);
+  var npaCol    = findCol(['npa', 'gnpa', 'non performing']);
+  var loanCol   = findCol(['advances', 'total loan', 'total credit', 'total advances']);
+  var crarCol   = findCol(['crar', 'capital adequacy', 'car']);
+
+  var ratios = [];
+  var nYears = ds[0] ? ds[0].data.length : 0;
+  var yearsDetected = labels.slice(0, nYears).map(String);
+
+  function val(col, idx) {
+    if (!col || col.data[idx] === undefined) return null;
+    var v = parseFloat(col.data[idx]);
+    return isNaN(v) ? null : v;
+  }
+
+  /* Revenue CAGR */
+  if (revCol && nYears >= 2) {
+    var r0 = val(revCol, 0), rN = val(revCol, nYears - 1);
+    if (r0 && rN && r0 > 0) {
+      var cagr = (Math.pow(rN / r0, 1 / (nYears - 1)) - 1) * 100;
+      ratios.push({ name: 'Revenue CAGR', value: cagr.toFixed(1), unit: '%', raw: cagr,
+        note: yearsDetected[0] + ' to ' + yearsDetected[nYears - 1] });
+    }
+  }
+
+  /* YoY Revenue Growth */
+  if (revCol && nYears >= 2) {
+    var rv1 = val(revCol, nYears - 2), rv2 = val(revCol, nYears - 1);
+    if (rv1 && rv2 && rv1 > 0) {
+      var yoy = ((rv2 - rv1) / rv1) * 100;
+      ratios.push({ name: 'YoY Revenue Growth', value: yoy.toFixed(1), unit: '%', raw: yoy,
+        note: 'Latest year vs prior' });
+    }
+  }
+
+  /* Net Profit Margin */
+  if (revCol && profCol && nYears >= 1) {
+    var lastRev = val(revCol, nYears - 1), lastProf = val(profCol, nYears - 1);
+    if (lastRev && lastProf) {
+      var npm = (lastProf / lastRev) * 100;
+      ratios.push({ name: 'Net Profit Margin', value: npm.toFixed(1), unit: '%', raw: npm, note: 'Latest year' });
+    }
+  }
+
+  /* ROE */
+  if (profCol && equityCol && nYears >= 1) {
+    var lp = val(profCol, nYears - 1), le = val(equityCol, nYears - 1);
+    if (lp && le && le > 0) {
+      var roe = (lp / le) * 100;
+      ratios.push({ name: 'ROE', value: roe.toFixed(1), unit: '%', raw: roe, note: 'Return on Equity' });
+    }
+  }
+
+  /* Debt-Equity */
+  if (debtCol && equityCol && nYears >= 1) {
+    var ld = val(debtCol, nYears - 1), leq = val(equityCol, nYears - 1);
+    if (ld !== null && leq && leq > 0) {
+      var de = ld / leq;
+      ratios.push({ name: 'Debt-Equity Ratio', value: de.toFixed(2), unit: 'x', raw: de, note: 'Latest year' });
+    }
+  }
+
+  /* Current Ratio */
+  if (caCol && clCol && nYears >= 1) {
+    var lca = val(caCol, nYears - 1), lcl = val(clCol, nYears - 1);
+    if (lca && lcl && lcl > 0) {
+      var cr = lca / lcl;
+      ratios.push({ name: 'Current Ratio', value: cr.toFixed(2), unit: 'x', raw: cr, note: 'Liquidity measure' });
+    }
+  }
+
+  /* NPA % */
+  if (npaCol && loanCol && nYears >= 1) {
+    var ln = val(npaCol, nYears - 1), ll = val(loanCol, nYears - 1);
+    if (ln !== null && ll && ll > 0) {
+      var npa = (ln / ll) * 100;
+      ratios.push({ name: 'NPA %', value: npa.toFixed(2), unit: '%', raw: npa, note: 'RBI norm < 3%' });
+    }
+  }
+
+  /* CRAR */
+  if (crarCol && nYears >= 1) {
+    var lc = val(crarCol, nYears - 1);
+    if (lc !== null) {
+      ratios.push({ name: 'CRAR %', value: lc.toFixed(2), unit: '%', raw: lc, note: 'RBI minimum 11%' });
+    }
+  }
+
+  /* Time series for charts */
+  var timeSeries = { years: yearsDetected };
+  if (revCol)    timeSeries.revenue = revCol.data.slice(0, nYears);
+  if (profCol)   timeSeries.profit  = profCol.data.slice(0, nYears);
+  if (ebitdaCol) timeSeries.ebitda  = ebitdaCol.data.slice(0, nYears);
+
+  /* Waterfall (latest year) */
+  var waterfall = [];
+  if (revCol) {
+    var rev = val(revCol, nYears - 1);
+    if (rev) waterfall.push({ label: 'Revenue', value: rev, type: 'start' });
+  }
+  if (ebitdaCol) {
+    var revV = revCol ? val(revCol, nYears - 1) : null;
+    var eV   = val(ebitdaCol, nYears - 1);
+    if (revV && eV) {
+      waterfall.push({ label: 'EBITDA', value: eV, type: 'positive' });
+      waterfall.push({ label: 'Operating Costs', value: -(revV - eV), type: 'negative' });
+    }
+  }
+  if (profCol) {
+    var pV = val(profCol, nYears - 1);
+    if (pV !== null) waterfall.push({ label: 'Net Profit', value: pV, type: 'end' });
+  }
+
+  return {
+    ratios: ratios,
+    yearsDetected: timeSeries.years,
+    timeSeries: timeSeries,
+    waterfall: waterfall,
+    columnsFound: {
+      revenue: !!revCol, profit: !!profCol, equity: !!equityCol,
+      debt: !!debtCol, ebitda: !!ebitdaCol, npa: !!npaCol
+    }
+  };
+}
+
+/* ── Finance-enriched AI prompt builder ── */
+function _buildFinancePrompt(ratios, statsContext, textSample, context, tone, truncated) {
+  var ratioSummary = '';
+  if (ratios && ratios.ratios.length > 0) {
+    ratioSummary = '\n=== PRE-CALCULATED FINANCIAL RATIOS (use exact numbers) ===\n';
+    ratios.ratios.forEach(function(r) {
+      var st = _getBenchmarkStatus(r.name, r.raw);
+      var flag = st === 'good' ? 'PASS' : st === 'warn' ? 'CAUTION' : st === 'bad' ? 'FLAG' : '';
+      var bm = FINANCE_BENCHMARKS[r.name];
+      var benchmark = bm ? ' (Benchmark: ' + bm.label + ')' : '';
+      ratioSummary += '  ' + r.name + ': ' + r.value + r.unit + '  [' + flag + ']' + benchmark + '\n';
+    });
+    ratioSummary += 'Period: ' + (ratios.yearsDetected[0] || '') + ' to ' + (ratios.yearsDetected[ratios.yearsDetected.length - 1] || '') + ' (' + ratios.yearsDetected.length + ' years)\n\n';
+  }
+  var p = 'You are a Chartered Accountant (CA) and Senior Credit Analyst specialising in corporate banking and investment analysis.\n\n';
+  if (ratioSummary) {
+    p += ratioSummary;
+    p += 'IMPORTANT: The ratios above are CALCULATED FROM ACTUAL EXCEL DATA. Reference specific numbers.\n\n';
+  }
+  if (statsContext) p += '=== RAW DATA SUMMARY ===\n' + statsContext + '\n\n';
+  p += '=== FINANCIAL DATA ===\n' + textSample + '\n';
+  if (truncated) p += '[Data continues - excerpt shown]\n';
+  if (context) p += '\nUser notes: "' + context + '"\n';
+  p += '\nTone: ' + tone + '\n\n';
+  p += 'Provide expert CREDIT ANALYST analysis (2-3 sentences each point):\n';
+  p += '1. EXECUTIVE SUMMARY - overall financial health referencing specific ratio numbers\n';
+  p += '2. KEY RATIOS - comment on each calculated ratio vs benchmark\n';
+  p += '3. TREND ANALYSIS - revenue, profit, key metric trajectories\n';
+  p += '4. RED FLAGS - 2-3 concerns from the numbers\n';
+  p += '5. STRENGTHS - 2-3 positive indicators\n';
+  p += '6. CREDIT/INVESTMENT RECOMMENDATION - clear actionable verdict\n';
+  p += '\nReturn ONLY valid JSON:\n';
+  p += '{"title":"concise report title max 8 words",';
+  p += '"summary":"3-sentence expert executive summary with specific ratio numbers",';
+  p += '"keyPoints":["ratio finding 1","ratio finding 2","trend finding 3","red flag 4","strength 5"],';
+  p += '"stats":[{"label":"Net Profit Margin","value":"XX.X%","trend":"up"},{"label":"Revenue CAGR","value":"X.X%","trend":"up"},{"label":"ROE","value":"XX%","trend":"neutral"}],';
+  p += '"recommendations":["specific credit action 1","action 2","action 3","action 4"],';
+  p += '"hashtags":["#Finance","#CreditAnalysis","#Banking","#Investment","#FinancialHealth"]}';
+  p += '\n\nCRITICAL: Use pre-calculated ratios. Do NOT fabricate numbers.';
+  return p;
+}
+
+/* ── KPI Cards renderer ── */
+function renderFinanceKPICards(container, ratios) {
+  if (!ratios || ratios.ratios.length === 0) {
+    container.innerHTML = '<div style="color:rgba(255,255,255,0.4);font-size:13px;padding:16px 0">Upload an Excel with financial columns (Revenue, Profit, Equity, NPA) to calculate live ratios.</div>';
+    return;
+  }
+  var icons   = { good: '\u2705', warn: '\u26a0\ufe0f', bad: '\u274c', na: '\u2014' };
+  var colors  = { good: '#4ade80', warn: '#fbbf24', bad: '#f87171', na: 'rgba(255,255,255,0.4)' };
+  var borders = { good: 'rgba(74,222,128,0.3)', warn: 'rgba(251,191,36,0.3)', bad: 'rgba(248,113,113,0.3)', na: 'rgba(255,255,255,0.1)' };
+
+  var html = '<div class="fin-kpi-grid">';
+  ratios.ratios.forEach(function(r) {
+    var st  = _getBenchmarkStatus(r.name, r.raw);
+    var bm  = FINANCE_BENCHMARKS[r.name];
+    var bmNote = bm ? bm.label : (r.note || '');
+    html += '<div class="fin-kpi-card" style="border-color:' + borders[st] + '">'
+      + '<div class="fin-kpi-status">' + (icons[st] || '\u2014') + '</div>'
+      + '<div class="fin-kpi-value" style="color:' + colors[st] + '">' + r.value + r.unit + '</div>'
+      + '<div class="fin-kpi-name">' + r.name + '</div>'
+      + '<div class="fin-kpi-bm">' + bmNote + '</div>'
+      + '</div>';
+  });
+  html += '</div>';
+
+  /* Columns found note */
+  if (ratios.columnsFound) {
+    var cf = ratios.columnsFound;
+    var found = [];
+    if (cf.revenue) found.push('Revenue');
+    if (cf.profit)  found.push('Profit');
+    if (cf.equity)  found.push('Equity');
+    if (cf.debt)    found.push('Debt');
+    if (cf.ebitda)  found.push('EBITDA');
+    if (cf.npa)     found.push('NPA');
+    if (found.length > 0) {
+      html += '<div class="fin-cols-found">\ud83d\udcca Detected: <strong>' + found.join(', ') + '</strong>';
+      if (ratios.yearsDetected.length >= 2) {
+        html += ' \u00b7 <span style="color:#4ade80">' + ratios.yearsDetected.length + ' years of data</span>';
+      } else {
+        html += ' \u00b7 <span style="color:#fbbf24">\u26a0\ufe0f Upload multi-year data for CAGR</span>';
+      }
+      html += '</div>';
+    }
+  }
+  container.innerHTML = html;
+}
+
+/* ── Format large financial numbers ── */
+function _fmtFinNum(v) {
+  if (v === null || v === undefined || isNaN(v)) return 'N/A';
+  var n = Math.abs(v), sign = v < 0 ? '-' : '';
+  if (n >= 1e7)  return sign + (n / 1e7).toFixed(1) + ' Cr';
+  if (n >= 1e5)  return sign + (n / 1e5).toFixed(1) + ' L';
+  if (n >= 1e3)  return sign + (n / 1e3).toFixed(1) + 'K';
+  return sign + n.toFixed(1);
+}
+
+/* ── Waterfall P&L Chart ── */
+async function renderWaterfallChart(canvasId, waterfallData) {
+  if (!window.Chart) await loadScript('https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js');
+  if (!window.ChartDataLabels) await loadScript('https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js');
+  var canvas = document.getElementById(canvasId);
+  if (!canvas || !waterfallData || waterfallData.length === 0) return;
+
+  var labels = [], bases = [], values = [], colors = [], running = 0;
+  waterfallData.forEach(function(item) {
+    labels.push(item.label);
+    if (item.type === 'start') {
+      bases.push(0); values.push(item.value); colors.push('rgba(255,112,67,0.85)'); running = item.value;
+    } else if (item.type === 'end') {
+      bases.push(0); values.push(item.value); colors.push('rgba(56,189,248,0.85)');
+    } else if (item.value >= 0) {
+      bases.push(running); values.push(item.value); colors.push('rgba(74,222,128,0.8)'); running += item.value;
+    } else {
+      running += item.value; bases.push(running); values.push(-item.value); colors.push('rgba(248,113,113,0.8)');
+    }
+  });
+
+  var existing = canvas._chartInstance;
+  if (existing) { existing.destroy(); canvas._chartInstance = null; }
+
+  try { Chart.register(ChartDataLabels); } catch(e) {}
+
+  canvas._chartInstance = new Chart(canvas, {
+    type: 'bar',
+    data: {
+      labels: labels,
+      datasets: [
+        { label: 'Base', data: bases, backgroundColor: 'transparent', borderWidth: 0,
+          datalabels: { display: false } },
+        { label: 'Value', data: values, backgroundColor: colors, borderRadius: 4, borderSkipped: false,
+          datalabels: { anchor: 'end', align: 'top', color: '#fff', font: { size: 11, weight: 'bold' },
+            formatter: function(v, ctx) {
+              var raw = waterfallData[ctx.dataIndex];
+              var sign = (raw && raw.value < 0) ? '-' : '';
+              return sign + _fmtFinNum(Math.abs(v));
+            }
+          }
+        }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: { callbacks: { label: function(ctx) {
+          var raw = waterfallData[ctx.dataIndex];
+          return raw ? (raw.label + ': ' + _fmtFinNum(Math.abs(raw.value))) : '';
+        }}}
+      },
+      scales: {
+        x: { stacked: true, ticks: { color: 'rgba(255,255,255,0.6)', font: { size: 10 } }, grid: { display: false } },
+        y: { stacked: true, ticks: { color: 'rgba(255,255,255,0.5)', font: { size: 9 },
+               callback: function(v) { return _fmtFinNum(v); } }, grid: { color: 'rgba(255,255,255,0.05)' } }
+      }
+    }
+  });
+}
+
+/* ── YoY Grouped Bar Chart ── */
+async function renderYoYGroupedBar(canvasId, timeSeries) {
+  if (!window.Chart) await loadScript('https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js');
+  var canvas = document.getElementById(canvasId);
+  if (!canvas || !timeSeries || !timeSeries.years || timeSeries.years.length === 0) return;
+
+  var palette = ['rgba(255,112,67,0.85)', 'rgba(56,189,248,0.85)', 'rgba(74,222,128,0.85)', 'rgba(251,191,36,0.85)'];
+  var datasets = [], pi = 0;
+  var showLabels = timeSeries.years.length <= 6;
+
+  if (timeSeries.revenue && timeSeries.revenue.length > 0) {
+    datasets.push({ label: 'Revenue', data: timeSeries.revenue, backgroundColor: palette[pi++ % palette.length],
+      borderRadius: 4,
+      datalabels: { display: showLabels, anchor: 'end', align: 'top', color: '#fff',
+        font: { size: 9, weight: 'bold' }, formatter: function(v) { return _fmtFinNum(v); } }
+    });
+  }
+  if (timeSeries.ebitda && timeSeries.ebitda.length > 0) {
+    datasets.push({ label: 'EBITDA', data: timeSeries.ebitda, backgroundColor: palette[pi++ % palette.length],
+      borderRadius: 4, datalabels: { display: false } });
+  }
+  if (timeSeries.profit && timeSeries.profit.length > 0) {
+    datasets.push({ label: 'Net Profit', data: timeSeries.profit, backgroundColor: palette[pi++ % palette.length],
+      borderRadius: 4, datalabels: { display: false } });
+  }
+  if (datasets.length === 0) return;
+
+  var existing = canvas._chartInstance;
+  if (existing) { existing.destroy(); canvas._chartInstance = null; }
+
+  try { Chart.register(ChartDataLabels); } catch(e) {}
+
+  canvas._chartInstance = new Chart(canvas, {
+    type: 'bar',
+    data: { labels: timeSeries.years, datasets: datasets },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: { labels: { color: 'rgba(255,255,255,0.65)', font: { size: 10 }, padding: 12 } },
+        tooltip: { callbacks: { label: function(ctx) { return ctx.dataset.label + ': ' + _fmtFinNum(ctx.parsed.y); } } }
+      },
+      scales: {
+        x: { ticks: { color: 'rgba(255,255,255,0.6)', font: { size: 10 } }, grid: { display: false } },
+        y: { ticks: { color: 'rgba(255,255,255,0.5)', font: { size: 9 },
+               callback: function(v) { return _fmtFinNum(v); } }, grid: { color: 'rgba(255,255,255,0.05)' } }
+      }
+    }
+  });
+}
+
+/* ── Build Banking Output HTML ── */
+function buildBankingOutputHTML(result, ratios) {
+  var title = result.title || 'Financial Intelligence Report';
+
+  var header = '<div class="fin-report-header">'
+    + '<div class="fin-report-badge">\ud83c\udfe6 Banking &amp; Finance Intelligence</div>'
+    + '<div class="fin-report-title">\u2728 ' + title + '</div>'
+    + (docFileName ? '<div class="fin-report-file">\ud83d\udcc4 ' + docFileName + '</div>' : '')
+    + '</div>';
+
+  var kpiSection = '<div class="fin-section">'
+    + '<div class="fin-section-heading">\ud83d\udcca Financial Ratios \u2014 Live Calculated vs RBI Benchmarks</div>'
+    + '<div id="finKpiCards"></div>'
+    + '</div>';
+
+  var hasWaterfall = ratios && ratios.waterfall && ratios.waterfall.length >= 2;
+  var hasYoY = ratios && ratios.timeSeries && ratios.yearsDetected && ratios.yearsDetected.length >= 2;
+
+  var chartsSection = '';
+  if (hasWaterfall || hasYoY) {
+    chartsSection = '<div class="fin-charts-row">';
+    if (hasWaterfall) {
+      chartsSection += '<div class="fin-chart-panel">'
+        + '<div class="fin-chart-title">\ud83c\udf0a P&amp;L Waterfall \u2014 Latest Year</div>'
+        + '<div class="fin-chart-wrap"><canvas id="finWaterfallChart"></canvas></div>'
+        + '</div>';
+    }
+    if (hasYoY) {
+      chartsSection += '<div class="fin-chart-panel">'
+        + '<div class="fin-chart-title">\ud83d\udcc8 Year-on-Year Comparison</div>'
+        + '<div class="fin-chart-wrap"><canvas id="finYoYChart"></canvas></div>'
+        + '</div>';
+    }
+    chartsSection += '</div>';
+  }
+
+  var kp   = result.keyPoints       || [];
+  var recs = result.recommendations || [];
+
+  var summarySection = '<div class="fin-section">'
+    + '<div class="fin-section-heading">\ud83e\udd16 AI Expert Analysis <span class="fin-badge-ca">Credit Analyst</span></div>'
+    + '<div class="fin-summary-box">' + (result.summary || '') + '</div>'
+    + '</div>';
+
+  var insightsSection = '';
+  if (kp.length > 0 || recs.length > 0) {
+    insightsSection = '<div class="fin-two-col">';
+    if (kp.length > 0) {
+      insightsSection += '<div class="fin-section"><div class="fin-section-heading">\ud83d\udd11 Key Findings</div>'
+        + '<ul class="fin-points-list">';
+      kp.forEach(function(p) { insightsSection += '<li>' + p + '</li>'; });
+      insightsSection += '</ul></div>';
+    }
+    if (recs.length > 0) {
+      insightsSection += '<div class="fin-section"><div class="fin-section-heading">\ud83c\udfaf Recommendations</div>'
+        + '<ol class="fin-recs-list">';
+      recs.forEach(function(r) { insightsSection += '<li>' + r + '</li>'; });
+      insightsSection += '</ol></div>';
+    }
+    insightsSection += '</div>';
+  }
+
+  var actSection = '<div class="doc-action-row" style="margin-top:20px">'
+    + '<button class="doc-action-btn doc-action-primary" onclick="exportBankingToPDF()">\ud83d\udcd1 Credit Report PDF</button>'
+    + '<button class="doc-action-btn doc-action-secondary" onclick="exportDocToPPT()">\ud83c\udfa5 Export PPT</button>'
+    + '<button class="doc-action-btn" onclick="shareDocAnalysis(this)">\ud83d\udd17 Share Link</button>'
+    + '<button class="doc-action-btn" onclick="copyDocSummary()">\ud83d\udccb Copy</button>'
+    + '</div>';
+
+  return header + kpiSection + chartsSection + summarySection + insightsSection + actSection;
+}
+
+/* ── Render Banking Output (entry point) ── */
+function renderBankingOutput(result) {
+  _currentDocResult   = result;
+  _currentDocSlideIdx = 0;
+  var out       = document.getElementById('studioOutput');
+  var container = document.getElementById('docAnalyzerOutput');
+  if (!out || !container) return;
+
+  var ratios = calcFinancialRatios(docDirectChartData);
+  out.classList.add('visible');
+  container.innerHTML = buildBankingOutputHTML(result, ratios);
+  out.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+  var kpiEl = document.getElementById('finKpiCards');
+  if (kpiEl) renderFinanceKPICards(kpiEl, ratios);
+
+  setTimeout(function() {
+    if (ratios && ratios.waterfall && ratios.waterfall.length >= 2) {
+      renderWaterfallChart('finWaterfallChart', ratios.waterfall);
+    }
+    if (ratios && ratios.timeSeries && ratios.yearsDetected && ratios.yearsDetected.length >= 2) {
+      renderYoYGroupedBar('finYoYChart', ratios.timeSeries);
+    }
+  }, 350);
+}
+
+/* ── Export Banking Credit Report PDF ── */
+async function exportBankingToPDF() {
+  var result = _currentDocResult;
+  if (!result) { Toast.show('Generate analysis first', 'error'); return; }
+  Toast.show('\ud83d\udcd1 Building Credit Report PDF\u2026', 'info', 8000);
+  try {
+    await loadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js');
+    await loadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js');
+    var ratios = calcFinancialRatios(docDirectChartData);
+    var pdf = new window.jspdf.jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+    var W = 210, mg = 14, cw = W - mg * 2, y = 18;
+    function newPage() { pdf.addPage(); y = 18; }
+    function needY(h) { if (y + h > 270) newPage(); }
+
+    /* Cover */
+    pdf.setFillColor(15, 15, 26); pdf.rect(0, 0, W, 52, 'F');
+    pdf.setFillColor(255, 112, 67); pdf.rect(0, 0, W, 4, 'F');
+    pdf.setFont('helvetica', 'bold'); pdf.setFontSize(20); pdf.setTextColor(255, 255, 255);
+    pdf.text(result.title || 'Financial Intelligence Report', mg, 22);
+    pdf.setFont('helvetica', 'normal'); pdf.setFontSize(10); pdf.setTextColor(255, 112, 67);
+    pdf.text('Credit Analysis Report  \u2022  Powered by Clarix AI', mg, 31);
+    pdf.setFontSize(9); pdf.setTextColor(180, 180, 200);
+    var dateLine = (docFileName ? docFileName + '  \u2022  ' : '') + new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'long', year: 'numeric' });
+    pdf.text(dateLine, mg, 39);
+    if (ratios && ratios.yearsDetected.length > 0) {
+      pdf.text('Period: ' + ratios.yearsDetected[0] + ' \u2192 ' + ratios.yearsDetected[ratios.yearsDetected.length - 1]
+        + ' (' + ratios.yearsDetected.length + ' year' + (ratios.yearsDetected.length > 1 ? 's' : '') + ')', mg, 46);
+    }
+    y = 62;
+
+    function sectionHeader(label, r, g, b) {
+      needY(12);
+      pdf.setFillColor(r, g, b); pdf.rect(mg, y, cw, 0.8, 'F');
+      y += 4;
+      pdf.setFont('helvetica', 'bold'); pdf.setFontSize(10); pdf.setTextColor(r, g, b);
+      pdf.text(label, mg, y);
+      y += 6; pdf.setTextColor(30, 30, 50);
+    }
+
+    /* Executive Summary */
+    sectionHeader('EXECUTIVE SUMMARY', 56, 189, 248);
+    pdf.setFont('helvetica', 'normal'); pdf.setFontSize(11);
+    var sumLines = pdf.splitTextToSize(result.summary || '', cw);
+    sumLines.forEach(function(line) { needY(6); pdf.text(line, mg, y); y += 5.8; });
+    y += 8;
+
+    /* Financial Ratios Table */
+    if (ratios && ratios.ratios.length > 0) {
+      sectionHeader('FINANCIAL RATIOS \u2014 RBI BENCHMARK ANALYSIS', 255, 112, 67);
+      pdf.autoTable({
+        startY: y, margin: { left: mg, right: mg },
+        head: [['Ratio', 'Value', 'Benchmark', 'Status']],
+        body: ratios.ratios.map(function(r) {
+          var st = _getBenchmarkStatus(r.name, r.raw);
+          var bm = FINANCE_BENCHMARKS[r.name];
+          var statusLabel = st === 'good' ? 'PASS' : st === 'warn' ? 'CAUTION' : st === 'bad' ? 'FLAG' : 'N/A';
+          return [r.name, r.value + r.unit, bm ? bm.label : (r.note || '\u2014'), statusLabel];
+        }),
+        headStyles: { fillColor: [26, 26, 46], textColor: [255, 255, 255], fontSize: 10, fontStyle: 'bold' },
+        bodyStyles: { fillColor: [248, 248, 252], textColor: [30, 30, 50], fontSize: 10 },
+        alternateRowStyles: { fillColor: [238, 238, 248] },
+        styles: { cellPadding: 4, lineColor: [200, 200, 220], lineWidth: 0.3 }
+      });
+      y = pdf.lastAutoTable.finalY + 10;
+    }
+
+    /* Key Findings */
+    if ((result.keyPoints || []).length > 0) {
+      sectionHeader('KEY FINDINGS', 56, 189, 248);
+      result.keyPoints.forEach(function(pt) {
+        var lines = pdf.splitTextToSize('\u25b8  ' + pt, cw - 6);
+        needY(lines.length * 5.5 + 3);
+        pdf.setFont('helvetica', 'normal'); pdf.setFontSize(10.5); pdf.setTextColor(30, 30, 50);
+        pdf.text(lines, mg + 2, y); y += lines.length * 5.5 + 4;
+      }); y += 4;
+    }
+
+    /* Recommendations */
+    if ((result.recommendations || []).length > 0) {
+      needY(20);
+      sectionHeader('CREDIT / INVESTMENT RECOMMENDATIONS', 255, 112, 67);
+      result.recommendations.forEach(function(r, i) {
+        var rLines = pdf.splitTextToSize((i + 1) + '.  ' + r, cw - 6);
+        needY(rLines.length * 5.5 + 4);
+        pdf.setFont('helvetica', 'normal'); pdf.setFontSize(10.5); pdf.setTextColor(30, 30, 50);
+        pdf.text(rLines, mg + 2, y); y += rLines.length * 5.5 + 5;
+      });
+    }
+
+    /* Footer on all pages */
+    var pages = pdf.internal.getNumberOfPages();
+    for (var p = 1; p <= pages; p++) {
+      pdf.setPage(p);
+      pdf.setDrawColor(200, 200, 220); pdf.line(mg, 286, W - mg, 286);
+      pdf.setFontSize(8); pdf.setFont('helvetica', 'normal'); pdf.setTextColor(150, 150, 180);
+      pdf.text('Clarix AI Credit Analysis  \u2022  clarix.digital', mg, 291);
+      pdf.text('Page ' + p + ' of ' + pages, W - mg, 291, { align: 'right' });
+    }
+    var fn = 'Clarix-Credit-' + (result.title || 'Report').replace(/[^a-zA-Z0-9 ]/g, '').trim().replace(/\s+/g, '-') + '.pdf';
+    pdf.save(fn);
+    Toast.show('\ud83d\udcd1 Credit Report PDF downloaded!', 'success');
+  } catch(err) {
+    console.error('[BankingPDF]', err);
+    Toast.show('\u274c PDF export failed: ' + (err.message || 'Unknown error'), 'error');
+  }
+}
+
+/* ── Init ── */
 
 document.addEventListener('DOMContentLoaded', function() {
   renderStudios();
