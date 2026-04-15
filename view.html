@@ -62,7 +62,7 @@
     .view-error-msg  { font-size: 16px; color: var(--muted); max-width: 360px; line-height: 1.7; }
 
     /* ── Main content ── */
-    .view-wrap { max-width: 860px; margin: 0 auto; padding: 32px 20px 60px; }
+    .view-wrap { max-width: 1100px; margin: 0 auto; padding: 32px 20px 60px; }
 
     /* ── Header ── */
     .view-header { margin-bottom: 28px; }
@@ -100,13 +100,71 @@
     .t-down { color: #f87171; }
     .t-neu  { color: var(--muted); }
 
-    /* ── Chart ── */
+    /* ── Single chart fallback (AI data) ── */
     .view-chart-box {
       background: var(--card); border: 1px solid var(--border);
-      border-radius: 16px; padding: 20px; margin-bottom: 8px; height: 320px;
+      border-radius: 16px; padding: 20px; margin-bottom: 8px; height: 280px;
     }
-    .view-chart-box canvas { max-height: 240px; }
     .view-chart-src { font-size: 11px; color: var(--muted); font-style: italic; margin-bottom: 20px; }
+
+    /* ── Multi-chart grid (real Excel data) ── */
+    .doc-multi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr));
+      gap: 14px; margin-bottom: 14px;
+    }
+    .doc-chart-panel {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 14px; padding: 14px 14px 10px;
+      display: flex; flex-direction: column; gap: 8px;
+    }
+    .doc-chart-panel-title {
+      font-size: 13px; font-weight: 700; color: rgba(255,255,255,.9);
+      border-bottom: 1px solid rgba(255,255,255,.07); padding-bottom: 6px;
+    }
+    .doc-panel-kpi {
+      display: flex; gap: 12px; flex-wrap: wrap;
+      font-size: 11px; color: rgba(255,255,255,.5);
+    }
+    .doc-panel-kpi b { color: rgba(255,255,255,.85); }
+    .doc-panel-canvas-wrap {
+      position: relative; height: var(--panel-h, 260px); min-height: 200px;
+    }
+    .doc-panel-canvas-wrap canvas { position: absolute; inset: 0; width: 100% !important; height: 100% !important; }
+    /* Stats table */
+    .doc-stats-table-wrap {
+      margin-top: 12px; border-radius: 12px; overflow: hidden;
+      border: 1px solid var(--border); margin-bottom: 20px;
+    }
+    .doc-stats-table-title {
+      font-size: 11px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase;
+      color: var(--blue); padding: 10px 14px 8px;
+      background: rgba(56,189,248,.05); border-bottom: 1px solid var(--border);
+    }
+    .doc-stats-table {
+      width: 100%; border-collapse: collapse; font-size: 11px;
+      background: rgba(255,255,255,.02);
+    }
+    .doc-stats-table th {
+      padding: 7px 10px; text-align: left; color: rgba(255,255,255,.4);
+      font-weight: 700; font-size: 10px;
+      border-bottom: 1px solid var(--border); white-space: nowrap;
+    }
+    .doc-stats-table td {
+      padding: 6px 10px; color: rgba(255,255,255,.75);
+      border-bottom: 1px solid rgba(255,255,255,.04);
+    }
+    .doc-stats-table tr:last-child td { border-bottom: none; }
+    .doc-stats-table td.ucl-cell { color: rgba(239,68,68,.85); font-weight: 700; }
+    .doc-stats-table td.lcl-cell { color: rgba(239,68,68,.75); font-weight: 700; }
+    .stat-up  { color: #4ade80 !important; font-weight: 700; }
+    .stat-dn  { color: #f87171 !important; font-weight: 700; }
+    /* Anomaly */
+    .view-anomaly-item {
+      padding: 10px 14px; border-radius: 10px; font-size: 13px;
+      background: rgba(251,191,36,.05); border: 1px solid rgba(251,191,36,.15);
+      color: rgba(251,191,36,.85); margin-bottom: 8px; line-height: 1.5;
+    }
 
     /* ── Bullets ── */
     .view-bullets { list-style: none; }
@@ -200,11 +258,21 @@
         <div class="view-summary" id="vSummary"></div>
       </div>
 
-      <!-- Chart -->
+      <!-- Chart section: multi-chart (real Excel) OR single chart (AI data) -->
       <div class="view-section" id="vChartSection">
         <div class="view-section-hd orange">📊 Data Analysis</div>
-        <div class="view-chart-box"><canvas id="vChart"></canvas></div>
         <div class="view-chart-src" id="vChartSrc"></div>
+        <!-- Multi-chart grid (populated when directChartData exists) -->
+        <div id="vMultiChartWrap"></div>
+        <!-- Single canvas fallback for AI data -->
+        <div class="view-chart-box" id="vSingleChartBox" style="display:none">
+          <canvas id="vChart"></canvas>
+        </div>
+        <!-- Anomaly alerts (real data only) -->
+        <div id="vAnomalies" style="display:none;margin-top:16px">
+          <div class="view-section-hd">⚠️ Anomaly Alerts</div>
+          <div id="vAnomalyList"></div>
+        </div>
       </div>
 
       <!-- Key Insights -->
@@ -325,89 +393,219 @@
       renderViewChart(d);
     }
 
-    /* ── Render Chart.js ── */
+    /* ══════════════════════════════════════════════════════
+       VIEW CHART ENGINE — multi-chart for real Excel data,
+       single chart fallback for AI-only data
+    ══════════════════════════════════════════════════════ */
+    var _vMultiChartInstances = [];
+
+    function _computeViewStats(values) {
+      var n    = values.length;
+      if (n === 0) return null;
+      var mean = values.reduce(function(a,b){return a+b;},0)/n;
+      var variance = values.reduce(function(a,v){return a+Math.pow(v-mean,2);},0)/n;
+      var std  = Math.sqrt(variance);
+      var min  = Math.min.apply(null,values);
+      var max  = Math.max.apply(null,values);
+      var ucl  = mean + 3*std;
+      var lcl  = Math.max(0, mean - 3*std);
+      var slice = Math.max(1, Math.floor(n*0.1));
+      var fa   = values.slice(0,slice).reduce(function(a,b){return a+b;},0)/slice;
+      var la   = values.slice(n-slice).reduce(function(a,b){return a+b;},0)/slice;
+      var trend = la > fa*1.05 ? 'up' : la < fa*0.95 ? 'down' : 'stable';
+      var pct   = fa !== 0 ? ((la-fa)/fa*100).toFixed(1) : '0';
+      return { mean:mean, std:std, ucl:ucl, lcl:lcl, min:min, max:max, trend:trend, pctChange:pct, n:n };
+    }
+
     function renderViewChart(d) {
-      var cd      = d.directChartData || null;
-      var aiCd    = d.chartData        || null;
-      var canvas  = document.getElementById('vChart');
-      var srcEl   = document.getElementById('vChartSrc');
+      var cd   = d.directChartData || null;
+      var aiCd = d.chartData       || null;
+      var srcEl = document.getElementById('vChartSrc');
 
       if (!cd && !aiCd) {
         document.getElementById('vChartSection').style.display = 'none'; return;
       }
 
-      var palette = ['rgba(255,112,67,.85)','rgba(56,189,248,.85)','rgba(74,222,128,.85)',
-                     'rgba(246,173,85,.85)','rgba(167,139,250,.85)','rgba(244,114,182,.85)'];
-      var labels, datasets, chartType = 'bar';
+      var palette = ['rgba(56,189,248,.9)','rgba(255,112,67,.9)','rgba(74,222,128,.9)',
+                     'rgba(246,173,85,.9)','rgba(167,139,250,.9)','rgba(244,114,182,.9)'];
 
-      if (cd) {
-        /* Use stored detectedType (e.g. 'line' for HOUR data, 'scatter' for XY) */
-        chartType = cd.detectedType || 'bar';
-        labels    = cd.labels;
-        datasets  = cd.datasets.map(function(ds, i) {
-          var c = palette[i % palette.length];
-          var isLine = chartType === 'line';
-          return {
-            label:            ds.label,
-            data:             ds.data,
-            backgroundColor:  isLine ? c.replace('.85',',.15') : c,
-            borderColor:      c,
-            borderWidth:      isLine ? 2.5 : 1,
-            fill:             false,
-            tension:          0,          /* straight segments like Excel */
-            pointRadius:      isLine ? 4  : 0,
-            pointHoverRadius: isLine ? 7  : 4,
-            pointBackgroundColor: c,
-            borderRadius:     chartType === 'bar' ? 4 : 0
-          };
+      /* ── CASE 1: Real Excel data → multi-chart grid ── */
+      if (cd && cd.datasets && cd.datasets.length > 0) {
+        /* Compute stats if not stored (older shared links) */
+        cd.datasets.forEach(function(ds) {
+          if (!ds.stats) ds.stats = _computeViewStats(ds.data || []);
         });
-        if (srcEl) srcEl.textContent = '\ud83d\udcca Real data from sheet: "' + cd.sheetName + '"';
-      } else {
-        chartType = aiCd.type || 'bar';
-        labels    = aiCd.labels || [];
-        datasets  = [{ label: d.title || 'Data', data: aiCd.values || [],
-                       backgroundColor: palette, borderColor: palette, borderWidth: 1 }];
-        if (srcEl) srcEl.textContent = '\ud83e\udd16 AI-analyzed data';
+
+        var labels    = cd.labels;
+        var xLabel    = cd.col0Label || 'X';
+        var chartType = cd.detectedType || 'line';
+        if (chartType === 'candlestick') chartType = 'line';
+        var nPts = labels.length;
+        var panelH = nPts > 60 ? 300 : (nPts > 30 ? 270 : 240);
+
+        if (srcEl) srcEl.textContent = '\ud83d\udcca Real data · Sheet: "' + cd.sheetName + '" · ' + nPts + ' points \u00d7 ' + cd.datasets.length + ' columns';
+
+        /* Build HTML */
+        var html = '<div class="doc-multi-grid" style="--panel-h:' + panelH + 'px">';
+        cd.datasets.forEach(function(ds, i) {
+          html += '<div class="doc-chart-panel">';
+          html += '<div class="doc-chart-panel-title">' + ds.label + '</div>';
+          if (ds.stats) {
+            var s = ds.stats;
+            var ti = s.trend === 'up' ? '\u2191' : s.trend === 'down' ? '\u2193' : '\u2192';
+            var tc = s.trend === 'up' ? 'stat-up' : s.trend === 'down' ? 'stat-dn' : '';
+            html += '<div class="doc-panel-kpi">'
+              + '<span>Avg: <b>' + s.mean.toFixed(1) + '</b></span>'
+              + '<span>Max: <b>' + s.max.toFixed(1) + '</b></span>'
+              + '<span>Min: <b>' + s.min.toFixed(1) + '</b></span>'
+              + '<span class="' + tc + '">' + ti + ' ' + s.pctChange + '%</span>'
+              + '</div>';
+          }
+          html += '<div class="doc-panel-canvas-wrap"><canvas id="vPanelChart_' + i + '"></canvas></div>';
+          html += '</div>';
+        });
+        html += '</div>';
+
+        /* Stats table */
+        html += '<div class="doc-stats-table-wrap">'
+          + '<div class="doc-stats-table-title">\ud83d\udcca Statistical Summary</div>'
+          + '<div style="overflow-x:auto"><table class="doc-stats-table"><thead><tr>'
+          + '<th>Column</th><th>N</th><th>Mean</th><th>Std</th><th>Min</th><th>Max</th><th>UCL(+3\u03c3)</th><th>LCL(\u22123\u03c3)</th><th>Trend</th>'
+          + '</tr></thead><tbody>';
+        cd.datasets.forEach(function(ds) {
+          if (!ds.stats) return;
+          var s = ds.stats;
+          var tt = s.trend==='up' ? '\u2191 +'+s.pctChange+'%' : s.trend==='down' ? '\u2193 '+s.pctChange+'%' : '\u2192 Stable';
+          var tc = s.trend==='up' ? 'stat-up' : s.trend==='down' ? 'stat-dn' : '';
+          html += '<tr>'
+            + '<td><b>'+ds.label+'</b></td>'
+            + '<td>'+s.n+'</td>'
+            + '<td>'+s.mean.toFixed(2)+'</td>'
+            + '<td>'+s.std.toFixed(2)+'</td>'
+            + '<td>'+s.min.toFixed(2)+'</td>'
+            + '<td>'+s.max.toFixed(2)+'</td>'
+            + '<td class="ucl-cell">'+s.ucl.toFixed(2)+'</td>'
+            + '<td class="lcl-cell">'+(s.lcl>0?s.lcl.toFixed(2):'0')+'</td>'
+            + '<td class="'+tc+'">'+tt+'</td>'
+            + '</tr>';
+        });
+        html += '</tbody></table></div></div>';
+
+        document.getElementById('vMultiChartWrap').innerHTML = html;
+        document.getElementById('vSingleChartBox').style.display = 'none';
+
+        /* Anomaly detection */
+        var anomalies = [];
+        cd.datasets.forEach(function(ds) {
+          if (!ds.stats) return;
+          var s = ds.stats;
+          var bu = (ds.data||[]).filter(function(v){return v>s.ucl;}).length;
+          if (bu>0) anomalies.push('\u26a0\ufe0f <b>'+ds.label+'</b>: '+bu+' reading(s) exceeded UCL ('+s.ucl.toFixed(1)+')');
+          if (s.lcl>0) {
+            var bd = (ds.data||[]).filter(function(v){return v<s.lcl;}).length;
+            if (bd>0) anomalies.push('\u26a0\ufe0f <b>'+ds.label+'</b>: '+bd+' reading(s) below LCL ('+s.lcl.toFixed(1)+')');
+          }
+          if (Math.abs(parseFloat(s.pctChange))>50) {
+            var dir = parseFloat(s.pctChange)>0?'increase':'decrease';
+            anomalies.push('\ud83d\udcc9 <b>'+ds.label+'</b>: '+Math.abs(s.pctChange)+'% '+dir+' over period');
+          }
+        });
+        if (anomalies.length>0) {
+          document.getElementById('vAnomalies').style.display = 'block';
+          document.getElementById('vAnomalyList').innerHTML = anomalies.map(function(a){
+            return '<div class="view-anomaly-item">'+a+'</div>';
+          }).join('');
+        }
+
+        /* Render each Chart.js panel */
+        _vMultiChartInstances.forEach(function(c){ try{c.destroy();}catch(e){} });
+        _vMultiChartInstances = [];
+
+        cd.datasets.forEach(function(ds, i) {
+          var canvas = document.getElementById('vPanelChart_' + i);
+          if (!canvas) return;
+          var st = ds.stats;
+          var c  = palette[i % palette.length];
+          var chartDatasets = [{
+            label: ds.label, data: ds.data,
+            borderColor: c, backgroundColor: c.replace('.9','.1'),
+            borderWidth: 2, fill: true, tension: 0,
+            pointRadius: nPts>80?2:(nPts>40?3:4),
+            pointHoverRadius: 7, pointBackgroundColor: c, order: 0
+          }];
+          if (st && chartType === 'line') {
+            chartDatasets.push({ label:'UCL ('+st.ucl.toFixed(1)+')',
+              data: labels.map(function(){return st.ucl;}),
+              borderColor:'rgba(239,68,68,.75)',borderWidth:1.5,borderDash:[6,4],
+              pointRadius:0,fill:false,tension:0,order:1,datalabels:{display:false}});
+            chartDatasets.push({ label:'Mean ('+st.mean.toFixed(1)+')',
+              data: labels.map(function(){return st.mean;}),
+              borderColor:'rgba(74,222,128,.75)',borderWidth:1.5,borderDash:[4,3],
+              pointRadius:0,fill:false,tension:0,order:1,datalabels:{display:false}});
+            if (st.lcl>0) chartDatasets.push({ label:'LCL ('+st.lcl.toFixed(1)+')',
+              data: labels.map(function(){return st.lcl;}),
+              borderColor:'rgba(239,68,68,.75)',borderWidth:1.5,borderDash:[6,4],
+              pointRadius:0,fill:false,tension:0,order:1,datalabels:{display:false}});
+          }
+          var dlCfg = {
+            display: function(ctx) {
+              if (ctx.datasetIndex!==0) return false;
+              if (nPts>120) return false;
+              if (nPts>60) return ctx.dataIndex%3===0;
+              if (nPts>30) return ctx.dataIndex%2===0;
+              return true;
+            },
+            color:'rgba(255,255,255,.85)', font:{size:nPts>60?7:(nPts>30?8:9),weight:'700'},
+            formatter:function(v){return(v===0||v==null)?'':(typeof v==='number'?v.toFixed(v%1===0?0:1):v);},
+            anchor:'end',align:'top',offset:1,rotation:nPts>30?-60:0,clip:false
+          };
+          var inst = new Chart(canvas, {
+            type: chartType==='scatter'?'scatter':'line',
+            data: { labels:labels, datasets:chartDatasets },
+            options: {
+              responsive:true, maintainAspectRatio:false,
+              layout:{padding:{top:nPts>30?30:18,right:8}},
+              interaction:{mode:'index',intersect:false},
+              plugins: {
+                legend:{display:true,labels:{color:'rgba(255,255,255,.55)',font:{size:10},padding:10}},
+                tooltip:{mode:'index',intersect:false},
+                datalabels:dlCfg
+              },
+              scales: {
+                x:{title:{display:true,text:xLabel,color:'rgba(255,255,255,.4)',font:{size:10}},
+                   ticks:{color:'rgba(255,255,255,.45)',font:{size:9},maxTicksLimit:Math.min(nPts,15),maxRotation:45},
+                   grid:{color:'rgba(255,255,255,.04)'}},
+                y:{title:{display:true,text:ds.label,color:'rgba(255,255,255,.4)',font:{size:10}},
+                   ticks:{color:'rgba(255,255,255,.45)',font:{size:9}},
+                   grid:{color:'rgba(255,255,255,.04)'}}
+              }
+            }
+          });
+          _vMultiChartInstances.push(inst);
+        });
+        return; /* done with multi-chart */
       }
 
-      /* Data labels config */
-      var nPts = datasets.length > 0 && datasets[0].data ? datasets[0].data.length : 0;
-      var dlCfg = (chartType === 'pie' || chartType === 'scatter') ? { display: false } : {
-        display: function(ctx) {
-          if (nPts > 120) return false;
-          if (nPts > 60)  return ctx.dataIndex % 3 === 0;
-          if (nPts > 30)  return ctx.dataIndex % 2 === 0;
-          return true;
-        },
-        color:     'rgba(255,255,255,0.82)',
-        font:      { size: nPts > 50 ? 7.5 : (nPts > 25 ? 8.5 : 9.5), weight: '700' },
-        formatter: function(v) { return (v === 0 || v === null) ? '' : v; },
-        anchor:    chartType === 'bar' ? 'end' : 'center',
-        align:     'top',
-        offset:    2,
-        rotation:  nPts > 30 ? -60 : 0,
-        clip:      false
-      };
-
-      if (_vChartInst) { try { _vChartInst.destroy(); } catch(e) {} }
+      /* ── CASE 2: AI-only data → single chart ── */
+      document.getElementById('vSingleChartBox').style.display = 'block';
+      var canvas   = document.getElementById('vChart');
+      var chartType2 = aiCd.type || 'bar';
+      var labels2  = aiCd.labels || [];
+      var aiPal    = ['rgba(255,112,67,.85)','rgba(56,189,248,.85)','rgba(74,222,128,.85)'];
+      var datasets2 = [{ label: d.title||'Data', data: aiCd.values||[],
+        backgroundColor: aiPal, borderColor: aiPal, borderWidth:1.5,
+        fill:false, tension:0, pointRadius:4, pointHoverRadius:7 }];
+      if (srcEl) srcEl.textContent = '\ud83e\udd16 AI-estimated data';
+      if (_vChartInst) { try{_vChartInst.destroy();}catch(e){} }
       _vChartInst = new Chart(canvas, {
-        type: chartType,
-        data: { labels: labels, datasets: datasets },
-        options: {
-          responsive: true, maintainAspectRatio: false,
-          layout: { padding: { top: nPts > 30 ? 28 : 14 } },
-          plugins: {
-            legend: { display: datasets.length > 1 || chartType === 'pie',
-                      labels: { color: '#e0e0e0', font: { size: 11 }, padding: 12 } },
-            tooltip: { mode: chartType === 'pie' ? 'nearest' : 'index',
-                       intersect: chartType === 'pie' },
-            datalabels: dlCfg
-          },
-          scales: chartType === 'pie' ? {} : {
-            x: { ticks: { color: 'rgba(255,255,255,.6)', font: { size: 10 }, maxRotation: 45 },
-                 grid: { color: 'rgba(255,255,255,.05)' } },
-            y: { ticks: { color: 'rgba(255,255,255,.6)', font: { size: 10 } },
-                 grid: { color: 'rgba(255,255,255,.05)' } }
+        type: chartType2, data:{labels:labels2,datasets:datasets2},
+        options:{ responsive:true, maintainAspectRatio:false,
+          plugins:{ legend:{display:false},
+            datalabels:{display:true,color:'rgba(255,255,255,.8)',font:{size:9,weight:'700'},
+              formatter:function(v){return v;},anchor:'end',align:'top',offset:2}},
+          scales:{
+            x:{ticks:{color:'rgba(255,255,255,.55)',font:{size:10}},grid:{color:'rgba(255,255,255,.05)'}},
+            y:{ticks:{color:'rgba(255,255,255,.55)',font:{size:10}},grid:{color:'rgba(255,255,255,.05)'}}
           }
         }
       });

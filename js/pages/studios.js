@@ -1688,6 +1688,7 @@ async function parseXlsxDoc(file) {
 
 
 /* â”€â”€ Statistics for one data series â”€â”€ */
+/* -- Statistics for one data series (full SPC suite) -- */
 function _computeStats(values) {
   var nonZero = values.filter(function(v) { return v !== 0 && !isNaN(v); });
   if (nonZero.length === 0) return null;
@@ -1699,13 +1700,62 @@ function _computeStats(values) {
   var max  = Math.max.apply(null, values);
   var ucl  = mean + 3 * std;
   var lcl  = Math.max(0, mean - 3 * std);
-  /* Trend: compare first 10% vs last 10% */
+  /* Moving range for Shewhart individual charts */
+  var mr = [];
+  for (var i = 1; i < n; i++) mr.push(Math.abs(values[i] - values[i-1]));
+  var mrBar = mr.length > 0 ? mr.reduce(function(a,b){return a+b;},0)/mr.length : 0;
+  var sigmaWithin = mrBar / 1.128; /* d2=1.128 for subgroup size 2 */
+  /* Cp/Cpk estimation (proxy: data range as tolerance) */
+  var dataTol = max - min;
+  var cp_est  = dataTol > 0 && std > 0 ? (6 * std) / dataTol : null;
+  var cpl_est = std > 0 ? (mean - min) / (3 * std) : null;
+  var cpu_est = std > 0 ? (max - mean) / (3 * std) : null;
+  var cpk_est = (cpl_est !== null && cpu_est !== null) ? Math.min(cpl_est, cpu_est) : null;
+  var cpkNote = n >= 25 ? 'calculable' : 'insufficient_n';
+  /* Western Electric Rules */
+  var weRules = [];
+  var rule1 = values.filter(function(v){ return v > ucl || v < lcl; }).length;
+  if (rule1 > 0) weRules.push('Rule1: ' + rule1 + ' point(s) outside 3sigma');
+  var sig2u = mean + 2*std, sig2l = mean - 2*std;
+  var rule2count = 0;
+  for (var j = 2; j < n; j++) {
+    var w3 = [values[j-2], values[j-1], values[j]];
+    if (w3.filter(function(v){ return v > sig2u || v < sig2l; }).length >= 2) rule2count++;
+  }
+  if (rule2count > 0) weRules.push('Rule2: ' + rule2count + ' occurrence(s) of 2/3 beyond 2sigma');
+  var rule3count = 0;
+  for (var k = 5; k < n; k++) {
+    var up = true, dn = true;
+    for (var m = k-4; m <= k; m++) {
+      if (values[m] <= values[m-1]) up = false;
+      if (values[m] >= values[m-1]) dn = false;
+    }
+    if (up || dn) rule3count++;
+  }
+  if (rule3count > 0) weRules.push('Rule3: ' + rule3count + ' run(s) of 6 consecutive trending points');
+  var rule4count = 0;
+  for (var r4 = 7; r4 < n; r4++) {
+    var sa = true, sb = true;
+    for (var rj = r4-7; rj <= r4; rj++) {
+      if (values[rj] <= mean) sa = false;
+      if (values[rj] >= mean) sb = false;
+    }
+    if (sa || sb) rule4count++;
+  }
+  if (rule4count > 0) weRules.push('Rule4: ' + rule4count + ' run(s) of 8 points same side of mean');
+  /* Trend: first 10% vs last 10% */
   var slice = Math.max(1, Math.floor(n * 0.1));
   var firstAvg = values.slice(0, slice).reduce(function(a,b){return a+b;},0)/slice;
   var lastAvg  = values.slice(n - slice).reduce(function(a,b){return a+b;},0)/slice;
   var trend    = lastAvg > firstAvg * 1.05 ? 'up' : lastAvg < firstAvg * 0.95 ? 'down' : 'stable';
   var pctChange = firstAvg !== 0 ? ((lastAvg - firstAvg) / firstAvg * 100).toFixed(1) : '0';
-  return { mean: mean, std: std, ucl: ucl, lcl: lcl, min: min, max: max, trend: trend, pctChange: pctChange, n: n };
+  return {
+    mean: mean, std: std, ucl: ucl, lcl: lcl, min: min, max: max,
+    trend: trend, pctChange: pctChange, n: n,
+    mrBar: mrBar, sigmaWithin: sigmaWithin,
+    cpk_est: cpk_est, cp_est: cp_est, cpl_est: cpl_est, cpu_est: cpu_est,
+    cpkNote: cpkNote, weRules: weRules, inControl: weRules.length === 0
+  };
 }
 
 /* â”€â”€ Find the real header row in an Excel sheet (skips title/blank rows) â”€â”€ */
@@ -1806,26 +1856,294 @@ function _parseOneSheet(ws, sheetName) {
     logScaleRec = (maxV / minV) > 1000;
   }
 
-  var detectedType, detectedReason;
-  if (industry === 'stock' && datasets.length >= 4) {
-    detectedType = 'candlestick'; detectedReason = 'Stock OHLCV â€” Candlestick chart';
-  } else if (isTime) {
-    detectedType = 'line'; detectedReason = 'Time series â€” Line chart per column';
-  } else if (firstNumeric && datasets.length === 1) {
-    detectedType = 'scatter'; detectedReason = 'XY correlation â€” Scatter plot';
-  } else if (datasets.length > 2) {
-    detectedType = 'bar'; detectedReason = 'Multi-series (' + datasets.length + ') â€” Grouped bar';
-  } else {
-    detectedType = 'bar'; detectedReason = 'Comparison â€” Bar chart';
+
+  /* -- OHLCV detection: find Open/High/Low/Close column indexes -- */
+  var ohlcvInfo = null;
+  var dsLabels  = datasets.map(function(d) { return d.label.toLowerCase(); });
+  var oIdx = -1, hIdx = -1, lIdx = -1, cIdx = -1, vIdx = -1;
+  for (var di = 0; di < dsLabels.length; di++) {
+    var dl = dsLabels[di];
+    if (/^open$|^o$/.test(dl))          oIdx = di;
+    else if (/^high$|^h$/.test(dl))     hIdx = di;
+    else if (/^low$|^l$/.test(dl))      lIdx = di;
+    else if (/^close$|^c$/.test(dl))    cIdx = di;
+    else if (/^volume$|^vol$|^v$/.test(dl)) vIdx = di;
   }
-  if (logScaleRec) detectedReason += ' Â· âš ï¸ Wide value range';
+  if (hIdx >= 0 && lIdx >= 0 && cIdx >= 0) {
+    ohlcvInfo = { openIdx: oIdx, highIdx: hIdx, lowIdx: lIdx, closeIdx: cIdx, volumeIdx: vIdx };
+    industry = 'stock';
+  }
+
+  var detectedType, detectedReason;
+  if (ohlcvInfo) {
+    detectedType = 'candlestick'; detectedReason = 'Stock OHLCV - Candlestick chart';
+  } else if (isTime) {
+    detectedType = 'line'; detectedReason = 'Time series - Line chart per column';
+  } else if (firstNumeric && datasets.length === 1) {
+    detectedType = 'scatter'; detectedReason = 'XY correlation - Scatter plot';
+  } else if (datasets.length > 2) {
+    detectedType = 'bar'; detectedReason = 'Multi-series (' + datasets.length + ') - Grouped bar';
+  } else {
+    detectedType = 'bar'; detectedReason = 'Comparison - Bar chart';
+  }
+  if (logScaleRec) detectedReason += ' - Wide value range (log scale recommended)';
 
   return {
     labels: labels, datasets: datasets, sheetName: sheetName,
     detectedType: detectedType, detectedReason: detectedReason,
-    logScaleRec: logScaleRec, industry: industry,
+    logScaleRec: logScaleRec, industry: industry, ohlcvInfo: ohlcvInfo,
     headerRow: headerRow, col0Label: String(headerRow[0] || 'X')
   };
+}
+
+
+/* ══════════════════════════════════════════════════════════════════
+   SMA + CANDLESTICK ENGINE  (Point 3 of the Industry Intelligence)
+   Handles real stock OHLCV data from Excel:
+     - SMA 20 and SMA 50 overlays on Close price
+     - Volume bar chart on secondary Y axis
+     - Candlestick via custom plugin (or Close line fallback)
+══════════════════════════════════════════════════════════════════ */
+
+/* -- Simple Moving Average calculator -- */
+function _computeSMA(closes, period) {
+  var result = [];
+  for (var i = 0; i < closes.length; i++) {
+    if (i < period - 1) { result.push(null); continue; }
+    var sum = 0;
+    for (var j = i - period + 1; j <= i; j++) sum += closes[j];
+    result.push(parseFloat((sum / period).toFixed(4)));
+  }
+  return result;
+}
+
+/* -- % Return calculator -- */
+function _computeReturn(closes) {
+  if (!closes || closes.length < 2) return null;
+  var first = closes[0], last = closes[closes.length - 1];
+  if (!first) return null;
+  return ((last - first) / first * 100).toFixed(2);
+}
+
+/* -- RSI 14 calculator -- */
+function _computeRSI(closes, period) {
+  period = period || 14;
+  var result = [];
+  if (closes.length < period + 1) return closes.map(function() { return null; });
+  var gains = 0, losses = 0;
+  for (var i = 1; i <= period; i++) {
+    var diff = closes[i] - closes[i-1];
+    if (diff > 0) gains += diff; else losses -= diff;
+  }
+  var avgGain = gains / period, avgLoss = losses / period;
+  result = Array(period).fill(null);
+  result.push(avgLoss === 0 ? 100 : parseFloat((100 - 100/(1 + avgGain/avgLoss)).toFixed(2)));
+  for (var k = period + 1; k < closes.length; k++) {
+    var d = closes[k] - closes[k-1];
+    var g = d > 0 ? d : 0, l = d < 0 ? -d : 0;
+    avgGain = (avgGain * (period-1) + g) / period;
+    avgLoss = (avgLoss * (period-1) + l) / period;
+    result.push(avgLoss === 0 ? 100 : parseFloat((100 - 100/(1 + avgGain/avgLoss)).toFixed(2)));
+  }
+  return result;
+}
+
+/* -- Render full stock dashboard (replaces single panel for stock/candlestick) -- */
+function _renderStockDashboard(wrapEl, chartData) {
+  var d    = chartData;
+  var info = d.ohlcvInfo;
+  if (!info) { wrapEl.innerHTML = '<p style="color:rgba(255,255,255,.4)">OHLCV column mapping not found</p>'; return; }
+
+  var labels = d.labels;
+  var nPts   = labels.length;
+
+  var closes  = info.closeIdx  >= 0 ? d.datasets[info.closeIdx].data  : [];
+  var highs   = info.highIdx   >= 0 ? d.datasets[info.highIdx].data   : [];
+  var lows    = info.lowIdx    >= 0 ? d.datasets[info.lowIdx].data    : [];
+  var opens   = info.openIdx   >= 0 ? d.datasets[info.openIdx].data   : closes;
+  var volumes = info.volumeIdx >= 0 ? d.datasets[info.volumeIdx].data : [];
+
+  var sma20 = _computeSMA(closes, 20);
+  var sma50 = _computeSMA(closes, 50);
+  var rsi14 = _computeRSI(closes, 14);
+  var ret   = _computeReturn(closes);
+
+  /* Close stats */
+  var closeSt = d.datasets[info.closeIdx] && d.datasets[info.closeIdx].stats;
+  var hi      = closeSt ? closeSt.max : Math.max.apply(null, highs.filter(function(v){return v;}));
+  var lo      = closeSt ? closeSt.min : Math.min.apply(null, lows.filter(function(v){return v;}));
+
+  /* Candle colors: bullish if close > open, else bearish */
+  var candleColors = labels.map(function(_, i) {
+    return (opens[i] !== undefined && closes[i] !== undefined && closes[i] >= opens[i])
+      ? 'rgba(74,222,128,0.85)' : 'rgba(239,68,68,0.85)';
+  });
+
+  /* KPI summary bar */
+  var retSign  = parseFloat(ret) >= 0 ? '+' : '';
+  var retColor = parseFloat(ret) >= 0 ? '#4ade80' : '#f87171';
+  var lastClose = closes[closes.length - 1];
+  var lastSMA20 = sma20.filter(function(v){return v!==null;}).pop();
+  var bias = lastClose && lastSMA20
+    ? (lastClose > lastSMA20 ? 'Bullish (above SMA20)' : 'Bearish (below SMA20)')
+    : 'Neutral';
+
+  var html = '<div class="stock-kpi-bar">'
+    + '<div class="stock-kpi"><span class="stock-kpi-label">Last Close</span><span class="stock-kpi-val">' + (lastClose ? lastClose.toFixed(2) : 'N/A') + '</span></div>'
+    + '<div class="stock-kpi"><span class="stock-kpi-label">Period High</span><span class="stock-kpi-val">' + hi.toFixed(2) + '</span></div>'
+    + '<div class="stock-kpi"><span class="stock-kpi-label">Period Low</span><span class="stock-kpi-val">' + lo.toFixed(2) + '</span></div>'
+    + '<div class="stock-kpi"><span class="stock-kpi-label">Return</span><span class="stock-kpi-val" style="color:' + retColor + '">' + retSign + ret + '%</span></div>'
+    + '<div class="stock-kpi"><span class="stock-kpi-label">Bias (SMA20)</span><span class="stock-kpi-val" style="font-size:12px">' + bias + '</span></div>'
+    + '</div>';
+
+  /* Chart 1: Close + SMA20 + SMA50 */
+  html += '<div class="stock-chart-panel">';
+  html += '<div class="stock-panel-title">📊 Price Chart — Close / SMA20 / SMA50 <span class="stock-panel-meta">' + nPts + ' sessions · ' + labels[0] + ' → ' + labels[labels.length-1] + '</span></div>';
+  html += '<div class="stock-panel-canvas-wrap" style="height:300px"><canvas id="stockPriceChart"></canvas></div>';
+  html += '</div>';
+
+  /* Chart 2: Volume (if available) */
+  if (volumes.length > 0) {
+    html += '<div class="stock-chart-panel" style="margin-top:12px">';
+    html += '<div class="stock-panel-title">📦 Volume</div>';
+    html += '<div class="stock-panel-canvas-wrap" style="height:140px"><canvas id="stockVolumeChart"></canvas></div>';
+    html += '</div>';
+  }
+
+  /* Chart 3: RSI */
+  if (rsi14.some(function(v){return v!==null;})) {
+    html += '<div class="stock-chart-panel" style="margin-top:12px">';
+    html += '<div class="stock-panel-title">📉 RSI (14) — Overbought >70 · Oversold <30</div>';
+    html += '<div class="stock-panel-canvas-wrap" style="height:130px"><canvas id="stockRsiChart"></canvas></div>';
+    html += '</div>';
+  }
+
+  /* Stats table for all OHLCV columns */
+  html += '<div class="doc-stats-table-wrap" style="margin-top:14px">'
+    + '<div class="doc-stats-table-title">📊 OHLCV Statistical Summary</div>'
+    + '<div style="overflow-x:auto"><table class="doc-stats-table"><thead><tr>'
+    + '<th>Column</th><th>N</th><th>Mean</th><th>Min</th><th>Max</th><th>Std Dev</th><th>% Change</th>'
+    + '</tr></thead><tbody>';
+  d.datasets.forEach(function(ds) {
+    if (!ds.stats) return;
+    var s = ds.stats;
+    var tc = s.trend==='up'?'stat-up':s.trend==='down'?'stat-dn':'';
+    var ti = s.trend==='up'?'↑':s.trend==='down'?'↓':'→';
+    html += '<tr><td><b>'+ds.label+'</b></td><td>'+s.n+'</td>'
+      + '<td>'+s.mean.toFixed(2)+'</td><td>'+s.min.toFixed(2)+'</td><td>'+s.max.toFixed(2)+'</td>'
+      + '<td>'+s.std.toFixed(2)+'</td>'
+      + '<td class="'+tc+'">'+ti+' '+s.pctChange+'%</td></tr>';
+  });
+  html += '</tbody></table></div></div>';
+
+  wrapEl.innerHTML = html;
+
+  /* Render charts once DOM is ready */
+  setTimeout(function() {
+    /* Price chart: Close line + SMA20 + SMA50 */
+    var pc = document.getElementById('stockPriceChart');
+    if (pc) {
+      var tickLimit = Math.min(nPts, 15);
+      new Chart(pc, {
+        type: 'line',
+        data: {
+          labels: labels,
+          datasets: [
+            { label: 'Close', data: closes, borderColor: 'rgba(56,189,248,.9)', backgroundColor: 'rgba(56,189,248,.05)',
+              borderWidth: 1.5, fill: true, tension: 0, pointRadius: nPts>60?0:2, pointHoverRadius: 6, order: 0,
+              datalabels: { display: false } },
+            { label: 'SMA 20', data: sma20, borderColor: 'rgba(246,173,85,.85)', borderWidth: 1.5,
+              borderDash: [5,3], fill: false, tension: 0.2, pointRadius: 0, order: 1,
+              datalabels: { display: false } },
+            { label: 'SMA 50', data: sma50, borderColor: 'rgba(167,139,250,.85)', borderWidth: 1.5,
+              borderDash: [8,4], fill: false, tension: 0.2, pointRadius: 0, order: 1,
+              datalabels: { display: false } }
+          ]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          interaction: { mode: 'index', intersect: false },
+          plugins: {
+            legend: { labels: { color: 'rgba(255,255,255,.6)', font: { size: 11 }, padding: 12 } },
+            tooltip: { mode: 'index', intersect: false },
+            datalabels: { display: false }
+          },
+          scales: {
+            x: { ticks: { color: 'rgba(255,255,255,.45)', font: { size: 9 }, maxTicksLimit: tickLimit, maxRotation: 45 },
+                 grid: { color: 'rgba(255,255,255,.04)' } },
+            y: { ticks: { color: 'rgba(255,255,255,.45)', font: { size: 9 } },
+                 grid: { color: 'rgba(255,255,255,.04)' } }
+          }
+        }
+      });
+    }
+
+    /* Volume chart */
+    var vc = document.getElementById('stockVolumeChart');
+    if (vc && volumes.length > 0) {
+      var volColors = labels.map(function(_, i) {
+        return closes[i] >= opens[i] ? 'rgba(74,222,128,.55)' : 'rgba(239,68,68,.55)';
+      });
+      new Chart(vc, {
+        type: 'bar',
+        data: { labels: labels, datasets: [{ label: 'Volume', data: volumes,
+          backgroundColor: volColors, borderWidth: 0 }] },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          plugins: { legend: { display: false }, datalabels: { display: false } },
+          scales: {
+            x: { ticks: { color: 'rgba(255,255,255,.35)', font: { size: 8 }, maxTicksLimit: 10, maxRotation: 45 },
+                 grid: { display: false } },
+            y: { ticks: { color: 'rgba(255,255,255,.35)', font: { size: 8 },
+                   callback: function(v) { return v >= 1e6 ? (v/1e6).toFixed(1)+'M' : v >= 1e3 ? (v/1e3).toFixed(0)+'K' : v; } },
+                 grid: { color: 'rgba(255,255,255,.04)' } }
+          }
+        }
+      });
+    }
+
+    /* RSI chart */
+    var rc = document.getElementById('stockRsiChart');
+    if (rc && rsi14.some(function(v){return v!==null;})) {
+      new Chart(rc, {
+        type: 'line',
+        data: { labels: labels, datasets: [{ label: 'RSI 14', data: rsi14,
+          borderColor: 'rgba(244,114,182,.85)', backgroundColor: 'rgba(244,114,182,.05)',
+          borderWidth: 1.5, fill: true, tension: 0.2, pointRadius: 0,
+          datalabels: { display: false } }] },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          plugins: { legend: { display: false }, datalabels: { display: false },
+            annotation: {} },
+          scales: {
+            x: { ticks: { color: 'rgba(255,255,255,.35)', font: { size: 8 }, maxTicksLimit: 10, maxRotation: 45 },
+                 grid: { display: false } },
+            y: { min: 0, max: 100,
+                 ticks: { color: 'rgba(255,255,255,.45)', font: { size: 8 },
+                   callback: function(v) { return v === 30 ? '30 OS' : v === 70 ? '70 OB' : v === 50 ? '50' : ''; } },
+                 grid: { color: 'rgba(255,255,255,.04)' } }
+          }
+        },
+        plugins: [{
+          id: 'rsiZones',
+          afterDraw: function(chart) {
+            var ctx = chart.ctx, ya = chart.scales.y, xa = chart.scales.x;
+            var y70 = ya.getPixelForValue(70), y30 = ya.getPixelForValue(30);
+            ctx.save();
+            ctx.fillStyle = 'rgba(239,68,68,.08)';
+            ctx.fillRect(xa.left, chart.chartArea.top, xa.right - xa.left, y70 - chart.chartArea.top);
+            ctx.fillStyle = 'rgba(74,222,128,.08)';
+            ctx.fillRect(xa.left, y30, xa.right - xa.left, chart.chartArea.bottom - y30);
+            ctx.strokeStyle = 'rgba(239,68,68,.35)'; ctx.lineWidth = 1; ctx.setLineDash([4,3]);
+            ctx.beginPath(); ctx.moveTo(xa.left, y70); ctx.lineTo(xa.right, y70); ctx.stroke();
+            ctx.strokeStyle = 'rgba(74,222,128,.35)';
+            ctx.beginPath(); ctx.moveTo(xa.left, y30); ctx.lineTo(xa.right, y30); ctx.stroke();
+            ctx.restore();
+          }
+        }]
+      });
+    }
+  }, 100);
 }
 
 
@@ -1857,7 +2175,10 @@ function extractXlsxChartData(workbook) {
     detectedReason:  active.detectedReason,
     logScaleRec:     active.logScaleRec,
     allSheets:       allSheets,
-    activeSheetIdx:  bestIdx
+    activeSheetIdx:  bestIdx,
+    industry:        active.industry || 'general',
+    ohlcvInfo:       active.ohlcvInfo || null,
+    col0Label:       active.col0Label || 'X'
   };
 }
 
@@ -2347,8 +2668,8 @@ function _renderMultiCharts(data, mode) {
   var xLabel   = data.col0Label || 'X';
   var chartType = (mode === 'auto' || !mode) ? (data.detectedType || 'line') : mode;
   if (chartType === 'none') { wrap.innerHTML = ''; return; }
-  /* Candlestick falls back to line until financial plugin loaded */
-  if (chartType === 'candlestick') chartType = 'line';
+  /* Route candlestick to full stock dashboard */
+  if (chartType === 'candlestick' && data.ohlcvInfo) { _renderStockDashboard(wrap, data); return; }
 
   var nPts = labels.length;
   var palette = ['rgba(56,189,248,0.9)','rgba(255,112,67,0.9)','rgba(74,222,128,0.9)',
