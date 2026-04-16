@@ -5,7 +5,7 @@
   <!-- Homepage -->
   <url>
     <loc>https://clarix.digital/</loc>
-    <lastmod>2026-04-15</lastmod>
+    <lastmod>2026-04-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
@@ -100,6 +100,14 @@
     <lastmod>2026-04-15</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.2</priority>
+  </url>
+
+  <!-- Marketing Digital — AI Marketing Co-Pilot -->
+  <url>
+    <loc>https://clarix.digital/marketing.html</loc>
+    <lastmod>2026-04-16</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
   </url>
 
 </urlset>

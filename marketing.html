@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!-- Google Analytics GA4 -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-YZJ8P58KTJ"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-YZJ8P58KTJ');
+  </script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Marketing Digital &mdash; AI Marketing Co-Pilot | Clarix</title>
+  <meta name="description" content="Generate a personalised 30-day marketing plan for your startup powered by Clarix AI. Get channel-specific content for Reddit, LinkedIn, Twitter, WhatsApp and Product Hunt.">
+  <meta name="keywords" content="startup marketing plan, AI marketing tool, 30 day marketing plan, India startup, Clarix marketing">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://clarix.digital/marketing.html">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://clarix.digital/marketing.html">
+  <meta property="og:title" content="Marketing Digital &mdash; AI Marketing Co-Pilot | Clarix">
+  <meta property="og:description" content="Your AI-powered 30-day go-to-market co-pilot. Enter your startup details, get a personalised plan and ready-to-post content for every channel.">
+  <meta property="og:image" content="https://clarix.digital/icons/og-image.png">
+  <meta property="og:site_name" content="Clarix AI">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Marketing Digital &mdash; Clarix">
+  <meta name="twitter:image" content="https://clarix.digital/icons/og-image.png">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#ff7043">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Clarix">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%23ff7043'/><text x='50%' y='55%' font-size='18' text-anchor='middle' dominant-baseline='middle' fill='white'>&#10022;</text></svg>">
+  <!-- Core Clarix design system (read-only, not modified) -->
+  <link rel="stylesheet" href="css/design.css?v=20260414A">
+  <link rel="stylesheet" href="css/components.css?v=20260414A">
+  <link rel="stylesheet" href="css/sidebar.css?v=20260414A">
+  <link rel="stylesheet" href="css/auth.css?v=20260414A">
+  <!-- Marketing Digital page styles (new, isolated) -->
+  <link rel="stylesheet" href="css/pages/marketing.css?v=20260416A">
+</head>
+<body class="theme-dark">
+
+  <!-- ═════════════════════════════════════════
+       TOP NAV  (same pattern as all Clarix pages)
+  ═════════════════════════════════════════ -->
+  <nav class="topnav" id="topnav">
+    <div class="nav-left">
+      <button class="sidebar-toggle-btn" onclick="Sidebar.toggle()" aria-label="Menu">
+        <span></span><span></span><span></span>
+      </button>
+      <div class="nav-logo" onclick="location.href='index.html'">
+        <span class="nav-star">&#10022;</span> clarix
+      </div>
+    </div>
+    <div class="nav-links">
+      <a href="index.html"    class="nav-link">Home</a>
+      <a href="write.html"    class="nav-link">Write</a>
+      <a href="inspire.html"  class="nav-link">Inspire</a>
+      <a href="apps.html"     class="nav-link">Apps</a>
+      <a href="marketing.html" class="nav-link active">Marketing Digital</a>
+    </div>
+    <div class="nav-right">
+      <div class="usage-counter" id="usage-counter" onclick="UpgradeModal.show()">5/5 free</div>
+      <button class="btn btn-ghost btn-sm" id="authNavBtn" onclick="AuthModal.show()">Login</button>
+      <a href="profile.html" class="btn btn-primary btn-sm">Profile</a>
+    </div>
+  </nav>
+
+  <!-- ═════════════════════════════════════════
+       MARKETING DIGITAL PAGE
+  ═════════════════════════════════════════ -->
+  <div class="mktg-page">
+
+    <!-- HERO -->
+    <div class="mktg-hero">
+      <div class="mktg-hero-badge">&#10022; New &mdash; Marketing Digital</div>
+      <h1>Your AI <span class="gradient-text">Marketing Co-Pilot</span></h1>
+      <p>
+        Enter your startup details. Clarix AI generates a personalised
+        <strong>30-day marketing plan</strong> with ready-to-post content
+        for every channel &mdash; powered by Clarix tools.
+      </p>
+
+      <!-- STEP INDICATOR -->
+      <div class="mktg-steps">
+        <div class="mktg-step active" id="step-1">
+          <div class="mktg-step-num">1</div>
+          <span>Startup Details</span>
+        </div>
+        <div class="mktg-step-arrow"></div>
+        <div class="mktg-step" id="step-2">
+          <div class="mktg-step-num">2</div>
+          <span>AI Generates Plan</span>
+        </div>
+        <div class="mktg-step-arrow"></div>
+        <div class="mktg-step" id="step-3">
+          <div class="mktg-step-num">3</div>
+          <span>30-Day Plan + Content</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── VIEW: FORM ─────────────────────────── -->
+    <div class="mktg-content" id="view-form">
+
+      <div class="mktg-panel">
+        <div class="mktg-panel-title">&#128640; Tell us about your startup</div>
+        <div class="mktg-panel-sub">
+          The more detail you give, the more tailored your marketing plan will be.
+          Clarix uses this to build a plan specific to <em>your</em> product and audience.
+        </div>
+
+        <!-- Row 1: Name + Industry -->
+        <div class="mktg-row">
+          <div class="mktg-field">
+            <label class="mktg-label" for="mktg-startup-name">
+              Startup Name <span>* required</span>
+            </label>
+            <input
+              class="mktg-input" id="mktg-startup-name"
+              type="text"
+              placeholder="e.g. Clarix, Zomato, Razorpay"
+              maxlength="60"
+            >
+          </div>
+          <div class="mktg-field">
+            <label class="mktg-label" for="mktg-industry">
+              Industry <span>optional</span>
+            </label>
+            <input
+              class="mktg-input" id="mktg-industry"
+              type="text"
+              placeholder="e.g. EdTech, FinTech, AI Tools, SaaS"
+              maxlength="60"
+            >
+          </div>
+        </div>
+
+        <!-- What it does -->
+        <div class="mktg-field">
+          <label class="mktg-label" for="mktg-description">
+            What does your startup do? <span>* required</span>
+          </label>
+          <textarea
+            class="mktg-textarea" id="mktg-description"
+            placeholder="e.g. Clarix is an AI prompt engine that helps Indian creators write better prompts in Hindi, English and 20+ languages. It enhances rough ideas into professional AI prompts for ChatGPT, Midjourney and other platforms."
+            maxlength="600" rows="4"
+          ></textarea>
+        </div>
+
+        <!-- Target audience -->
+        <div class="mktg-field">
+          <label class="mktg-label" for="mktg-audience">
+            Who is your target audience? <span>* required</span>
+          </label>
+          <textarea
+            class="mktg-textarea" id="mktg-audience"
+            placeholder="e.g. Indian college students, freelancers, small business owners, content creators aged 18-35 who use ChatGPT but struggle to write good prompts in English."
+            maxlength="400" rows="3"
+          ></textarea>
+        </div>
+
+        <!-- USP -->
+        <div class="mktg-field">
+          <label class="mktg-label" for="mktg-usp">
+            What makes you different? Your USP / Differentiator <span>* required</span>
+          </label>
+          <textarea
+            class="mktg-textarea" id="mktg-usp"
+            placeholder="e.g. Only Indian AI prompt engine supporting 20+ local languages including Hindi, Marathi, Tamil and Gujarati. Try 5 prompts free, no login needed."
+            maxlength="400" rows="3"
+          ></textarea>
+        </div>
+
+        <!-- Goal chips -->
+        <div class="mktg-field">
+          <label class="mktg-label">Primary Goal <span>* required</span></label>
+          <div class="mktg-chips" id="goal-chips">
+            <button class="mktg-chip" data-group="goal" data-value="signups">&#128100; Get Signups</button>
+            <button class="mktg-chip" data-group="goal" data-value="downloads">&#128247; App Downloads</button>
+            <button class="mktg-chip" data-group="goal" data-value="sales">&#128178; Drive Sales</button>
+            <button class="mktg-chip" data-group="goal" data-value="awareness">&#128276; Brand Awareness</button>
+            <button class="mktg-chip" data-group="goal" data-value="community">&#128101; Build Community</button>
+          </div>
+        </div>
+
+        <!-- Budget chips -->
+        <div class="mktg-field">
+          <label class="mktg-label">Marketing Budget <span>* required</span></label>
+          <div class="mktg-chips" id="budget-chips">
+            <button class="mktg-chip selected" data-group="budget" data-value="zero">&#128176; &#8377;0 (Free only)</button>
+            <button class="mktg-chip" data-group="budget" data-value="low">&#128178; &#8377;1k&ndash;5k/month</button>
+            <button class="mktg-chip" data-group="budget" data-value="medium">&#128640; &#8377;5k&ndash;20k/month</button>
+            <button class="mktg-chip" data-group="budget" data-value="growth">&#9889; &#8377;20k+/month</button>
+          </div>
+        </div>
+
+        <!-- CTA -->
+        <button class="mktg-generate-btn" id="generate-plan-btn" onclick="generatePlan()">
+          <div class="btn-spinner"></div>
+          <span class="btn-text">&#10022; Generate My 30-Day Marketing Plan</span>
+        </button>
+
+        <!-- CLARIX HINT BOX — explains how Clarix powers the plan -->
+        <div class="mktg-clarix-hint" style="margin-top:20px">
+          <div class="mktg-clarix-hint-icon">&#10022;</div>
+          <div class="mktg-clarix-hint-text">
+            <strong>Powered by Clarix AI:</strong>
+            Your plan will use Clarix Write, Inspire, Apps and more to create
+            every piece of content. Think of Clarix as your marketing team.
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ─── VIEW: LOADING ──────────────────────── -->
+    <div class="mktg-content hidden" id="view-loading">
+      <div class="mktg-panel" style="text-align:center; padding:60px 32px">
+        <div style="font-size:56px; margin-bottom:20px; animation:spin 2s linear infinite; display:inline-block">&#10022;</div>
+        <div class="mktg-panel-title" style="justify-content:center; font-size:24px">
+          Building Your Marketing Plan...
+        </div>
+        <p id="loading-step-text" style="color:rgba(255,255,255,0.5); margin:12px 0 28px; font-size:15px">
+          Analysing your startup...
+        </p>
+        <div class="mktg-progress-bar" style="max-width:400px; margin:0 auto">
+          <div class="mktg-progress-fill" id="loading-progress-fill" style="width:5%"></div>
+        </div>
+        <p style="font-size:12px; color:rgba(255,255,255,0.25); margin-top:20px">
+          Clarix AI is building 30 personalised action items for your startup. Give it a moment...
+        </p>
+      </div>
+    </div>
+
+    <!-- ─── VIEW: PLAN ─────────────────────────── -->
+    <div class="mktg-content hidden" id="view-plan">
+
+      <!-- Back + Reset -->
+      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px">
+        <button class="mktg-back-btn" onclick="resetPlan()">
+          &#8592; New Plan
+        </button>
+        <span style="font-size:13px; color:rgba(255,255,255,0.35)">
+          Plan for: <strong id="plan-startup-name" style="color:rgba(255,255,255,0.7)">Your Startup</strong>
+        </span>
+      </div>
+
+      <!-- Overall progress -->
+      <div style="margin-bottom:20px">
+        <div style="display:flex; justify-content:space-between; font-size:12px; color:rgba(255,255,255,0.4); margin-bottom:6px">
+          <span>Overall Progress</span>
+          <span id="plan-progress-label">0 / 30 days completed (0%)</span>
+        </div>
+        <div class="mktg-progress-bar">
+          <div class="mktg-progress-fill" id="plan-progress-fill" style="width:0%"></div>
+        </div>
+      </div>
+
+      <!-- Stats -->
+      <div class="mktg-stats">
+        <div class="mktg-stat-card">
+          <div class="mktg-stat-val" id="stat-days">30</div>
+          <div class="mktg-stat-lbl">Total Days</div>
+        </div>
+        <div class="mktg-stat-card">
+          <div class="mktg-stat-val" id="stat-channels">7</div>
+          <div class="mktg-stat-lbl">Channels</div>
+        </div>
+        <div class="mktg-stat-card">
+          <div class="mktg-stat-val" id="stat-done" style="color:#4ade80">0</div>
+          <div class="mktg-stat-lbl">Done</div>
+        </div>
+        <div class="mktg-stat-card">
+          <div class="mktg-stat-val" id="stat-left">30</div>
+          <div class="mktg-stat-lbl">Remaining</div>
+        </div>
+      </div>
+
+      <!-- Strategy Summary -->
+      <div class="mktg-summary-bar" id="plan-summary">
+        <div class="mktg-summary-text">Generating your strategy summary...</div>
+        <div class="mktg-summary-channel"></div>
+      </div>
+
+      <!-- CLARIX GUIDE BOX -->
+      <div class="mktg-panel" style="padding:20px 24px; margin-bottom:20px;">
+        <div style="display:flex; align-items:flex-start; gap:14px">
+          <div style="font-size:28px; flex-shrink:0">&#10022;</div>
+          <div>
+            <div style="font-family:var(--font-head); font-size:15px; font-weight:800; margin-bottom:6px">
+              How Clarix Powers Each Day
+            </div>
+            <p style="font-size:13px; color:rgba(255,255,255,0.55); line-height:1.7; margin:0">
+              Every day in your plan includes a
+              <strong style="color:var(--accent)">&#10022; Use Clarix</strong> hint
+              that links to the exact Clarix tool to help you create that day's content.
+              Click any day to expand it, generate AI content, and copy it instantly.
+            </p>
+            <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:14px">
+              <a href="write.html" class="mktg-clarix-link" style="font-size:12px">&#9997;&#65039; Write Studio</a>
+              <a href="inspire.html" class="mktg-clarix-link" style="font-size:12px">&#10024; InspireMe</a>
+              <a href="apps.html" class="mktg-clarix-link" style="font-size:12px">&#128640; Apps</a>
+              <a href="library.html" class="mktg-clarix-link" style="font-size:12px">&#128218; Library</a>
+              <a href="community.html" class="mktg-clarix-link" style="font-size:12px">&#128101; Community</a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Week tabs + days -->
+      <div class="mktg-panel" style="padding:24px">
+        <div class="mktg-panel-title">&#128197; Your 30-Day Action Plan</div>
+        <div class="mktg-panel-sub">
+          Click any day to see what to do, generate ready-to-post content, and mark it done.
+          Green check = completed. Each day links to the right Clarix tool.
+        </div>
+
+        <!-- Week tabs -->
+        <div class="mktg-week-tabs" id="week-tabs">
+          <!-- Rendered by JS -->
+        </div>
+
+        <!-- Week goal -->
+        <div class="mktg-week-goal" id="week-goal-text"></div>
+
+        <!-- Days list -->
+        <div class="mktg-days-grid" id="days-container">
+          <!-- Skeleton loading -->
+          <div class="mktg-skeleton mktg-skeleton-card"></div>
+          <div class="mktg-skeleton mktg-skeleton-card"></div>
+          <div class="mktg-skeleton mktg-skeleton-card"></div>
+          <div class="mktg-skeleton mktg-skeleton-card"></div>
+          <div class="mktg-skeleton mktg-skeleton-card"></div>
+        </div>
+      </div>
+
+    </div>
+
+  </div><!-- end .mktg-page -->
+
+  <!-- MOBILE BOTTOM NAV -->
+  <nav class="mobile-nav">
+    <div class="mnav-items">
+      <a href="index.html"     class="mnav-item"><span class="mnav-icon">&#127968;</span>Home</a>
+      <a href="write.html"     class="mnav-item"><span class="mnav-icon">&#9997;&#65039;</span>Write</a>
+      <a href="inspire.html"   class="mnav-item"><span class="mnav-icon">&#10024;</span>Inspire</a>
+      <a href="apps.html"      class="mnav-item"><span class="mnav-icon">&#128640;</span>Apps</a>
+      <a href="marketing.html" class="mnav-item active"><span class="mnav-icon">&#128200;</span>Market</a>
+    </div>
+  </nav>
+
+  <!-- ─── SCRIPTS ────────────────────────────── -->
+  <script src="config.js?v=20260414A"></script>
+  <script src="js/core.js?v=20260414A"></script>
+  <script src="js/sidebar.js?v=20260414A"></script>
+  <script src="js/onboarding.js?v=20260414A"></script>
+  <script src="js/firebase.js?v=20260414A"></script>
+  <script src="js/firebase-auth.js?v=20260414A"></script>
+  <!-- Marketing Digital page logic (new, isolated) -->
+  <script src="js/pages/marketing.js?v=20260416A"></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js').catch(() => {});
+    }
+    document.addEventListener('DOMContentLoaded', () => {
+      if (window.Sidebar) Sidebar.init();
+    });
+  </script>
+  <script src="js/pwa.js?v=20260414A"></script>
+  <script src="js/push.js?v=20260415P"></script>
+</body>
+</html>

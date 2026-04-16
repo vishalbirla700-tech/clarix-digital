@@ -1,0 +1,669 @@
+/* ═══════════════════════════════════════════════
+   CLARIX — Marketing Digital Page CSS
+   Standalone stylesheet — does NOT affect any
+   other Clarix page.
+═══════════════════════════════════════════════ */
+
+/* ─── LAYOUT ────────────────────────────────── */
+.mktg-page {
+  min-height: 100vh;
+  background: var(--bg-dark);
+  color: var(--text-white);
+  padding-top: 64px;
+}
+
+/* ─── HERO ───────────────────────────────────── */
+.mktg-hero {
+  text-align: center;
+  padding: 60px 24px 40px;
+  position: relative;
+  overflow: hidden;
+}
+.mktg-hero::before {
+  content: '';
+  position: absolute;
+  top: -100px; left: 50%;
+  transform: translateX(-50%);
+  width: 600px; height: 400px;
+  background: radial-gradient(ellipse at center, rgba(255,112,67,0.15) 0%, transparent 70%);
+  pointer-events: none;
+}
+.mktg-hero-badge {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: rgba(255,112,67,0.12);
+  border: 1px solid rgba(255,112,67,0.3);
+  border-radius: var(--r-full);
+  padding: 6px 18px;
+  font-size: 12px; font-weight: 700;
+  color: var(--accent);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-bottom: 20px;
+}
+.mktg-hero h1 {
+  font-family: var(--font-head);
+  font-size: clamp(32px, 6vw, 56px);
+  font-weight: 900;
+  line-height: 1.1;
+  margin-bottom: 16px;
+}
+.mktg-hero p {
+  font-size: 17px;
+  color: rgba(255,255,255,0.6);
+  max-width: 560px;
+  margin: 0 auto 32px;
+  line-height: 1.7;
+}
+
+/* ─── STEP INDICATOR ─────────────────────────── */
+.mktg-steps {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  margin-bottom: 40px;
+  flex-wrap: wrap;
+  padding: 0 24px;
+}
+.mktg-step {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 13px; font-weight: 600;
+  color: rgba(255,255,255,0.35);
+  transition: color var(--t-mid) var(--ease);
+}
+.mktg-step.active { color: var(--accent); }
+.mktg-step.done   { color: rgba(255,255,255,0.6); }
+.mktg-step-num {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.08);
+  border: 1.5px solid rgba(255,255,255,0.15);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 800;
+  transition: all var(--t-mid) var(--ease);
+  flex-shrink: 0;
+}
+.mktg-step.active .mktg-step-num {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+  box-shadow: 0 0 16px rgba(255,112,67,0.4);
+}
+.mktg-step.done .mktg-step-num {
+  background: rgba(74,222,128,0.15);
+  border-color: rgba(74,222,128,0.4);
+  color: #4ade80;
+}
+.mktg-step-arrow {
+  width: 32px; height: 2px;
+  background: rgba(255,255,255,0.1);
+  margin: 0 4px;
+  flex-shrink: 0;
+}
+
+/* ─── MAIN CONTENT AREA ─────────────────────── */
+.mktg-content {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 0 20px 80px;
+}
+
+/* ─── SECTIONS (panels) ─────────────────────── */
+.mktg-panel {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: var(--r-lg);
+  padding: 32px;
+  margin-bottom: 24px;
+  animation: fadeUp 0.4s var(--ease) both;
+}
+.mktg-panel-title {
+  font-family: var(--font-head);
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: 6px;
+  display: flex; align-items: center; gap: 10px;
+}
+.mktg-panel-sub {
+  font-size: 13px;
+  color: rgba(255,255,255,0.45);
+  margin-bottom: 28px;
+  line-height: 1.6;
+}
+
+/* ─── FORM FIELDS ────────────────────────────── */
+.mktg-field {
+  margin-bottom: 20px;
+}
+.mktg-label {
+  display: block;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: rgba(255,255,255,0.5);
+  margin-bottom: 8px;
+}
+.mktg-label span {
+  color: var(--accent);
+  text-transform: none;
+  font-weight: 600;
+  font-size: 11px;
+  letter-spacing: 0;
+}
+.mktg-input,
+.mktg-textarea,
+.mktg-select {
+  width: 100%;
+  background: rgba(255,255,255,0.05);
+  border: 1.5px solid rgba(255,255,255,0.1);
+  border-radius: var(--r-md);
+  padding: 14px 16px;
+  color: #fff;
+  font-size: 15px;
+  font-family: var(--font-body);
+  transition: border-color var(--t-fast) var(--ease),
+              background var(--t-fast) var(--ease);
+}
+.mktg-input:focus,
+.mktg-textarea:focus,
+.mktg-select:focus {
+  border-color: rgba(255,112,67,0.5);
+  background: rgba(255,112,67,0.05);
+  outline: none;
+}
+.mktg-input::placeholder,
+.mktg-textarea::placeholder { color: rgba(255,255,255,0.25); }
+.mktg-textarea { resize: vertical; min-height: 90px; line-height: 1.6; }
+.mktg-select option { background: #1a1a1a; color: #fff; }
+
+.mktg-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+@media (max-width: 600px) { .mktg-row { grid-template-columns: 1fr; } }
+
+/* ─── CHIP SELECTOR (Budget / Goal) ─────────── */
+.mktg-chips {
+  display: flex; flex-wrap: wrap; gap: 8px;
+}
+.mktg-chip {
+  padding: 8px 16px;
+  border-radius: var(--r-full);
+  background: rgba(255,255,255,0.06);
+  border: 1.5px solid rgba(255,255,255,0.1);
+  color: rgba(255,255,255,0.6);
+  font-size: 13px; font-weight: 600;
+  cursor: pointer;
+  transition: all var(--t-fast) var(--ease);
+}
+.mktg-chip:hover  {
+  background: rgba(255,112,67,0.1);
+  border-color: rgba(255,112,67,0.3);
+  color: var(--accent);
+}
+.mktg-chip.selected {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+  box-shadow: 0 4px 16px rgba(255,112,67,0.3);
+}
+
+/* ─── GENERATE BUTTON ────────────────────────── */
+.mktg-generate-btn {
+  width: 100%;
+  padding: 18px 24px;
+  background: linear-gradient(135deg, #ff7043, #e64a19);
+  border: none;
+  border-radius: var(--r-md);
+  color: #fff;
+  font-size: 16px;
+  font-weight: 800;
+  font-family: var(--font-head);
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  transition: all var(--t-mid) var(--ease-spring);
+  box-shadow: 0 8px 32px rgba(255,112,67,0.35);
+  margin-top: 8px;
+}
+.mktg-generate-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 40px rgba(255,112,67,0.5);
+}
+.mktg-generate-btn:active { transform: translateY(0); }
+.mktg-generate-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+.mktg-generate-btn .btn-spinner {
+  width: 18px; height: 18px;
+  border: 2.5px solid rgba(255,255,255,0.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  display: none;
+}
+.mktg-generate-btn.loading .btn-spinner { display: block; }
+.mktg-generate-btn.loading .btn-text   { display: none; }
+
+/* ─── SUMMARY BAR ────────────────────────────── */
+.mktg-summary-bar {
+  background: linear-gradient(135deg, rgba(255,112,67,0.12), rgba(255,112,67,0.05));
+  border: 1px solid rgba(255,112,67,0.25);
+  border-radius: var(--r-md);
+  padding: 20px 24px;
+  margin-bottom: 24px;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 16px;
+  align-items: center;
+}
+.mktg-summary-text { font-size: 15px; line-height: 1.6; color: rgba(255,255,255,0.85); }
+.mktg-summary-channel {
+  font-size: 12px; font-weight: 800;
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  text-align: right;
+  white-space: nowrap;
+}
+
+/* ─── WEEK TABS ──────────────────────────────── */
+.mktg-week-tabs {
+  display: flex; gap: 8px;
+  margin-bottom: 24px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+.mktg-week-tab {
+  padding: 8px 20px;
+  border-radius: var(--r-full);
+  background: rgba(255,255,255,0.06);
+  border: 1.5px solid rgba(255,255,255,0.1);
+  color: rgba(255,255,255,0.5);
+  font-size: 13px; font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all var(--t-fast) var(--ease);
+  flex-shrink: 0;
+}
+.mktg-week-tab:hover { border-color: var(--accent); color: var(--accent); }
+.mktg-week-tab.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+.mktg-week-goal {
+  font-size: 13px;
+  color: rgba(255,255,255,0.4);
+  font-style: italic;
+  margin-bottom: 20px;
+  padding: 10px 16px;
+  background: rgba(255,255,255,0.03);
+  border-left: 3px solid rgba(255,112,67,0.4);
+  border-radius: 0 var(--r-sm) var(--r-sm) 0;
+}
+
+/* ─── DAY CARDS ──────────────────────────────── */
+.mktg-days-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.mktg-day-card {
+  background: rgba(255,255,255,0.03);
+  border: 1.5px solid rgba(255,255,255,0.07);
+  border-radius: var(--r-md);
+  overflow: hidden;
+  transition: border-color var(--t-fast) var(--ease),
+              transform var(--t-fast) var(--ease);
+  cursor: pointer;
+}
+.mktg-day-card:hover {
+  border-color: rgba(255,112,67,0.3);
+  transform: translateX(2px);
+}
+.mktg-day-card.done { opacity: 0.55; }
+.mktg-day-card.done .mktg-day-header { background: rgba(74,222,128,0.05); }
+
+.mktg-day-header {
+  padding: 14px 18px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.mktg-day-num {
+  width: 36px; height: 36px;
+  background: rgba(255,112,67,0.15);
+  border: 1.5px solid rgba(255,112,67,0.3);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 900;
+  color: var(--accent);
+  flex-shrink: 0;
+}
+.mktg-day-card.done .mktg-day-num {
+  background: rgba(74,222,128,0.15);
+  border-color: rgba(74,222,128,0.4);
+  color: #4ade80;
+}
+.mktg-day-info { flex: 1; min-width: 0; }
+.mktg-day-title {
+  font-size: 14px; font-weight: 700;
+  line-height: 1.3;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.mktg-day-meta {
+  display: flex; align-items: center; gap: 8px;
+  margin-top: 3px;
+}
+.mktg-channel-tag {
+  font-size: 11px; font-weight: 700;
+  padding: 2px 8px;
+  border-radius: var(--r-full);
+  text-transform: uppercase; letter-spacing: 0.06em;
+}
+.ch-reddit    { background: rgba(255,69,0,0.2);  color: #ff6314; }
+.ch-linkedin  { background: rgba(10,102,194,0.2); color: #5aacff; }
+.ch-twitter   { background: rgba(29,155,240,0.2); color: #5bc6ff; }
+.ch-whatsapp  { background: rgba(37,211,102,0.2); color: #25d366; }
+.ch-producthunt { background: rgba(218,72,0,0.2); color: #ff9a5c; }
+.ch-press     { background: rgba(168,85,247,0.2); color: #c084fc; }
+.ch-email     { background: rgba(255,112,67,0.2); color: var(--accent); }
+.ch-content   { background: rgba(251,191,36,0.2); color: #fbbf24; }
+.ch-seo       { background: rgba(52,211,153,0.2); color: #34d399; }
+.ch-community { background: rgba(167,139,250,0.2);color: #a78bfa; }
+
+.mktg-effort-badge {
+  font-size: 10px; font-weight: 600;
+  color: rgba(255,255,255,0.4);
+}
+.effort-low    { color: #4ade80; }
+.effort-medium { color: #fbbf24; }
+.effort-high   { color: #f87171; }
+
+.mktg-day-actions {
+  display: flex; align-items: center; gap: 8px; flex-shrink: 0;
+}
+.mktg-done-btn {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.07);
+  border: 1.5px solid rgba(255,255,255,0.15);
+  color: rgba(255,255,255,0.4);
+  font-size: 13px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  transition: all var(--t-fast) var(--ease);
+}
+.mktg-done-btn:hover,
+.mktg-day-card.done .mktg-done-btn {
+  background: rgba(74,222,128,0.2);
+  border-color: rgba(74,222,128,0.5);
+  color: #4ade80;
+}
+
+/* ─── DAY EXPAND PANEL ───────────────────────── */
+.mktg-day-expand {
+  display: none;
+  padding: 0 18px 18px;
+  border-top: 1px solid rgba(255,255,255,0.06);
+  animation: fadeIn 0.2s ease both;
+}
+.mktg-day-card.expanded .mktg-day-expand { display: block; }
+.mktg-day-desc {
+  font-size: 14px;
+  color: rgba(255,255,255,0.65);
+  line-height: 1.7;
+  margin: 12px 0;
+}
+
+/* ─── CLARIX HINT BOX ────────────────────────── */
+.mktg-clarix-hint {
+  background: linear-gradient(135deg, rgba(255,112,67,0.1), rgba(255,112,67,0.04));
+  border: 1px solid rgba(255,112,67,0.25);
+  border-radius: var(--r-sm);
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+.mktg-clarix-hint-icon { font-size: 20px; flex-shrink: 0; }
+.mktg-clarix-hint-text {
+  flex: 1;
+  font-size: 13px;
+  color: rgba(255,255,255,0.7);
+  line-height: 1.5;
+}
+.mktg-clarix-hint-text strong { color: var(--accent); }
+.mktg-clarix-link {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 7px 14px;
+  background: var(--accent);
+  border-radius: var(--r-sm);
+  color: #fff;
+  font-size: 12px; font-weight: 800;
+  flex-shrink: 0;
+  transition: all var(--t-fast) var(--ease);
+}
+.mktg-clarix-link:hover {
+  background: var(--accent-hover);
+  transform: translateX(2px);
+}
+
+/* ─── CONTENT GENERATOR ──────────────────────── */
+.mktg-content-gen {
+  margin-top: 12px;
+}
+.mktg-content-gen-title {
+  font-size: 12px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.08em;
+  color: rgba(255,255,255,0.35);
+  margin-bottom: 10px;
+}
+.mktg-gen-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 9px 18px;
+  background: rgba(255,255,255,0.07);
+  border: 1.5px solid rgba(255,255,255,0.12);
+  border-radius: var(--r-sm);
+  color: rgba(255,255,255,0.8);
+  font-size: 13px; font-weight: 700;
+  cursor: pointer;
+  transition: all var(--t-fast) var(--ease);
+}
+.mktg-gen-btn:hover {
+  background: rgba(255,112,67,0.12);
+  border-color: rgba(255,112,67,0.35);
+  color: var(--accent);
+}
+.mktg-gen-btn.loading { opacity: 0.6; pointer-events: none; }
+
+/* ─── CONTENT OUTPUT CARD ────────────────────── */
+.mktg-content-card {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: var(--r-md);
+  padding: 18px;
+  margin-top: 12px;
+  display: none;
+  animation: fadeUp 0.3s ease both;
+}
+.mktg-content-card.visible { display: block; }
+.mktg-content-headline {
+  font-family: var(--font-head);
+  font-size: 16px; font-weight: 800;
+  margin-bottom: 10px;
+  color: var(--accent);
+}
+.mktg-content-body {
+  font-size: 14px;
+  line-height: 1.75;
+  color: rgba(255,255,255,0.75);
+  white-space: pre-wrap;
+  word-break: break-word;
+  margin-bottom: 14px;
+  background: rgba(0,0,0,0.2);
+  padding: 14px;
+  border-radius: var(--r-sm);
+  border: 1px solid rgba(255,255,255,0.06);
+}
+.mktg-content-tags {
+  display: flex; flex-wrap: wrap; gap: 6px;
+  margin-bottom: 12px;
+}
+.mktg-tag {
+  font-size: 12px; font-weight: 600;
+  padding: 3px 10px;
+  background: rgba(255,255,255,0.08);
+  border-radius: var(--r-full);
+  color: rgba(255,255,255,0.5);
+}
+.mktg-content-cta {
+  font-size: 13px;
+  color: rgba(255,255,255,0.55);
+  font-style: italic;
+  margin-bottom: 2px;
+}
+.mktg-content-tip {
+  font-size: 12px; color: #fbbf24;
+  padding: 8px 12px;
+  background: rgba(251,191,36,0.08);
+  border-radius: var(--r-sm);
+  border-left: 3px solid rgba(251,191,36,0.4);
+  margin-top: 10px;
+}
+.mktg-copy-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 10px 20px;
+  background: rgba(255,255,255,0.1);
+  border: 1.5px solid rgba(255,255,255,0.15);
+  border-radius: var(--r-sm);
+  color: #fff;
+  font-size: 13px; font-weight: 700;
+  cursor: pointer;
+  margin-top: 12px;
+  transition: all var(--t-fast) var(--ease);
+}
+.mktg-copy-btn:hover { background: rgba(255,255,255,0.15); }
+.mktg-copy-btn.copied { background: rgba(74,222,128,0.15); border-color: rgba(74,222,128,0.4); color: #4ade80; }
+
+/* ─── PROGRESS BAR ───────────────────────────── */
+.mktg-progress-bar {
+  height: 4px;
+  background: rgba(255,255,255,0.08);
+  border-radius: var(--r-full);
+  overflow: hidden;
+  margin-bottom: 28px;
+}
+.mktg-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #ff7043, #ffcc02);
+  border-radius: var(--r-full);
+  transition: width 0.6s var(--ease);
+}
+
+/* ─── LOADING SKELETON ───────────────────────── */
+.mktg-skeleton {
+  background: linear-gradient(90deg,
+    rgba(255,255,255,0.05) 25%,
+    rgba(255,255,255,0.1)  50%,
+    rgba(255,255,255,0.05) 75%);
+  background-size: 400px 100%;
+  animation: shimmer 1.4s infinite;
+  border-radius: var(--r-sm);
+}
+.mktg-skeleton-line {
+  height: 14px; margin-bottom: 10px;
+  border-radius: var(--r-full);
+}
+.mktg-skeleton-card {
+  height: 72px; margin-bottom: 12px;
+  border-radius: var(--r-md);
+}
+
+/* ─── EMPTY / RESULT STATES ──────────────────── */
+.mktg-empty {
+  text-align: center;
+  padding: 60px 24px;
+}
+.mktg-empty-icon { font-size: 52px; margin-bottom: 16px; }
+.mktg-empty-title {
+  font-family: var(--font-head);
+  font-size: 22px; font-weight: 700;
+  margin-bottom: 8px;
+}
+.mktg-empty-sub {
+  font-size: 14px;
+  color: rgba(255,255,255,0.45);
+  max-width: 400px; margin: 0 auto;
+  line-height: 1.6;
+}
+
+/* ─── STATS ROW ──────────────────────────────── */
+.mktg-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-bottom: 24px;
+}
+@media (max-width: 600px) { .mktg-stats { grid-template-columns: repeat(2, 1fr); } }
+.mktg-stat-card {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: var(--r-md);
+  padding: 16px;
+  text-align: center;
+}
+.mktg-stat-val {
+  font-family: var(--font-head);
+  font-size: 28px; font-weight: 800;
+  color: var(--accent);
+}
+.mktg-stat-lbl {
+  font-size: 11px; font-weight: 600;
+  color: rgba(255,255,255,0.4);
+  text-transform: uppercase; letter-spacing: 0.06em;
+  margin-top: 2px;
+}
+
+/* ─── BACK BUTTON ────────────────────────────── */
+.mktg-back-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 9px 18px;
+  background: rgba(255,255,255,0.06);
+  border: 1.5px solid rgba(255,255,255,0.1);
+  border-radius: var(--r-sm);
+  color: rgba(255,255,255,0.6);
+  font-size: 13px; font-weight: 700;
+  cursor: pointer;
+  margin-bottom: 24px;
+  transition: all var(--t-fast) var(--ease);
+}
+.mktg-back-btn:hover {
+  background: rgba(255,255,255,0.1);
+  color: #fff;
+}
+
+/* ─── TOOLTIP ────────────────────────────────── */
+.mktg-tooltip {
+  position: relative; display: inline-flex;
+}
+.mktg-tooltip:hover::after {
+  content: attr(data-tip);
+  position: absolute;
+  bottom: calc(100% + 6px); left: 50%;
+  transform: translateX(-50%);
+  background: #1a1a1a;
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: var(--r-sm);
+  padding: 6px 10px;
+  font-size: 11px;
+  white-space: nowrap;
+  color: rgba(255,255,255,0.8);
+  pointer-events: none;
+  z-index: 100;
+}

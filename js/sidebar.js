@@ -25,15 +25,16 @@ window.Sidebar = {
     // Sidebar
     const page = window.location.pathname.split('/').pop() || 'index.html';
     const navLinks = [
-      { href:'index.html',    icon:'🏠', label:'Home' },
-      { href:'write.html',    icon:'✍️', label:'Write' },
-      { href:'inspire.html',  icon:'🎨', label:'InspireMe' },
-      { href:'library.html',  icon:'📚', label:'Library', dynamicBadge:'clarix_saved' },
-      { href:'data.html',     icon:'📊', label:'Data Intelligence' },
-      { href:'apps.html',     icon:'🚀', label:'Apps' },
-      { href:'history.html',  icon:'📜', label:'History' },
-      { href:'profile.html',  icon:'👤', label:'Profile' },
-      { href:'feedback.html', icon:'⭐', label:'Give Feedback' },
+      { href:'index.html',     icon:'🏠', label:'Home' },
+      { href:'write.html',     icon:'✍️', label:'Write' },
+      { href:'inspire.html',   icon:'🎨', label:'InspireMe' },
+      { href:'library.html',   icon:'📚', label:'Library', dynamicBadge:'clarix_saved' },
+      { href:'data.html',      icon:'📊', label:'Data Intelligence' },
+      { href:'apps.html',      icon:'🚀', label:'Apps' },
+      { href:'marketing.html', icon:'📈', label:'Marketing Digital' },
+      { href:'history.html',   icon:'📜', label:'History' },
+      { href:'profile.html',   icon:'👤', label:'Profile' },
+      { href:'feedback.html',  icon:'⭐', label:'Give Feedback' },
     ];
 
     // Resolve dynamic badges from localStorage
