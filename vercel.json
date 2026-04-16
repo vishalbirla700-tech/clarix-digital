@@ -15,7 +15,8 @@
     { "source": "/privacy",   "destination": "/privacy.html" },
     { "source": "/refund",    "destination": "/refund.html" },
     { "source": "/view",      "destination": "/view.html" },
-    { "source": "/admin",     "destination": "/admin.html" }
+    { "source": "/admin",     "destination": "/admin.html" },
+    { "source": "/marketing", "destination": "/marketing.html" }
   ],
   "headers": [
     {
@@ -27,7 +28,7 @@
       ]
     },
     {
-      "source": "/(write|inspire|library|apps|history|profile|breakdown|community|about|terms|privacy|refund|onepager|indias-first-ai-prompt-engine|view|admin)",
+      "source": "/(write|inspire|library|apps|history|profile|breakdown|community|about|terms|privacy|refund|onepager|indias-first-ai-prompt-engine|view|admin|marketing)",
       "headers": [
         { "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate" },
         { "key": "Pragma",        "value": "no-cache" },
