@@ -169,7 +169,7 @@ async function loadUsers(search) {
   search = search || '';
   showTableLoading(true);
   try {
-    var url  = API_BASE + '?action=getUsers&secret=' + ADMIN_SECRET + '&limit=100'
+    var url  = API_BASE + '?action=getUsers&secret=' + ADMIN_SECRET + '&limit=500'
       + (search ? '&search=' + encodeURIComponent(search) : '');
     var resp = await fetch(url);
     var data = await resp.json();

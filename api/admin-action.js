@@ -60,7 +60,7 @@ module.exports = async function handler(req, res) {
 
     /* ── GET /api/admin-action?action=getUsers&page=0 ── */
     if (action === 'getUsers') {
-      const limit  = parseInt(query.limit || body.limit || '50');
+      const limit  = Math.min(parseInt(query.limit || body.limit || '500'), 500);
       const search = (query.search || body.search || '').toLowerCase().trim();
 
       let q = users.orderBy('createdAt', 'desc').limit(limit);
