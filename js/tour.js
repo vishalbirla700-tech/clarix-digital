@@ -8,8 +8,8 @@
 
 const ClarixTour = {
 
-  /* ── Tour version: bump alongside CLARIX_APP_VERSION ── */
-  TOUR_VERSION: '20260415P',
+  /* ── Tour version: bump to force tour reset for all users who already saw it ── */
+  TOUR_VERSION: '20260417A',
 
   /* ── State ── */
   _steps: [],
@@ -137,8 +137,12 @@ const ClarixTour = {
     if (!steps || !steps.length) return;
     this._steps = steps;
 
-    /* Short delay so page fully paints */
-    setTimeout(() => this.start(), 1200);
+    /* Delay long enough for:
+       - Firebase auth to resolve (3s grace period)
+       - Onboarding modal to complete
+       - Login modal to appear and be handled
+       This prevents the tour from conflicting with auth UI. */
+    setTimeout(() => this.start(), 5500);
   },
 
   /* ── Floating "?" replay button ── */
