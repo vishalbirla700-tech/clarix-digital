@@ -27,12 +27,10 @@ var PartnerReg = {
     var form = document.getElementById('partnerRegForm');
     if (form) form.addEventListener('submit', this.handleSubmit.bind(this));
 
-    /* Pre-fill name/email from Firebase auth if user is signed in */
+    /* Pre-fill email only from Firebase auth — name is entered by the partner themselves */
     ClarixAuth.onReady(function(user) {
       if (user) {
-        var nameEl  = document.getElementById('partnerName');
         var emailEl = document.getElementById('partnerEmail');
-        if (nameEl && !nameEl.value)   nameEl.value  = user.displayName || '';
         if (emailEl && !emailEl.value) emailEl.value = user.email || '';
       }
     });
@@ -328,7 +326,7 @@ var PartnerDash = {
       var data = await resp.json();
 
       if (data.success) {
-        alert('✅ Payout request submitted!\n\nAmount: ₹' + data.amount + '\nUPI: ' + upiId + '\n\nWe will process it within 3-5 business days.');
+        alert('✅ Payout request submitted!\n\nAmount: ₹' + data.amount + '\nUPI: ' + upiId + '\n\nClarix team will process your payout on the 15th of the following month.');
         window.location.reload();
       } else {
         alert('❌ ' + (data.error || 'Failed to submit request.'));
