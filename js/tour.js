@@ -9,7 +9,7 @@
 const ClarixTour = {
 
   /* ── Tour version: bump to force tour reset for all users who already saw it ── */
-  TOUR_VERSION: '20260417A',
+  TOUR_VERSION: '20260417P',
 
   /* ── State ── */
   _steps: [],
