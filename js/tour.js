@@ -6,7 +6,7 @@
    - Floating "?" button lets any user replay at any time
 ═══════════════════════════════════════════════════════════ */
 
-const ClarixTour = {
+const ClarixTour = window.ClarixTour = {
 
   /* ── Tour version: bump to force tour reset for all users who already saw it ── */
   TOUR_VERSION: '20260417P',

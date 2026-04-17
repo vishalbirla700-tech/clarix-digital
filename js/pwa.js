@@ -36,10 +36,9 @@ const ClarixPWA = (() => {
   function checkVersion() {
     const stored = localStorage.getItem('clarix_version');
     if (stored && stored !== CLARIX_APP_VERSION) {
-      /* Show banner ONCE — stamp new version immediately so it never shows
-         again on the next page, whether or not user taps Update Now */
+      /* Delay banner 3s so it appears after auth/onboarding modal clears */
       localStorage.setItem('clarix_version', CLARIX_APP_VERSION);
-      _showUpdateBanner('🆕 Clarix has new features! Tap to reload.');
+      setTimeout(() => _showUpdateBanner('\uD83D\uDD06 Clarix just updated! Reload for the latest features.'), 3000);
     } else {
       localStorage.setItem('clarix_version', CLARIX_APP_VERSION);
     }
@@ -53,11 +52,11 @@ const ClarixPWA = (() => {
     const banner = document.createElement('div');
     banner.id = 'clarix-update-banner';
     banner.style.cssText = [
-      'position:fixed;bottom:72px;left:12px;right:12px',
+      'position:fixed;top:72px;left:12px;right:12px',
       'background:linear-gradient(135deg,#ff7043,#e64a19)',
       'border-radius:16px;padding:14px 16px',
       'display:flex;align-items:center;gap:12px',
-      'z-index:10000;box-shadow:0 8px 40px rgba(255,112,67,0.45)',
+      'z-index:200002;box-shadow:0 8px 40px rgba(255,112,67,0.45)',
       'max-width:500px;margin:0 auto'
     ].join(';');
 
