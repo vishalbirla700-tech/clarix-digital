@@ -84,29 +84,6 @@ const ClarixTour = window.ClarixTour = {
       }
     ],
 
-    apps: [
-      {
-        target: 'studiosGrid',
-        title: '1 \u00B7 Creative Studios',
-        body:  'Four specialised AI tools \u2014 Kids, Corporate, Festival & Multilingual. Each has a unique creative flow.',
-        arrow: 'bottom',
-        hand:  'point-down'
-      },
-      {
-        target: 'intentGrid',
-        title: '2 \u00B7 Quick Intent Shortcuts',
-        body:  'Tap any intent card to jump straight into the Write page with a preset topic and platform ready to go.',
-        arrow: 'bottom',
-        hand:  'tap'
-      },
-      {
-        target: 'hubContent',
-        title: '3 \u00B7 AI Creation Hubs',
-        body:  'Discover the best AI tools for Video, Blog, 3D and more \u2014 all curated and categorised for Indian creators.',
-        arrow: 'top',
-        hand:  'point-down'
-      }
-    ]
   },
 
   /* ── localStorage keys ── */
@@ -142,7 +119,7 @@ const ClarixTour = window.ClarixTour = {
        - Onboarding modal to complete
        - Login modal to appear and be handled
        This prevents the tour from conflicting with auth UI. */
-    setTimeout(() => this.start(), 5500);
+    setTimeout(() => this.start(), 4000);
   },
 
   /* ── Floating "?" replay button ── */
@@ -276,13 +253,11 @@ const ClarixTour = window.ClarixTour = {
     nextBtn.textContent   = index === this._steps.length - 1 ? '\uD83D\uDE80 Get Started!' : 'Next \u2192';
 
     if (target) {
-      target.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      setTimeout(() => {
-        target.classList.add('ct-target-glow');
-        this._positionSpotlight(target);
-        this._positionTooltip(target, step.arrow);
-        this._positionHand(target, step.hand);
-      }, 350);
+      target.scrollIntoView({ behavior: 'auto', block: 'center' });
+      target.classList.add('ct-target-glow');
+      this._positionSpotlight(target);
+      this._positionTooltip(target, step.arrow);
+      this._positionHand(target, step.hand);
     }
   },
 
