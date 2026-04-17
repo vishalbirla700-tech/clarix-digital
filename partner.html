@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Clarix Partner Program — Earn by Sharing India's First AI Prompt Engine</title>
+  <meta name="description" content="Join Clarix as a sales partner or freelancer. Share your referral link, bring Pro subscribers, and earn 5% commission. Free to join. No target. Your CRM dashboard included.">
+  <meta name="keywords" content="Clarix partner program, affiliate India, earn commission AI, freelancer earn online, referral program India, Clarix affiliate">
+  <meta property="og:title" content="Clarix Partner Program — Earn While You Share">
+  <meta property="og:description" content="Join India's fastest-growing AI platform as a Partner. Share. Refer. Earn 5% per paid subscriber.">
+  <meta property="og:url" content="https://clarix.digital/partner">
+  <meta property="og:image" content="https://clarix.digital/icons/og-image.png">
+  <link rel="canonical" href="https://clarix.digital/partner">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%23ff7043'/><text x='50%' y='55%' font-size='18' text-anchor='middle' dominant-baseline='middle' fill='white'>&#10022;</text></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:      #080814;
+  --bg2:     #0d0d1e;
+  --accent:  #ff7043;
+  --accent2: #ff8a65;
+  --green:   #22c55e;
+  --blue:    #60a5fa;
+  --purple:  #a78bfa;
+  --text:    rgba(255,255,255,0.92);
+  --sub:     rgba(255,255,255,0.5);
+  --dim:     rgba(255,255,255,0.25);
+  --border:  rgba(255,255,255,0.08);
+  --glass:   rgba(255,255,255,0.04);
+  --radius:  18px;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'Inter', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ─── NAV ─── */
+nav.pnav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 32px; height: 64px;
+  background: rgba(8,8,20,0.85);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border);
+}
+.pnav-logo { font-size: 20px; font-weight: 900; color: #fff; text-decoration: none; display: flex; align-items: center; gap: 6px; letter-spacing: -0.5px; }
+.pnav-logo span { color: var(--accent); }
+.pnav-links { display: flex; gap: 24px; }
+.pnav-links a { font-size: 13px; font-weight: 500; color: var(--sub); text-decoration: none; transition: color 0.2s; }
+.pnav-links a:hover { color: #fff; }
+.pnav-cta { background: var(--accent); color: #fff; border: none; border-radius: 10px; padding: 9px 20px; font-size: 13px; font-weight: 700; cursor: pointer; text-decoration: none; transition: all 0.2s; }
+.pnav-cta:hover { background: var(--accent2); transform: translateY(-1px); }
+
+/* ─── HERO ─── */
+.partner-hero {
+  min-height: 100vh;
+  display: flex; align-items: center; justify-content: center;
+  text-align: center;
+  padding: 100px 24px 60px;
+  position: relative;
+  overflow: hidden;
+}
+.partner-hero::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse 70% 60% at 50% 30%, rgba(255,112,67,0.12) 0%, transparent 70%),
+              radial-gradient(ellipse 40% 40% at 80% 70%, rgba(167,139,250,0.08) 0%, transparent 60%);
+}
+.ph-grid {
+  position: absolute; inset: 0;
+  background-image: linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+                    linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+  background-size: 60px 60px;
+}
+.hero-content-wrap { position: relative; z-index: 2; max-width: 760px; margin: 0 auto; }
+.hero-pill {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: rgba(255,112,67,0.1); border: 1px solid rgba(255,112,67,0.3);
+  border-radius: 30px; padding: 7px 18px; font-size: 12px; font-weight: 700;
+  color: var(--accent); letter-spacing: 0.5px; text-transform: uppercase;
+  margin-bottom: 28px;
+  animation: fadeInUp 0.6s ease both;
+}
+h1.hero-h1 {
+  font-size: clamp(38px, 7vw, 72px);
+  font-weight: 900; line-height: 1.1; letter-spacing: -2px;
+  color: #fff; margin-bottom: 20px;
+  animation: fadeInUp 0.6s ease 0.1s both;
+}
+h1.hero-h1 .grad { background: linear-gradient(135deg, #ff7043, #ff8a65, #ffd54f); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+.hero-sub {
+  font-size: clamp(16px, 2.5vw, 20px); color: var(--sub);
+  line-height:1.7; max-width: 580px; margin: 0 auto 40px;
+  animation: fadeInUp 0.6s ease 0.2s both;
+}
+.hero-ctas {
+  display: flex; gap: 14px; justify-content: center; flex-wrap: wrap;
+  animation: fadeInUp 0.6s ease 0.3s both;
+}
+.btn-primary-lg {
+  background: linear-gradient(135deg, var(--accent), #e64a19);
+  color: #fff; border: none; border-radius: 14px; padding: 16px 36px;
+  font-size: 16px; font-weight: 800; cursor: pointer; text-decoration: none;
+  box-shadow: 0 8px 32px rgba(255,112,67,0.35);
+  transition: all 0.2s; display: inline-block;
+}
+.btn-primary-lg:hover { transform: translateY(-2px); box-shadow: 0 14px 40px rgba(255,112,67,0.45); }
+.btn-ghost-lg {
+  background: transparent; color: var(--sub); border: 1px solid var(--border);
+  border-radius: 14px; padding: 16px 28px; font-size: 15px; font-weight: 600;
+  cursor: pointer; text-decoration: none; transition: all 0.2s; display: inline-block;
+}
+.btn-ghost-lg:hover { border-color: rgba(255,255,255,0.2); color: #fff; background: rgba(255,255,255,0.04); }
+
+/* Earning preview pill */
+.earn-preview {
+  display: flex; align-items: center; gap: 20px; justify-content: center;
+  margin-top: 48px; flex-wrap: wrap;
+  animation: fadeInUp 0.6s ease 0.4s both;
+}
+.ep-item { text-align: center; }
+.ep-num { font-size: 32px; font-weight: 900; color: var(--green); letter-spacing: -1px; }
+.ep-label { font-size: 11px; color: var(--sub); text-transform: uppercase; letter-spacing: 1px; font-weight: 600; margin-top: 3px; }
+.ep-div { width: 1px; height: 40px; background: var(--border); }
+
+/* ─── SECTION BASE ─── */
+section.psec { padding: 80px 24px; }
+.container { max-width: 1100px; margin: 0 auto; }
+.sec-label { font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--accent); margin-bottom: 12px; }
+.sec-title { font-size: clamp(28px, 4vw, 44px); font-weight: 800; letter-spacing: -1px; color: #fff; margin-bottom: 14px; line-height: 1.2; }
+.sec-sub { font-size: 16px; color: var(--sub); line-height: 1.7; max-width: 600px; }
+
+/* ─── HOW IT WORKS ─── */
+.how-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; margin-top: 48px; }
+.how-card {
+  background: var(--glass); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 28px 24px;
+  position: relative; overflow: hidden; transition: transform 0.2s, border-color 0.2s;
+}
+.how-card:hover { transform: translateY(-3px); border-color: rgba(255,112,67,0.25); }
+.how-num { font-size: 48px; font-weight: 900; color: rgba(255,255,255,0.05); position: absolute; top: 12px; right: 16px; line-height: 1; }
+.how-icon { font-size: 32px; margin-bottom: 14px; }
+.how-card h3 { font-size: 16px; font-weight: 700; color: #fff; margin-bottom: 8px; }
+.how-card p { font-size: 13px; color: var(--sub); line-height: 1.7; }
+
+/* ─── EARN TABLE ─── */
+.earn-section-inner { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: center; }
+@media(max-width:700px){ .earn-section-inner { grid-template-columns: 1fr; } }
+.earn-table { background: var(--glass); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; margin-top: 32px; }
+.earn-table-row { display: flex; align-items: center; justify-content: space-between; padding: 16px 20px; border-bottom: 1px solid var(--border); }
+.earn-table-row:last-child { border-bottom: none; }
+.earn-table-row.header { background: rgba(255,112,67,0.06); }
+.earn-table-row.header span { font-size: 11px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--dim); }
+.earn-event { font-size: 13px; font-weight: 600; color: var(--text); }
+.earn-amount { font-size: 15px; font-weight: 800; color: var(--green); }
+.earn-visual {
+  background: linear-gradient(135deg, rgba(255,112,67,0.08), rgba(255,112,67,0.03));
+  border: 1px solid rgba(255,112,67,0.15);
+  border-radius: var(--radius); padding: 36px 32px; text-align: center;
+}
+.ev-calc-label { font-size: 12px; color: var(--sub); font-weight: 600; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 20px; }
+.ev-slider-wrap { margin: 20px 0; }
+.ev-slider { width: 100%; appearance: none; height: 4px; background: var(--border); border-radius: 2px; outline: none; }
+.ev-slider::-webkit-slider-thumb { appearance: none; width: 20px; height: 20px; border-radius: 50%; background: var(--accent); cursor: pointer; box-shadow: 0 0 12px rgba(255,112,67,0.5); }
+.ev-result { font-size: 48px; font-weight: 900; color: var(--green); letter-spacing: -2px; }
+.ev-result-label { font-size: 13px; color: var(--sub); margin-top: 6px; }
+.ev-clients-count { font-size: 14px; font-weight: 700; color: var(--accent); margin-bottom: 8px; }
+
+/* ─── WHO CAN JOIN ─── */
+.who-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-top: 40px; }
+.who-card {
+  background: var(--glass); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 24px 20px; text-align: center;
+  transition: all 0.2s; cursor: default;
+}
+.who-card:hover { border-color: rgba(255,112,67,0.3); transform: translateY(-2px); }
+.who-icon { font-size: 36px; margin-bottom: 12px; }
+.who-card h3 { font-size: 15px; font-weight: 700; color: #fff; margin-bottom: 6px; }
+.who-card p { font-size: 12px; color: var(--sub); line-height: 1.6; }
+
+/* ─── REGISTRATION FORM ─── */
+#register { background: linear-gradient(180deg, var(--bg) 0%, var(--bg2) 100%); }
+.reg-wrap {
+  max-width: 560px; margin: 0 auto;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 24px; padding: 48px 40px;
+  backdrop-filter: blur(20px);
+  position: relative; overflow: hidden;
+}
+.reg-wrap::before {
+  content: ''; position: absolute; inset: 0;
+  background: radial-gradient(ellipse 80% 50% at 50% 0%, rgba(255,112,67,0.08) 0%, transparent 60%);
+  pointer-events: none;
+}
+.reg-header { text-align: center; margin-bottom: 36px; }
+.reg-title { font-size: 28px; font-weight: 800; color: #fff; letter-spacing: -0.5px; margin-bottom: 8px; }
+.reg-sub { font-size: 14px; color: var(--sub); line-height: 1.6; }
+.form-group { margin-bottom: 18px; }
+.form-label { font-size: 12px; font-weight: 700; color: var(--sub); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; display: block; }
+.form-input, .form-select {
+  width: 100%;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid var(--border);
+  border-radius: 12px; padding: 13px 16px;
+  color: #fff; font-size: 14px; font-family: inherit;
+  outline: none; transition: border-color 0.2s;
+}
+.form-input::placeholder { color: var(--dim); }
+.form-input:focus, .form-select:focus { border-color: var(--accent); }
+.form-select option { background: #1a1a2e; color: #fff; }
+.form-checkbox-row { display: flex; align-items: flex-start; gap: 10px; font-size: 13px; color: var(--sub); line-height: 1.5; }
+.form-checkbox-row input[type=checkbox] { width: 16px; height: 16px; accent-color: var(--accent); margin-top: 2px; flex-shrink: 0; }
+.form-checkbox-row a { color: var(--accent); text-decoration: none; }
+.reg-submit {
+  width: 100%; padding: 15px;
+  background: linear-gradient(135deg, var(--accent), #e64a19);
+  color: #fff; border: none; border-radius: 14px;
+  font-size: 15px; font-weight: 800; cursor: pointer;
+  box-shadow: 0 8px 28px rgba(255,112,67,0.35);
+  transition: all 0.2s; margin-top: 8px;
+}
+.reg-submit:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 12px 36px rgba(255,112,67,0.45); }
+.reg-submit:disabled { opacity: 0.6; cursor: not-allowed; }
+.reg-error { background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3); color: #fca5a5; border-radius: 10px; padding: 10px 14px; font-size: 13px; margin-top: 12px; display: none; }
+.reg-note { text-align: center; font-size: 12px; color: var(--dim); margin-top: 16px; line-height: 1.6; }
+.reg-signin-prompt { text-align: center; margin-bottom: 20px; padding: 14px; background: rgba(255,112,67,0.06); border: 1px solid rgba(255,112,67,0.15); border-radius: 12px; font-size: 13px; color: var(--accent); display: none; }
+.reg-signin-btn { background: var(--accent); color: #fff; border: none; border-radius: 8px; padding: 8px 16px; font-size: 12px; font-weight: 700; cursor: pointer; margin-top: 8px; }
+
+/* ─── SOCIAL SHARE KIT ─── */
+.share-kit {
+  background: linear-gradient(135deg, rgba(255,112,67,0.08), rgba(167,139,250,0.05));
+  border: 1px solid rgba(255,112,67,0.2); border-radius: var(--radius);
+  padding: 32px 28px; margin-top: 40px;
+}
+.share-kit h3 { font-size: 18px; font-weight: 700; color: #fff; margin-bottom: 16px; }
+.share-message {
+  background: rgba(255,255,255,0.04); border: 1px solid var(--border);
+  border-radius: 12px; padding: 16px; font-size: 13px; color: var(--sub); line-height: 1.7;
+  white-space: pre-line; font-family: inherit; margin-bottom: 16px;
+}
+.share-btns { display: flex; gap: 10px; flex-wrap: wrap; }
+.share-btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 10px 18px; border-radius: 10px;
+  font-size: 13px; font-weight: 700; cursor: pointer; border: none;
+  text-decoration: none; transition: all 0.2s;
+}
+.share-btn-wa { background: #25d366; color: #fff; }
+.share-btn-wa:hover { background: #22c55e; transform: translateY(-1px); }
+.share-btn-tg { background: #229ed9; color: #fff; }
+.share-btn-tg:hover { background: #1d8fc7; transform: translateY(-1px); }
+.share-btn-copy { background: var(--glass); border: 1px solid var(--border) !important; color: var(--sub); }
+.share-btn-copy:hover { color: #fff; border-color: rgba(255,255,255,0.2) !important; }
+
+/* ─── FAQ ─── */
+.faq-list { margin-top: 40px; display: grid; gap: 12px; }
+.faq-item {
+  background: var(--glass); border: 1px solid var(--border);
+  border-radius: 14px; overflow: hidden;
+}
+.faq-q {
+  padding: 18px 20px; font-size: 14px; font-weight: 600; color: #fff;
+  cursor: pointer; display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  user-select: none;
+}
+.faq-q:hover { background: rgba(255,255,255,0.03); }
+.faq-arrow { font-size: 18px; color: var(--accent); transition: transform 0.25s; flex-shrink: 0; }
+.faq-item.open .faq-arrow { transform: rotate(45deg); }
+.faq-a { display: none; padding: 0 20px 18px; font-size: 13px; color: var(--sub); line-height: 1.8; }
+.faq-item.open .faq-a { display: block; }
+
+/* ─── FOOTER ─── */
+footer.pfooter {
+  text-align: center; padding: 40px 24px;
+  border-top: 1px solid var(--border);
+  font-size: 13px; color: var(--dim);
+}
+footer.pfooter a { color: var(--sub); text-decoration: none; margin: 0 8px; }
+footer.pfooter a:hover { color: #fff; }
+
+/* ─── ANIMATIONS ─── */
+@keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+.reveal { opacity: 0; transform: translateY(24px); transition: opacity 0.6s ease, transform 0.6s ease; }
+.reveal.visible { opacity: 1; transform: translateY(0); }
+
+@media (max-width: 640px) {
+  nav.pnav { padding: 0 16px; }
+  .pnav-links { display: none; }
+  .reg-wrap { padding: 32px 20px; }
+  .earn-section-inner { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="pnav">
+  <a href="/" class="pnav-logo"><span>&#10022;</span> clarix</a>
+  <div class="pnav-links">
+    <a href="#how-it-works">How it Works</a>
+    <a href="#earn">Earnings</a>
+    <a href="#faq">FAQ</a>
+    <a href="/write.html">Try Clarix Free</a>
+  </div>
+  <a href="#register" class="pnav-cta">Join as Partner</a>
+</nav>
+
+<!-- ═══ HERO ═══ -->
+<section class="partner-hero">
+  <div class="ph-grid"></div>
+  <div class="hero-content-wrap">
+    <div class="hero-pill">&#10022; Clarix Partner Program &mdash; Now Open</div>
+    <h1 class="hero-h1">
+      Share Clarix.<br>
+      <span class="grad">Earn Real Money.</span>
+    </h1>
+    <p class="hero-sub">
+      Bring Pro subscribers to India's First AI Prompt Engine &mdash; earn <strong style="color:#22c55e">5% per paid plan</strong>.
+      Your own CRM dashboard. No target. No cap. No cost to join.
+    </p>
+    <div class="hero-ctas">
+      <a href="#register" class="btn-primary-lg">&#10022; Join as Partner &rarr;</a>
+      <a href="#how-it-works" class="btn-ghost-lg">See How It Works</a>
+    </div>
+
+    <div class="earn-preview">
+      <div class="ep-item">
+        <div class="ep-num" id="epNum1">&#8377;15</div>
+        <div class="ep-label">Per Pro &#xB7; Creator</div>
+      </div>
+      <div class="ep-div"></div>
+      <div class="ep-item">
+        <div class="ep-num" id="epNum2">&#8377;50</div>
+        <div class="ep-label">Per Pro &#xB7; Pro Plan</div>
+      </div>
+      <div class="ep-div"></div>
+      <div class="ep-item">
+        <div class="ep-num" id="epNum3">&#8377;150</div>
+        <div class="ep-label">Per Pro &#xB7; Agency</div>
+      </div>
+      <div class="ep-div"></div>
+      <div class="ep-item">
+        <div class="ep-num" style="color:var(--accent);">No Cap</div>
+        <div class="ep-label">Referral Limit</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ HOW IT WORKS ═══ -->
+<section class="psec" id="how-it-works">
+  <div class="container">
+    <div class="sec-label">&#10022; Simple Process</div>
+    <h2 class="sec-title">4 Steps to Your<br>First Earning</h2>
+    <p class="sec-sub">No technical skill needed. If you can share a link, you can earn.</p>
+
+    <div class="how-grid">
+      <div class="how-card reveal">
+        <div class="how-num">01</div>
+        <div class="how-icon">&#128072;</div>
+        <h3>Register Free</h3>
+        <p>Sign up below. Takes 30 seconds. Get your unique partner code instantly (e.g. VB2042).</p>
+      </div>
+      <div class="how-card reveal">
+        <div class="how-num">02</div>
+        <div class="how-icon">&#128279;</div>
+        <h3>Share Your Link</h3>
+        <p>Your referral link is ready: clarix.digital/?ref=YOURCODE. Share on WhatsApp, Instagram, LinkedIn &mdash; anywhere.</p>
+      </div>
+      <div class="how-card reveal">
+        <div class="how-num">03</div>
+        <div class="how-icon">&#128200;</div>
+        <h3>Client Signs Up</h3>
+        <p>When someone visits Clarix via your link and subscribes to a paid plan, they're permanently linked to you.</p>
+      </div>
+      <div class="how-card reveal">
+        <div class="how-num">04</div>
+        <div class="how-icon">&#128181;</div>
+        <h3>You Earn 5%</h3>
+        <p>5% of every paid plan they take. Tracked in your CRM dashboard. Request payout via UPI when you reach &#8377;100.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ EARNINGS ═══ -->
+<section class="psec" id="earn" style="background: linear-gradient(180deg, var(--bg) 0%, var(--bg2) 100%);">
+  <div class="container">
+    <div class="earn-section-inner">
+      <div>
+        <div class="sec-label">&#10022; Transparent Earnings</div>
+        <h2 class="sec-title">What You Earn<br>Per Referral</h2>
+        <p class="sec-sub" style="margin-bottom:0;">Earnings are credited manually by our admin. Minimum payout &#8377;100 via UPI.</p>
+
+        <div class="earn-table reveal">
+          <div class="earn-table-row header">
+            <span>Plan Subscribed</span>
+            <span>Your Earning (5%)</span>
+          </div>
+          <div class="earn-table-row">
+            <span class="earn-event">&#10022; Creator Plan &mdash; &#8377;299/mo</span>
+            <span class="earn-amount">&#8377;15/month</span>
+          </div>
+          <div class="earn-table-row">
+            <span class="earn-event">&#10022; Pro Plan &mdash; &#8377;999/mo</span>
+            <span class="earn-amount">&#8377;50/month</span>
+          </div>
+          <div class="earn-table-row">
+            <span class="earn-event">&#10022; Agency Plan &mdash; &#8377;2999/mo</span>
+            <span class="earn-amount">&#8377;150/month</span>
+          </div>
+          <div class="earn-table-row" style="background:rgba(34,197,94,0.04);">
+            <span class="earn-event" style="color:var(--green);">&#9889; 10 Pro clients</span>
+            <span class="earn-amount">&#8377;500/month</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="earn-visual reveal">
+        <div class="ev-calc-label">&#127381; Earning Calculator</div>
+        <div class="ev-clients-count">You refer <span id="calcClients">5</span> Pro clients</div>
+        <div class="ev-slider-wrap">
+          <input type="range" class="ev-slider" id="earnCalcSlider" min="1" max="50" value="5" oninput="updateCalc(this.value)">
+        </div>
+        <div class="ev-result" id="calcResult">&#8377;250</div>
+        <div class="ev-result-label">Monthly Earning Estimate</div>
+        <div style="margin-top:20px;font-size:11px;color:var(--dim);line-height:1.6;">Based on Pro Plan (&#8377;999/mo). Actual earnings depend on plan mix. No earning guaranteed on free sign-ups.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ WHO CAN JOIN ═══ -->
+<section class="psec">
+  <div class="container">
+    <div class="sec-label">&#10022; Open to All</div>
+    <h2 class="sec-title">Who Can Be<br>a Clarix Partner?</h2>
+    <p class="sec-sub">Anyone who can share a link to people who need AI tools.</p>
+
+    <div class="who-grid">
+      <div class="who-card reveal">
+        <div class="who-icon">&#129513;</div>
+        <h3>Freelancers</h3>
+        <p>Writers, designers, developers — share with your client base who needs AI tools.</p>
+      </div>
+      <div class="who-card reveal">
+        <div class="who-icon">&#128188;</div>
+        <h3>Sales Professionals</h3>
+        <p>Field sales, inside sales — add Clarix to your product portfolio. Zero investment.</p>
+      </div>
+      <div class="who-card reveal">
+        <div class="who-icon">&#128248;</div>
+        <h3>Social Influencers</h3>
+        <p>Instagram, YouTube, LinkedIn creators — recommend Clarix to your followers.</p>
+      </div>
+      <div class="who-card reveal">
+        <div class="who-icon">&#127979;</div>
+        <h3>Students &amp; Educators</h3>
+        <p>College students, teachers — share with peers who need AI for content and study.</p>
+      </div>
+      <div class="who-card reveal">
+        <div class="who-icon">&#127968;</div>
+        <h3>Agencies</h3>
+        <p>Marketing, content, PR agencies — resell Clarix Pro to your clients at your margin.</p>
+      </div>
+      <div class="who-card reveal">
+        <div class="who-icon">&#127757;</div>
+        <h3>Anyone</h3>
+        <p>If you know someone who writes, creates, or uses AI tools — you can earn. Simple.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ REGISTER FORM ═══ -->
+<section class="psec" id="register">
+  <div class="container">
+    <div style="text-align:center;margin-bottom:40px;">
+      <div class="sec-label" style="justify-content:center;display:flex;">&#10022; Join the Program</div>
+      <h2 class="sec-title">Register as a Partner</h2>
+      <p class="sec-sub" style="margin:0 auto;">Free forever. Get your unique referral code in seconds.</p>
+    </div>
+
+    <div class="reg-wrap">
+      <!-- Sign-in prompt (shown if not logged in) -->
+      <div class="reg-signin-prompt" id="regSignInPrompt">
+        &#128274; Please sign in with Google first to register as a Clarix Partner.
+        <br>
+        <button class="reg-signin-btn" onclick="ClarixAuth.signInWithGoogle()">Sign in with Google &rarr;</button>
+      </div>
+
+      <div class="reg-header">
+        <div class="reg-title">&#10022; Create Your Partner Account</div>
+        <div class="reg-sub">Fill in your details. You'll get a unique referral code instantly after submission.</div>
+      </div>
+
+      <form id="partnerRegForm" autocomplete="on">
+        <div class="form-group">
+          <label class="form-label" for="partnerName">Full Name</label>
+          <input type="text" id="partnerName" class="form-input" placeholder="Your full name" required autocomplete="name">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="partnerEmail">Email</label>
+          <input type="email" id="partnerEmail" class="form-input" placeholder="Your email (from Google sign-in)" readonly style="opacity:0.7;cursor:not-allowed;">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="partnerCity">City</label>
+          <input type="text" id="partnerCity" class="form-input" placeholder="Your city (e.g. Mumbai, Bangalore)" required autocomplete="address-level2">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="partnerMode">Your Role</label>
+          <select id="partnerMode" class="form-select" required>
+            <option value="" disabled selected>Select your role…</option>
+            <option value="freelancer">&#129513; Freelancer</option>
+            <option value="sales">&#128188; Sales Professional</option>
+            <option value="influencer">&#128248; Influencer / Content Creator</option>
+            <option value="agency">&#127968; Agency Owner</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-checkbox-row">
+            <input type="checkbox" id="partnerAgree" required>
+            I agree to the <a href="/terms.html" target="_blank">Partner Terms</a> and <a href="/privacy.html" target="_blank">Privacy Policy</a>. I understand earnings are subject to admin approval and minimum &#8377;100 payout threshold.
+          </label>
+        </div>
+
+        <button type="submit" class="reg-submit" id="regSubmitBtn">Join as Partner &rarr;</button>
+        <div class="reg-error" id="regError"></div>
+        <div class="reg-note">
+          &#128274; Your data is secure. We only collect what's needed for your partner account.<br>
+          &#127381; You'll receive your unique referral code immediately after registration.
+        </div>
+      </form>
+    </div>
+
+    <!-- Social Share Kit (shown after registration via JS) -->
+    <div class="share-kit reveal" id="shareKit" style="max-width:560px;margin:32px auto 0;display:none;">
+      <h3>&#128279; Your Share Kit — Ready to Go!</h3>
+      <div class="share-message" id="shareMsgPreview">
+&#128640; Try Clarix AI — India's First AI Prompt Engine!
+
+Write better prompts in Hindi, Hinglish, English &amp; 20+ languages.
+Works with ChatGPT, Midjourney, Claude &amp; 25+ platforms.
+FREE to start! &#10022;
+
+&#128073; https://clarix.digital/?ref=YOURCODE
+      </div>
+      <div class="share-btns">
+        <button class="share-btn share-btn-wa" onclick="PartnerDash.shareWhatsApp()">&#128241; WhatsApp</button>
+        <button class="share-btn share-btn-tg" onclick="PartnerDash.shareTelegram()">&#9992;&#65039; Telegram</button>
+        <button class="share-btn share-btn-copy" id="copyShareMsg" onclick="copyShareMessage()">&#128203; Copy Message</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ FAQ ═══ -->
+<section class="psec" id="faq" style="background:var(--bg2);">
+  <div class="container">
+    <div class="sec-label">&#10022; Common Questions</div>
+    <h2 class="sec-title">FAQ for Partners</h2>
+
+    <div class="faq-list">
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">
+          Is it free to become a Clarix Partner?
+          <span class="faq-arrow">+</span>
+        </div>
+        <div class="faq-a">Yes, 100% free. No registration fee, no monthly charge, no target to hit. Just sign up and start sharing.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">
+          Do I earn for free sign-ups too?
+          <span class="faq-arrow">+</span>
+        </div>
+        <div class="faq-a">No. Earnings are only credited when your referred user upgrades to a <strong>paid plan</strong> (Creator, Pro, or Agency). Free sign-ups are tracked in your dashboard but do not generate earnings. This keeps the program sustainable and the payouts meaningful.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">
+          How does referral attribution work?
+          <span class="faq-arrow">+</span>
+        </div>
+        <div class="faq-a">When someone clicks your referral link (clarix.digital/?ref=YOURCODE), their browser saves your code. When they sign in to Clarix, your code is permanently recorded to their account. <strong>Last-click attribution</strong> — whichever link they click last before signing in gets the credit.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">
+          When and how do I get paid?
+          <span class="faq-arrow">+</span>
+        </div>
+        <div class="faq-a">When your earnings reach &#8377;100, you can request a payout from your partner dashboard. Enter your UPI ID, and our team will manually process the transfer within 3–5 business days. There is no automated payment system yet; all payouts are reviewed and approved by admin.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">
+          Can I refer anyone — from any city or state?
+          <span class="faq-arrow">+</span>
+        </div>
+        <div class="faq-a">Yes! There is no geographic restriction. Share with anyone in India or abroad. Clarix supports 20+ languages and works globally.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">
+          What tools do I get to help me sell?
+          <span class="faq-arrow">+</span>
+        </div>
+        <div class="faq-a">Your partner dashboard includes: a personal CRM with full client and earnings view, a Product Knowledge Hub with sales scripts and objection handling, pre-built WhatsApp and Telegram share messages, and a copyable referral link. Everything you need to close.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">
+          Is there a limit on how much I can earn?
+          <span class="faq-arrow">+</span>
+        </div>
+        <div class="faq-a">No cap whatsoever. 10 Pro clients = &#8377;500/month. 100 Pro clients = &#8377;5,000/month. The more you refer, the more you earn.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ FINAL CTA ═══ -->
+<section class="psec" style="text-align:center;">
+  <div class="container">
+    <div style="max-width:600px;margin:0 auto;">
+      <div class="sec-label" style="display:flex;justify-content:center;">&#127381; Start Earning Today</div>
+      <h2 class="sec-title">Join 0-Cap, Zero-Cost<br><span style="color:var(--green);">Partner Program</span></h2>
+      <p class="sec-sub" style="margin:0 auto 36px;">India's fastest-growing AI platform. Share your link today — your dashboard is waiting.</p>
+      <a href="#register" class="btn-primary-lg">&#10022; Become a Partner Free &rarr;</a>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="pfooter">
+  <div>&#10022; clarix partner program &mdash; clarix.digital</div>
+  <div style="margin-top:10px;">
+    <a href="/">Home</a>
+    <a href="/about.html">About</a>
+    <a href="/terms.html">Terms</a>
+    <a href="/privacy.html">Privacy</a>
+    <a href="mailto:support@clarix.digital">Contact</a>
+  </div>
+  <div style="margin-top:10px;">&copy; 2026 Clarix AI. All rights reserved. Made in India &#127470;&#127475;</div>
+</footer>
+
+<script src="config.js?v=20260417P"></script>
+<script src="js/firebase-auth.js?v=20260417P"></script>
+<script src="js/partner.js?v=20260417P"></script>
+
+<script>
+/* ── Earning Calculator ── */
+function updateCalc(val) {
+  document.getElementById('calcClients').textContent = val;
+  document.getElementById('calcResult').textContent = '&#8377;' + (val * 50);
+}
+
+/* ── FAQ toggle ── */
+function toggleFaq(el) {
+  var item = el.parentElement;
+  var isOpen = item.classList.contains('open');
+  document.querySelectorAll('.faq-item').forEach(function(f) { f.classList.remove('open'); });
+  if (!isOpen) item.classList.add('open');
+}
+
+/* ── Copy share message ── */
+function copyShareMessage() {
+  var code = localStorage.getItem('clarix_partner_code') || 'YOURCODE';
+  var msg = '&#128640; Try Clarix AI — India\'s First AI Prompt Engine!\n\nWrite better prompts in Hindi, Hinglish, English & 20+ languages.\nWorks with ChatGPT, Midjourney, Claude & 25+ platforms.\nFREE to start! &#10022;\n\n&#128073; https://clarix.digital/?ref=' + code;
+  navigator.clipboard.writeText(msg).then(function() {
+    var btn = document.getElementById('copyShareMsg');
+    if (btn) { btn.textContent = '&#10003; Copied!'; setTimeout(function() { btn.textContent = '&#128203; Copy Message'; }, 2000); }
+  });
+}
+
+/* ── Scroll reveals ── */
+var revealObserver = new IntersectionObserver(function(entries) {
+  entries.forEach(function(e) { if (e.isIntersecting) e.target.classList.add('visible'); });
+}, { threshold: 0.1 });
+document.querySelectorAll('.reveal').forEach(function(el) { revealObserver.observe(el); });
+
+/* ── Show sign-in prompt if not signed in ── */
+document.addEventListener('DOMContentLoaded', function() {
+  setTimeout(function() {
+    if (!ClarixAuth.currentUser && !localStorage.getItem('clarix_uid')) {
+      var prompt = document.getElementById('regSignInPrompt');
+      if (prompt) prompt.style.display = 'block';
+    }
+  }, 3500);
+});
+
+/* ── If already a partner, show dashboard link ── */
+ClarixAuth.onReady(function(user) {
+  if (user) {
+    var code = localStorage.getItem('clarix_partner_code');
+    if (code) {
+      /* Already registered — show share kit */
+      var shareKit = document.getElementById('shareKit');
+      if (shareKit) shareKit.style.display = 'block';
+      var preview = document.getElementById('shareMsgPreview');
+      if (preview) preview.innerHTML = preview.innerHTML.replace('YOURCODE', code);
+    }
+    var emailEl = document.getElementById('partnerEmail');
+    if (emailEl) emailEl.value = user.email || '';
+  }
+});
+</script>
+</body>
+</html>

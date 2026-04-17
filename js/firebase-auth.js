@@ -284,9 +284,26 @@ var ClarixAuth = {
           profile.country     = countryData.country || 'Unknown';
           profile.countryCode = countryData.code    || 'DEFAULT';
           profile.countryFlag = countryData.flag    || '🌍';
+
+          /* ── Partner Referral Attribution ──
+             Last-click: capture whichever ref code is in localStorage.
+             The ?ref= param is captured by partner.js on page load.
+             Write referredBy ONCE on new user creation only. */
+          var refCode = localStorage.getItem('clarix_ref');
+          if (refCode && /^[A-Z]{2}\d{4}$/.test(refCode)) {
+            profile.referredBy = refCode;
+          }
+
           ref.set(profile).then(function() {
             self.userProfile = profile;
             localStorage.setItem('clarix_username', profile.name);
+
+            /* Create referral tracking doc if this user was referred */
+            if (refCode && /^[A-Z]{2}\d{4}$/.test(refCode)) {
+              self._trackReferral(user, profile, refCode, countryData);
+              localStorage.removeItem('clarix_ref'); /* consume — no double attribution */
+            }
+
             done();
           });
         });
@@ -298,6 +315,50 @@ var ClarixAuth = {
       self.userProfile = { name: user.displayName || 'Creator', onboarded: true, isPro: false, trialUsed: localTrialUsed, countryCode: 'IN' };
       done();
     });
+  },
+
+  /* ── Track referral in Firestore ── */
+  _trackReferral: function(user, profile, refCode, countryData) {
+    var self = this;
+    /* Find the partner by refCode */
+    self._db.collection('partners')
+      .where('refCode', '==', refCode)
+      .limit(1)
+      .get()
+      .then(function(snap) {
+        if (snap.empty) return; /* invalid refCode — ignore */
+        var partnerDoc = snap.docs[0];
+        var partnerUid = partnerDoc.data().uid;
+
+        /* Create referral document */
+        var referralData = {
+          refCode:      refCode,
+          partnerUid:   partnerUid,
+          clientUid:    user.uid,
+          clientName:   profile.name || 'Member',
+          clientEmail:  user.email   || '',
+          clientCity:   (countryData && countryData.country) || 'Unknown',
+          signedUpAt:   firebase.firestore.FieldValue.serverTimestamp(),
+          plan:         'free',          /* upgraded to 'pro' when they pay */
+          earningAmount:0,               /* admin sets this when they go Pro */
+          status:       'pending'        /* admin confirms after plan upgrade */
+        };
+        self._db.collection('referrals').add(referralData).catch(function(e) {
+          console.warn('[Clarix Referral] Failed to create referral doc:', e);
+        });
+
+        /* Increment partner's totalReferrals counter */
+        self._db.collection('partners').doc(partnerUid).update({
+          totalReferrals: firebase.firestore.FieldValue.increment(1)
+        }).catch(function(e) {
+          console.warn('[Clarix Referral] Failed to update partner counter:', e);
+        });
+
+        console.log('[Clarix] Referral tracked for partner:', refCode);
+      })
+      .catch(function(e) {
+        console.warn('[Clarix Referral] Partner lookup failed:', e);
+      });
   },
 
   /* ── Country detection via free IP API ── */

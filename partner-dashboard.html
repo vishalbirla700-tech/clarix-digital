@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Partner Dashboard &mdash; Clarix</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%23ff7043'/><text x='50%' y='55%' font-size='18' text-anchor='middle' dominant-baseline='middle' fill='white'>&#10022;</text></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg:      #080814;
+  --bg2:     #0d0d1e;
+  --surface: rgba(255,255,255,0.04);
+  --surf-h:  rgba(255,255,255,0.07);
+  --border:  rgba(255,255,255,0.08);
+  --accent:  #ff7043;
+  --green:   #22c55e;
+  --blue:    #60a5fa;
+  --yellow:  #fbbf24;
+  --text:    rgba(255,255,255,0.92);
+  --sub:     rgba(255,255,255,0.5);
+  --dim:     rgba(255,255,255,0.25);
+  --radius:  14px;
+  --sb-w:    240px;
+}
+html, body { height: 100%; overflow: hidden; font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); }
+
+/* ─── LAYOUT ─── */
+.pd-layout { display: flex; height: 100%; width: 100%; }
+
+/* ─── SIDEBAR ─── */
+.pd-sidebar {
+  width: var(--sb-w); flex-shrink: 0;
+  background: rgba(255,255,255,0.025);
+  border-right: 1px solid var(--border);
+  display: flex; flex-direction: column;
+  height: 100%; overflow-y: auto; padding: 24px 0;
+}
+.pd-logo { padding: 0 20px 24px; border-bottom: 1px solid var(--border); margin-bottom: 16px; }
+.pd-logo-text { font-size: 18px; font-weight: 900; color: #fff; letter-spacing: -0.5px; }
+.pd-logo-sub { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--accent); margin-top: 3px; font-weight: 600; }
+.pd-nav-label { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--dim); font-weight: 600; padding: 0 20px; margin: 14px 0 6px; }
+.pd-nav-item {
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 20px; cursor: pointer;
+  color: var(--sub); font-size: 13px; font-weight: 500;
+  border-left: 2px solid transparent; transition: all 0.15s; user-select: none;
+}
+.pd-nav-item:hover { color: var(--text); background: var(--surf-h); }
+.pd-nav-item.active { color: var(--accent); background: rgba(255,112,67,0.08); border-left-color: var(--accent); font-weight: 600; }
+.pd-nav-icon { font-size: 16px; width: 20px; text-align: center; }
+.pd-user-bottom { margin-top: auto; padding: 16px 20px; border-top: 1px solid var(--border); display: flex; align-items: center; gap: 10px; }
+.pd-user-av { width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg,var(--accent),#e53935); display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; color: #fff; flex-shrink: 0; }
+.pd-user-info { flex: 1; overflow: hidden; }
+.pd-user-name { font-size: 13px; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pd-user-role { font-size: 11px; color: var(--dim); }
+.pd-signout { background: none; border: none; cursor: pointer; color: var(--dim); font-size: 18px; padding: 4px; transition: color 0.2s; }
+.pd-signout:hover { color: #ef4444; }
+
+/* ─── MAIN CONTENT ─── */
+.pd-main { flex: 1; overflow-y: auto; display: flex; flex-direction: column; }
+.pd-topbar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 20px 28px; border-bottom: 1px solid var(--border);
+  background: rgba(8,8,20,0.8); backdrop-filter: blur(12px);
+  position: sticky; top: 0; z-index: 10; flex-shrink: 0;
+}
+.pd-topbar-title { font-size: 20px; font-weight: 800; color: #fff; letter-spacing: -0.5px; }
+.pd-topbar-sub { font-size: 12px; color: var(--sub); margin-top: 2px; }
+.pd-ref-chip {
+  display: flex; align-items: center; gap: 10px;
+  background: rgba(255,112,67,0.1); border: 1px solid rgba(255,112,67,0.25);
+  border-radius: 12px; padding: 8px 14px;
+}
+.pd-ref-label { font-size: 11px; color: var(--accent); font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
+.pd-ref-code { font-size: 18px; font-weight: 900; color: #fff; letter-spacing: 2px; font-family: monospace; }
+
+.pd-content { padding: 28px; flex: 1; }
+
+/* ─── LOADER ─── */
+#dashLoader { display: flex; align-items: center; justify-content: center; padding: 80px; font-size: 14px; color: var(--sub); gap: 12px; }
+.ld-spinner { width: 22px; height: 22px; border: 2px solid rgba(255,112,67,0.2); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.7s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ─── DASHBOARD CONTENT ─── */
+#dashContent { display: none; }
+
+/* ─── TABS ─── */
+.pd-tabs { display: flex; gap: 4px; margin-bottom: 28px; background: var(--surface); border-radius: 12px; padding: 4px; width: fit-content; }
+.pd-tab-btn {
+  padding: 8px 18px; border-radius: 9px; border: none; background: none;
+  font-size: 13px; font-weight: 600; color: var(--sub); cursor: pointer; transition: all 0.2s;
+  font-family: inherit;
+}
+.pd-tab-btn.active { background: rgba(255,112,67,0.15); color: var(--accent); }
+.pd-tab-btn:hover:not(.active) { color: var(--text); }
+
+/* ─── KPI CARDS ─── */
+.pd-kpi-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 14px; margin-bottom: 24px; }
+.pd-kpi {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 18px 20px; position: relative; overflow: hidden;
+  transition: transform 0.2s, border-color 0.2s;
+}
+.pd-kpi:hover { transform: translateY(-2px); border-color: rgba(255,255,255,0.12); }
+.pd-kpi::before { content: ''; position: absolute; inset: 0; background: linear-gradient(135deg, rgba(255,112,67,0.04), transparent 60%); pointer-events: none; }
+.pd-kpi-icon { font-size: 20px; margin-bottom: 8px; }
+.pd-kpi-label { font-size: 11px; letter-spacing: 1px; text-transform: uppercase; color: var(--sub); font-weight: 600; margin-bottom: 4px; }
+.pd-kpi-value { font-size: 28px; font-weight: 900; color: #fff; letter-spacing: -1px; }
+.pd-kpi-sub { font-size: 11px; color: var(--dim); margin-top: 4px; }
+.pd-kpi.green .pd-kpi-value { color: var(--green); }
+.pd-kpi.accent .pd-kpi-value { color: var(--accent); }
+
+/* ─── REFERRAL LINK CARD ─── */
+.pd-link-card {
+  background: linear-gradient(135deg, rgba(255,112,67,0.08), rgba(255,112,67,0.03));
+  border: 1px solid rgba(255,112,67,0.2); border-radius: var(--radius); padding: 24px; margin-bottom: 24px;
+}
+.pd-link-title { font-size: 14px; font-weight: 700; color: #fff; margin-bottom: 14px; }
+.pd-link-row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.pd-link-input {
+  flex: 1; min-width: 220px;
+  background: rgba(255,255,255,0.06); border: 1px solid rgba(255,112,67,0.3);
+  border-radius: 10px; padding: 11px 14px;
+  font-size: 14px; color: #fff; font-family: monospace; outline: none;
+}
+.pd-link-btn { padding: 11px 18px; border-radius: 10px; border: none; font-size: 13px; font-weight: 700; cursor: pointer; white-space: nowrap; transition: all 0.2s; font-family: inherit; }
+.pd-link-btn-copy { background: var(--accent); color: #fff; }
+.pd-link-btn-copy:hover { background: #e64a19; }
+.pd-link-btn-wa { background: #25d366; color: #fff; }
+.pd-link-btn-wa:hover { background: #22c55e; }
+.pd-link-btn-tg { background: #229ed9; color: #fff; }
+.pd-link-btn-tg:hover { background: #1d8fc7; }
+
+/* ─── PAYOUT CARD ─── */
+.pd-payout-card {
+  background: linear-gradient(135deg, rgba(34,197,94,0.06), rgba(34,197,94,0.02));
+  border: 1px solid rgba(34,197,94,0.2); border-radius: var(--radius); padding: 24px; margin-bottom: 24px;
+  display: flex; align-items: center; justify-content: space-between; gap: 20px; flex-wrap: wrap;
+}
+.pd-payout-info h3 { font-size: 15px; font-weight: 700; color: #fff; margin-bottom: 4px; }
+.pd-payout-info p { font-size: 13px; color: var(--sub); line-height: 1.6; }
+.pd-payout-btn {
+  background: linear-gradient(135deg, var(--green), #16a34a);
+  color: #fff; border: none; border-radius: 12px; padding: 12px 24px;
+  font-size: 14px; font-weight: 800; cursor: pointer; white-space: nowrap;
+  box-shadow: 0 6px 24px rgba(34,197,94,0.3); transition: all 0.2s; font-family: inherit;
+}
+.pd-payout-btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(34,197,94,0.4); }
+.pd-payout-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+/* ─── PANEL / TABLE ─── */
+.pd-panel { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; margin-bottom: 24px; }
+.pd-panel-head { padding: 14px 18px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+.pd-panel-title { font-size: 14px; font-weight: 700; color: #fff; }
+.pd-panel-sub { font-size: 12px; color: var(--dim); }
+table.pd-table { width: 100%; border-collapse: collapse; }
+table.pd-table thead th { font-size: 11px; letter-spacing: 1px; text-transform: uppercase; color: var(--dim); font-weight: 600; padding: 10px 16px; text-align: left; border-bottom: 1px solid var(--border); white-space: nowrap; }
+table.pd-table tbody tr { border-bottom: 1px solid rgba(255,255,255,0.04); transition: background 0.15s; }
+table.pd-table tbody tr:hover { background: rgba(255,255,255,0.03); }
+table.pd-table tbody tr:last-child { border-bottom: none; }
+table.pd-table tbody td { padding: 11px 16px; font-size: 13px; color: var(--sub); vertical-align: middle; }
+.pd-user-cell { display: flex; align-items: center; gap: 10px; }
+.pd-avatar { width: 30px; height: 30px; border-radius: 50%; background: linear-gradient(135deg,#ff7043,#e53935); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; color: #fff; flex-shrink: 0; }
+.pd-badge { display: inline-flex; align-items: center; padding: 3px 8px; border-radius: 6px; font-size: 10px; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; }
+.pd-badge-pro { background: rgba(255,112,67,0.15); color: var(--accent); border: 1px solid rgba(255,112,67,0.3); }
+.pd-badge-free { background: rgba(255,255,255,0.05); color: var(--dim); border: 1px solid var(--border); }
+.pd-badge-green { background: rgba(34,197,94,0.12); color: var(--green); border: 1px solid rgba(34,197,94,0.3); }
+.pd-badge-pending { background: rgba(251,191,36,0.1); color: var(--yellow); border: 1px solid rgba(251,191,36,0.3); }
+.pd-payout-row { display: flex; align-items: center; justify-content: space-between; padding: 12px 18px; border-bottom: 1px solid var(--border); }
+.pd-payout-row:last-child { border-bottom: none; }
+
+/* ─── KNOWLEDGE HUB ─── */
+.kb-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; margin-top: 20px; }
+.kb-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 20px;
+  transition: border-color 0.2s, transform 0.2s;
+}
+.kb-card:hover { border-color: rgba(255,112,67,0.25); transform: translateY(-2px); }
+.kb-icon { font-size: 28px; margin-bottom: 10px; }
+.kb-card h3 { font-size: 15px; font-weight: 700; color: #fff; margin-bottom: 8px; }
+.kb-card p, .kb-card ul { font-size: 13px; color: var(--sub); line-height: 1.7; }
+.kb-card ul { padding-left: 16px; }
+.kb-card ul li { margin-bottom: 4px; }
+.kb-card strong { color: rgba(255,255,255,0.8); }
+
+/* Script card */
+.kb-script { background: rgba(255,112,67,0.04); border: 1px solid rgba(255,112,67,0.15); border-radius: 10px; padding: 14px 16px; margin-top: 10px; font-size: 12px; color: var(--sub); line-height: 1.7; font-style: italic; }
+
+/* ─── BADGES ─── */
+.pd-mode-badge { display: inline-flex; align-items: center; gap: 6px; background: rgba(255,255,255,0.06); border: 1px solid var(--border); border-radius: 20px; padding: 4px 12px; font-size: 12px; color: var(--sub); }
+
+/* ─── SCROLLBAR ─── */
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 3px; }
+
+/* ─── RESPONSIVE ─── */
+@media (max-width: 800px) {
+  .pd-sidebar { width: 56px; }
+  .pd-nav-item span:not(.pd-nav-icon) { display: none; }
+  .pd-nav-label { display: none; }
+  .pd-logo-sub { display: none; }
+  .pd-user-info, .pd-signout { display: none; }
+  .pd-content { padding: 16px; }
+  .pd-topbar { padding: 14px 16px; flex-wrap: wrap; gap: 10px; }
+}
+@media (max-width: 500px) { .pd-kpi-grid { grid-template-columns: 1fr 1fr; } }
+</style>
+</head>
+<body>
+
+<div class="pd-layout">
+
+  <!-- ═══ SIDEBAR ═══ -->
+  <nav class="pd-sidebar">
+    <div class="pd-logo">
+      <div class="pd-logo-text"><span style="color:var(--accent);">&#10022;</span> clarix</div>
+      <div class="pd-logo-sub">Partner CRM</div>
+    </div>
+
+    <div class="pd-nav-label">Dashboard</div>
+    <div class="pd-nav-item active" data-dash-tab="overview" onclick="PartnerDash.switchTab('overview')">
+      <span class="pd-nav-icon">&#128200;</span><span>Overview</span>
+    </div>
+    <div class="pd-nav-item" data-dash-tab="clients" onclick="PartnerDash.switchTab('clients')">
+      <span class="pd-nav-icon">&#128101;</span><span>Clients</span>
+    </div>
+    <div class="pd-nav-item" data-dash-tab="earnings" onclick="PartnerDash.switchTab('earnings')">
+      <span class="pd-nav-icon">&#128181;</span><span>Earnings</span>
+    </div>
+    <div class="pd-nav-item" data-dash-tab="share" onclick="PartnerDash.switchTab('share')">
+      <span class="pd-nav-icon">&#128279;</span><span>Share Link</span>
+    </div>
+
+    <div class="pd-nav-label">Resources</div>
+    <div class="pd-nav-item" data-dash-tab="knowledge" onclick="PartnerDash.switchTab('knowledge')">
+      <span class="pd-nav-icon">&#128218;</span><span>Sales Guide</span>
+    </div>
+    <div class="pd-nav-item" onclick="window.open('/','_blank')">
+      <span class="pd-nav-icon">&#127968;</span><span>Clarix Home</span>
+    </div>
+
+    <div class="pd-user-bottom">
+      <div class="pd-user-av" id="pdUserAv">P</div>
+      <div class="pd-user-info">
+        <div class="pd-user-name partner-name-display">Partner</div>
+        <div class="pd-user-role" id="partnerModeBadge">&mdash;</div>
+      </div>
+      <button class="pd-signout" onclick="ClarixAuth.signOut()" title="Sign Out">&#8617;</button>
+    </div>
+  </nav>
+
+  <!-- ═══ MAIN ═══ -->
+  <main class="pd-main">
+    <!-- Topbar -->
+    <div class="pd-topbar">
+      <div>
+        <div class="pd-topbar-title">Welcome back, <span class="partner-name-display">Partner</span> &#10022;</div>
+        <div class="pd-topbar-sub">Your partner CRM &mdash; <span id="partnerCityDisplay">&mdash;</span></div>
+      </div>
+      <div class="pd-ref-chip">
+        <div>
+          <div class="pd-ref-label">Your Ref Code</div>
+          <div class="pd-ref-code" id="refCodeDisplay">&mdash;&mdash;&mdash;&mdash;</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="pd-content">
+      <!-- Loader -->
+      <div id="dashLoader">
+        <div class="ld-spinner"></div>
+        Loading your dashboard&hellip;
+      </div>
+
+      <!-- Dashboard content -->
+      <div id="dashContent">
+
+        <!-- ═══ TABS ═══ -->
+        <div class="pd-tabs">
+          <button class="pd-tab-btn active" data-dash-tab="overview" onclick="PartnerDash.switchTab('overview')">Overview</button>
+          <button class="pd-tab-btn" data-dash-tab="clients" onclick="PartnerDash.switchTab('clients')">Clients</button>
+          <button class="pd-tab-btn" data-dash-tab="earnings" onclick="PartnerDash.switchTab('earnings')">Earnings</button>
+          <button class="pd-tab-btn" data-dash-tab="share" onclick="PartnerDash.switchTab('share')">Share</button>
+          <button class="pd-tab-btn" data-dash-tab="knowledge" onclick="PartnerDash.switchTab('knowledge')">&#128218; Sales Guide</button>
+        </div>
+
+        <!-- ═══ PANEL: OVERVIEW ═══ -->
+        <div data-dash-panel="overview">
+          <!-- KPI Grid -->
+          <div class="pd-kpi-grid">
+            <div class="pd-kpi green">
+              <div class="pd-kpi-icon">&#128198;</div>
+              <div class="pd-kpi-label">Today's Earning</div>
+              <div class="pd-kpi-value" id="statTodayEarnings">&#8377;0</div>
+              <div class="pd-kpi-sub">Credits pending admin review</div>
+            </div>
+            <div class="pd-kpi green">
+              <div class="pd-kpi-icon">&#128197;</div>
+              <div class="pd-kpi-label">This Month</div>
+              <div class="pd-kpi-value" id="statMonthEarnings">&#8377;0</div>
+              <div class="pd-kpi-sub">Month to date</div>
+            </div>
+            <div class="pd-kpi">
+              <div class="pd-kpi-icon">&#10022;</div>
+              <div class="pd-kpi-label">All-Time Earned</div>
+              <div class="pd-kpi-value" id="statTotalEarnings">&#8377;0</div>
+              <div class="pd-kpi-sub">Total credited</div>
+            </div>
+            <div class="pd-kpi accent">
+              <div class="pd-kpi-icon">&#128181;</div>
+              <div class="pd-kpi-label">Pending Payout</div>
+              <div class="pd-kpi-value" id="statPendingPayout">&#8377;0</div>
+              <div class="pd-kpi-sub">Awaiting disbursement</div>
+            </div>
+            <div class="pd-kpi">
+              <div class="pd-kpi-icon">&#128101;</div>
+              <div class="pd-kpi-label">Total Sign-ups</div>
+              <div class="pd-kpi-value" id="statTotalReferrals">0</div>
+              <div class="pd-kpi-sub">Via your link (free + paid)</div>
+            </div>
+            <div class="pd-kpi green">
+              <div class="pd-kpi-icon">&#128640;</div>
+              <div class="pd-kpi-label">Pro Conversions</div>
+              <div class="pd-kpi-value" id="statProReferrals">0</div>
+              <div class="pd-kpi-sub">Paid subscribers only</div>
+            </div>
+            <div class="pd-kpi">
+              <div class="pd-kpi-icon">&#9989;</div>
+              <div class="pd-kpi-label">Total Paid Out</div>
+              <div class="pd-kpi-value" id="statPaidOut">&#8377;0</div>
+              <div class="pd-kpi-sub">Already received</div>
+            </div>
+          </div>
+
+          <!-- Payout request card -->
+          <div class="pd-payout-card">
+            <div class="pd-payout-info">
+              <h3>&#128181; Request Payout</h3>
+              <p>When your pending balance reaches &#8377;100, click Request Payout. Enter your UPI ID and our team will process within 3&ndash;5 business days.</p>
+            </div>
+            <button class="pd-payout-btn" id="requestPayoutBtn" disabled>Request Payout</button>
+          </div>
+
+          <!-- Recent referrals preview -->
+          <div class="pd-panel">
+            <div class="pd-panel-head">
+              <div><div class="pd-panel-title">Recent Client Sign-ups</div><div class="pd-panel-sub">Last 5 via your link</div></div>
+              <button style="background:none;border:none;color:var(--accent);font-size:12px;font-weight:700;cursor:pointer;" onclick="PartnerDash.switchTab('clients')">View All &rarr;</button>
+            </div>
+            <div style="overflow-x:auto;">
+              <table class="pd-table">
+                <thead>
+                  <tr>
+                    <th>Client</th><th>City</th><th>Plan</th><th>Earning</th><th>Date</th>
+                  </tr>
+                </thead>
+                <tbody id="referralsTableBody">
+                  <tr><td colspan="5" style="text-align:center;padding:40px;color:var(--dim);font-size:13px;">Loading clients&hellip;</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- ═══ PANEL: CLIENTS ═══ -->
+        <div data-dash-panel="clients" style="display:none;">
+          <div class="pd-panel">
+            <div class="pd-panel-head">
+              <div><div class="pd-panel-title">All Referred Clients</div><div class="pd-panel-sub">Everyone who signed up via your link</div></div>
+            </div>
+            <div style="overflow-x:auto;">
+              <table class="pd-table">
+                <thead>
+                  <tr>
+                    <th>Client</th><th>City</th><th>Plan</th><th>Earning</th><th>Status</th><th>Joined</th>
+                  </tr>
+                </thead>
+                <tbody id="allClientsBody">
+                  <tr><td colspan="6" style="text-align:center;padding:40px;color:var(--dim);">Loading&hellip;</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- ═══ PANEL: EARNINGS ═══ -->
+        <div data-dash-panel="earnings" style="display:none;">
+          <!-- Payout history -->
+          <div class="pd-panel" style="margin-bottom:20px;">
+            <div class="pd-panel-head">
+              <div><div class="pd-panel-title">Payout Request History</div><div class="pd-panel-sub">All your payout requests and their status</div></div>
+              <button class="pd-payout-btn" id="requestPayoutBtn2" disabled style="font-size:12px;padding:9px 16px;" onclick="PartnerDash.requestPayout()">Request Payout</button>
+            </div>
+            <div id="payoutHistoryList"></div>
+          </div>
+
+          <!-- Earning breakdown -->
+          <div class="pd-panel">
+            <div class="pd-panel-head">
+              <div><div class="pd-panel-title">Earning Breakdown</div><div class="pd-panel-sub">By plan type</div></div>
+            </div>
+            <div style="padding:20px;display:grid;gap:12px;">
+              <div style="display:flex;justify-content:space-between;align-items:center;padding:14px 16px;background:rgba(255,255,255,0.03);border-radius:10px;border:1px solid var(--border);">
+                <div><div style="font-size:13px;font-weight:600;color:var(--text);">Free Sign-ups</div><div style="font-size:12px;color:var(--sub);">Tracked but no earning</div></div>
+                <div style="font-size:18px;font-weight:800;color:var(--dim);">&#8377;0</div>
+              </div>
+              <div style="display:flex;justify-content:space-between;align-items:center;padding:14px 16px;background:rgba(255,255,255,0.03);border-radius:10px;border:1px solid var(--border);">
+                <div><div style="font-size:13px;font-weight:600;color:var(--text);">Creator Plan &#8377;299/mo</div><div style="font-size:12px;color:var(--sub);">5% = &#8377;15 per subscriber</div></div>
+                <div style="font-size:18px;font-weight:800;color:var(--green);">&#8377;15/ref</div>
+              </div>
+              <div style="display:flex;justify-content:space-between;align-items:center;padding:14px 16px;background:rgba(255,255,255,0.03);border-radius:10px;border:1px solid var(--border);">
+                <div><div style="font-size:13px;font-weight:600;color:var(--text);">Pro Plan &#8377;999/mo</div><div style="font-size:12px;color:var(--sub);">5% = &#8377;50 per subscriber</div></div>
+                <div style="font-size:18px;font-weight:800;color:var(--green);">&#8377;50/ref</div>
+              </div>
+              <div style="display:flex;justify-content:space-between;align-items:center;padding:14px 16px;background:rgba(255,255,255,0.03);border-radius:10px;border:1px solid var(--border);">
+                <div><div style="font-size:13px;font-weight:600;color:var(--text);">Agency Plan &#8377;2999/mo</div><div style="font-size:12px;color:var(--sub);">5% = &#8377;150 per subscriber</div></div>
+                <div style="font-size:18px;font-weight:800;color:var(--green);">&#8377;150/ref</div>
+              </div>
+              <div style="background:rgba(255,112,67,0.06);border:1px solid rgba(255,112,67,0.2);border-radius:10px;padding:14px 16px;font-size:12px;color:var(--sub);line-height:1.7;">
+                &#9432;&nbsp; Earnings are manually credited by the admin after verification. Minimum payout threshold: &#8377;100. UPI transfer within 3–5 business days of request.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ═══ PANEL: SHARE ═══ -->
+        <div data-dash-panel="share" style="display:none;">
+          <div class="pd-link-card" style="margin-bottom:20px;">
+            <div class="pd-link-title">&#128279; Your Personal Referral Link</div>
+            <div class="pd-link-row">
+              <input type="text" class="pd-link-input" id="refLinkDisplay" value="https://clarix.digital/?ref=..." readonly>
+              <button class="pd-link-btn pd-link-btn-copy" id="copyRefLink">Copy Link</button>
+              <button class="pd-link-btn pd-link-btn-wa" onclick="PartnerDash.shareWhatsApp()">&#128241; WhatsApp</button>
+              <button class="pd-link-btn pd-link-btn-tg" onclick="PartnerDash.shareTelegram()">&#9992;&#65039; Telegram</button>
+            </div>
+          </div>
+
+          <!-- Pre-written message templates -->
+          <div class="pd-panel">
+            <div class="pd-panel-head"><div class="pd-panel-title">&#128203; Ready-to-use Message Templates</div></div>
+            <div style="padding:20px;display:grid;gap:16px;">
+
+              <div>
+                <div style="font-size:12px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">&#128241; WhatsApp group message</div>
+                <div style="background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:10px;padding:14px;font-size:13px;color:var(--sub);line-height:1.8;white-space:pre-line;" id="waTemplate">&#128640; *Clarix AI* — India ka pehla AI Prompt Engine!
+
+Hindi, Hinglish, English aur 20+ languages mein type karo.
+ChatGPT, Midjourney, Claude ke liye perfect prompts banao.
+*FREE mein start karo* &#10022;
+
+&#128073; https://clarix.digital/?ref=YOURCODE</div>
+                <button style="margin-top:8px;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:7px 14px;font-size:12px;color:var(--sub);cursor:pointer;font-family:inherit;" onclick="copyTemplate('waTemplate')">&#128203; Copy</button>
+              </div>
+
+              <div>
+                <div style="font-size:12px;font-weight:700;color:var(--blue);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">&#128222; LinkedIn / professional pitch</div>
+                <div style="background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:10px;padding:14px;font-size:13px;color:var(--sub);line-height:1.8;white-space:pre-line;" id="liTemplate">If you use ChatGPT, Midjourney or any AI tool — you NEED Clarix.
+
+Clarix turns your rough idea into a perfect, scored, ready-to-use AI prompt in seconds.
+Works in Hindi, English, Gujarati, Tamil + 20 more languages.
+
+&#10022; India's First AI Prompt Engine, built for Indian creators.
+&#128073; Try free: https://clarix.digital/?ref=YOURCODE</div>
+                <button style="margin-top:8px;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:7px 14px;font-size:12px;color:var(--sub);cursor:pointer;font-family:inherit;" onclick="copyTemplate('liTemplate')">&#128203; Copy</button>
+              </div>
+
+              <div>
+                <div style="font-size:12px;font-weight:700;color:var(--green);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">&#128145; Instagram caption</div>
+                <div style="background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:10px;padding:14px;font-size:13px;color:var(--sub);line-height:1.8;white-space:pre-line;" id="igTemplate">AI se kaam karo, apni language mein &#127470;&#127475;
+Clarix pe jaake ChatGPT/Midjourney ke liye perfect prompts banao — free mein!
+Bio mein link hai &#128071;
+
+#ClarixAI #AIIndia #Hindi #Hinglish #ChatGPT #AITools #MadeInIndia</div>
+                <button style="margin-top:8px;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:7px 14px;font-size:12px;color:var(--sub);cursor:pointer;font-family:inherit;" onclick="copyTemplate('igTemplate')">&#128203; Copy</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ═══ PANEL: KNOWLEDGE HUB ═══ -->
+        <div data-dash-panel="knowledge" style="display:none;">
+          <div style="margin-bottom:24px;">
+            <h2 style="font-size:22px;font-weight:800;color:#fff;letter-spacing:-0.5px;margin-bottom:6px;">&#128218; Product Knowledge Hub</h2>
+            <p style="font-size:13px;color:var(--sub);">Everything you need to pitch, close, and earn. What, Why, How, When, Where.</p>
+          </div>
+
+          <div class="kb-grid">
+
+            <!-- WHAT -->
+            <div class="kb-card">
+              <div class="kb-icon">&#128214;</div>
+              <h3>What is Clarix?</h3>
+              <p><strong>Clarix is India's First AI Prompt Engine</strong> — a tool that transforms your rough idea into a perfect, detailed prompt for ChatGPT, Midjourney, Claude, and 25+ AI platforms.</p>
+              <p style="margin-top:8px;">It supports <strong>Hindi, Hinglish, Gujarati, Tamil, Telugu, English, and 20+ languages</strong> — and is completely free to start.</p>
+            </div>
+
+            <!-- WHY THEY NEED IT -->
+            <div class="kb-card">
+              <div class="kb-icon">&#9889;</div>
+              <h3>Why Your Client Needs It</h3>
+              <ul>
+                <li>Bad prompts = bad AI output — they waste hours</li>
+                <li>They type in Hindi but AI needs English — Clarix bridges that</li>
+                <li>Students need it for assignments &amp; projects</li>
+                <li>Business owners need it for marketing content</li>
+                <li>Designers need it for Midjourney images</li>
+                <li>Writers need it for ChatGPT stories</li>
+              </ul>
+            </div>
+
+            <!-- HOW TO PITCH -->
+            <div class="kb-card">
+              <div class="kb-icon">&#127755;</div>
+              <h3>How to Pitch (Script)</h3>
+              <p>Use this simple script:</p>
+              <div class="kb-script">"Bhai, ChatGPT use karta hai? Usse zyada output chahiye? Clarix try kar — free hai, Hindi mein type kar, perfect prompt deta hai. Mera link hai, try kar."</div>
+              <p style="margin-top:10px;">For professionals:<br>"Clarix is an AI prompt optimizer — it improves your AI outputs instantly. Free plan available. Your team can write in Hindi, get English-quality results."</p>
+            </div>
+
+            <!-- WHEN TO SHARE -->
+            <div class="kb-card">
+              <div class="kb-icon">&#128337;</div>
+              <h3>When to Share</h3>
+              <ul>
+                <li><strong>Morning 9–11am</strong> — people planning their workday</li>
+                <li><strong>Evening 7–9pm</strong> — peak Instagram/WhatsApp time</li>
+                <li><strong>Friday evenings</strong> — people exploring new tools for weekend projects</li>
+                <li>When someone mentions ChatGPT, Midjourney, AI, or content creation</li>
+                <li>After a webinar or workshop on AI tools</li>
+              </ul>
+            </div>
+
+            <!-- WHERE TO SHARE -->
+            <div class="kb-card">
+              <div class="kb-icon">&#127760;</div>
+              <h3>Where to Share</h3>
+              <ul>
+                <li><strong>WhatsApp Groups</strong> — tech groups, business groups, college groups</li>
+                <li><strong>LinkedIn</strong> — professionals who use AI for work</li>
+                <li><strong>Instagram</strong> — creators, designers, students</li>
+                <li><strong>Facebook Groups</strong> — local business groups, freelancer groups</li>
+                <li><strong>Telegram channels</strong> — tech &amp; startup communities</li>
+                <li><strong>Face to face</strong> — clients, colleagues, students</li>
+              </ul>
+            </div>
+
+            <!-- OBJECTION HANDLING -->
+            <div class="kb-card">
+              <div class="kb-icon">&#128737;</div>
+              <h3>Objection Handling</h3>
+              <ul>
+                <li><strong>"Kya ye paid hai?"</strong> → Free plan has 5 prompts/day. Start free, upgrade only if you love it.</li>
+                <li><strong>"ChatGPT to seedha use karta hoon"</strong> → Clarix makes your ChatGPT 10x better — it's the upgrade your ChatGPT needs.</li>
+                <li><strong>"Safe hai?"</strong> → Google Sign-in use hota hai. No passwords. No data stored from prompts.</li>
+                <li><strong>"Mujhe AI ki zaroorat nahi"</strong> → Try karo, free hai. Ek baar use karo — fir dekho how much time you save.</li>
+              </ul>
+            </div>
+
+            <!-- WHY CLARIX -->
+            <div class="kb-card">
+              <div class="kb-icon">&#127470;&#127475;</div>
+              <h3>Why Clarix vs Others</h3>
+              <ul>
+                <li><strong>Only Indian platform</strong> — built for Indian languages</li>
+                <li><strong>20+ language support</strong> — Hindi, Gujarati, Tamil, etc.</li>
+                <li><strong>25+ platform support</strong> — ChatGPT, Claude, Midjourney, Stable Diffusion, etc.</li>
+                <li><strong>Voice input</strong> — speak in Hindi, get AI-ready prompts</li>
+                <li><strong>Free forever plan</strong> — no barrier to entry</li>
+                <li><strong>Made & hosted in India</strong> — DPDP compliant</li>
+              </ul>
+            </div>
+
+            <!-- SUPPORT -->
+            <div class="kb-card">
+              <div class="kb-icon">&#128222;</div>
+              <h3>Support &amp; Contacts</h3>
+              <ul>
+                <li><strong>Partner support:</strong> support@clarix.digital</li>
+                <li><strong>Payout queries:</strong> support@clarix.digital</li>
+                <li><strong>Live platform:</strong> <a href="https://clarix.digital" target="_blank" style="color:var(--accent);">clarix.digital</a></li>
+                <li><strong>One-pager for clients:</strong> <a href="/clarix-onepager.html" target="_blank" style="color:var(--accent);">clarix-onepager.html</a></li>
+              </ul>
+              <div style="margin-top:12px;padding:10px 12px;background:rgba(34,197,94,0.08);border:1px solid rgba(34,197,94,0.2);border-radius:8px;font-size:12px;color:var(--green);">
+                &#9989; Share the <a href="/clarix-onepager.html" target="_blank" style="color:var(--green);">one-pager PDF</a> with corporate clients — it covers everything professionally.
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+      </div><!-- /dashContent -->
+    </div><!-- /pd-content -->
+  </main>
+</div>
+
+<script src="config.js?v=20260417P"></script>
+<script src="js/firebase-auth.js?v=20260417P"></script>
+<script src="js/partner.js?v=20260417P"></script>
+<script>
+/* ── Fix all-clients table (clone from overview referrals) ── */
+var _origRenderRef = PartnerDash.renderReferrals.bind(PartnerDash);
+PartnerDash.renderReferrals = function(referrals) {
+  _origRenderRef(referrals);
+  /* Also populate the all-clients table with a status column */
+  var tbody2 = document.getElementById('allClientsBody');
+  if (!tbody2) return;
+  if (!referrals.length) {
+    tbody2.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:48px;color:rgba(255,255,255,0.3);font-size:13px;">No referrals yet. Share your link to get started!</td></tr>';
+    return;
+  }
+  tbody2.innerHTML = referrals.map(function(r) {
+    var date = r.signedUpAt ? new Date(r.signedUpAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : '—';
+    var planBadge = r.plan === 'pro' ? '<span class="pd-badge pd-badge-pro">Pro &#10022;</span>' : '<span class="pd-badge pd-badge-free">Free</span>';
+    var statusBadge = (r.status === 'confirmed' || r.status === 'paid') ? '<span class="pd-badge pd-badge-green">Confirmed</span>' : '<span class="pd-badge pd-badge-pending">Pending</span>';
+    var earning = r.earningAmount > 0 ? '<span style="color:#22c55e;font-weight:700;">&#8377;' + r.earningAmount + '</span>' : '<span style="color:rgba(255,255,255,0.3);">&#8212;</span>';
+    return '<tr><td><div class="pd-user-cell"><div class="pd-avatar">' + (r.clientName[0]||'U') + '</div><span>' + r.clientName + '</span></div></td><td>' + (r.clientCity||'&#8212;') + '</td><td>' + planBadge + '</td><td>' + earning + '</td><td>' + statusBadge + '</td><td>' + date + '</td></tr>';
+  }).join('');
+};
+
+/* ── Fix payout button on earnings tab ── */
+PartnerDash.render = (function(orig) {
+  return function(data) {
+    orig.call(this, data);
+    /* Sync second payout button */
+    var btn2 = document.getElementById('requestPayoutBtn2');
+    if (btn2) {
+      btn2.disabled = (data.partner.pendingPayout || 0) < 100;
+    }
+  };
+})(PartnerDash.render.bind(PartnerDash));
+
+/* ── Copy template helper ── */
+function copyTemplate(id) {
+  var el = document.getElementById(id);
+  if (!el) return;
+  var code = localStorage.getItem('clarix_partner_code') || 'YOURCODE';
+  var text = el.innerText.replace(/YOURCODE/g, code);
+  navigator.clipboard.writeText(text).then(function() {
+    var btns = el.parentElement.querySelectorAll('button');
+    btns.forEach(function(b) { b.textContent = '&#10003; Copied!'; setTimeout(function() { b.innerHTML = '&#128203; Copy'; }, 2000); });
+  });
+}
+
+/* ── Update template links with partner code ── */
+ClarixAuth.onReady(function(user) {
+  var code = localStorage.getItem('clarix_partner_code') || 'YOURCODE';
+  ['waTemplate','liTemplate'].forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el) el.innerHTML = el.innerHTML.replace(/YOURCODE/g, code);
+  });
+  /* Update user avatar initial */
+  if (user) {
+    var av = document.getElementById('pdUserAv');
+    if (av) av.textContent = (user.displayName || 'P')[0].toUpperCase();
+  }
+});
+</script>
+</body>
+</html>

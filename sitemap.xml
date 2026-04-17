@@ -105,7 +105,15 @@
   <!-- Marketing Digital — AI Marketing Co-Pilot -->
   <url>
     <loc>https://clarix.digital/marketing.html</loc>
-    <lastmod>2026-04-16</lastmod>
+    <lastmod>2026-04-17</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- Partner Program — Sales & Affiliate -->
+  <url>
+    <loc>https://clarix.digital/partner.html</loc>
+    <lastmod>2026-04-17</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>

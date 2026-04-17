@@ -487,6 +487,9 @@
       <div class="nav-item" data-section="insights" onclick="showSection('insights')">
         <span class="nav-icon">📈</span><span>Insights</span>
       </div>
+      <div class="nav-item" data-section="partners" onclick="showSection('partners')">
+        <span class="nav-icon">🤝</span><span>Partners</span>
+      </div>
 
       <div class="nav-group-label">System</div>
       <div class="nav-item" data-section="push" onclick="showSection('push')">
@@ -751,6 +754,91 @@
         </div>
       </div>
 
+      </div>
+
+      <!-- ════════════════════════════════════
+           SECTION: PARTNERS
+      ════════════════════════════════════ -->
+      <div id="section-partners" class="admin-section">
+        <div class="section-header">
+          <div style="display:flex;align-items:center;justify-content:space-between;">
+            <div>
+              <div class="section-title">🤝 Partner Program</div>
+              <div class="section-subtitle">All registered sales partners &mdash; referrals, earnings &amp; payout requests</div>
+            </div>
+            <button class="toolbar-btn orange" onclick="loadPartners()" style="display:flex;align-items:center;gap:6px;">🔄 Refresh</button>
+          </div>
+        </div>
+
+        <!-- Partner KPIs -->
+        <div class="stats-grid" style="margin-bottom:24px;">
+          <div class="stat-card">
+            <div class="stat-icon">🤝</div>
+            <div class="stat-label">Total Partners</div>
+            <div class="stat-value" id="statTotalPartners">—</div>
+            <div class="stat-delta">Registered</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">👥</div>
+            <div class="stat-label">Total Referrals</div>
+            <div class="stat-value" id="statTotalRefs">—</div>
+            <div class="stat-delta">All attributed sign-ups</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">💰</div>
+            <div class="stat-label">Pending Payouts</div>
+            <div class="stat-value" id="statPendingPayoutAdmin">—</div>
+            <div class="stat-delta" style="color:var(--accent);">Awaiting disbursement</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">✅</div>
+            <div class="stat-label">Paid Out</div>
+            <div class="stat-value" id="statPaidOutAdmin">—</div>
+            <div class="stat-delta" style="color:var(--green);">Total disbursed</div>
+          </div>
+        </div>
+
+        <!-- Partners table -->
+        <div class="panel" style="margin-bottom:20px;">
+          <div class="panel-header">
+            <div>
+              <div class="panel-title">All Partners</div>
+              <div class="panel-sub">Click Manage to view referrals &amp; credit earnings</div>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Partner</th><th>Code</th><th>City</th><th>Mode</th><th>Referrals</th><th>Earnings</th><th>Pending</th><th>Status</th><th>Joined</th><th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="partnersTableBody">
+                <tr><td colspan="10" style="text-align:center;padding:40px;color:var(--text-dim);">Loading partners…</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Payout requests panel -->
+        <div class="panel">
+          <div class="panel-header">
+            <div>
+              <div class="panel-title">💸 Payout Requests</div>
+              <div class="panel-sub">Partners who have requested manual UPI disbursement</div>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr><th>Partner</th><th>Amount</th><th>UPI ID</th><th>Requested</th><th>Status</th><th>Action</th></tr>
+              </thead>
+              <tbody id="payoutsTableBody">
+                <tr><td colspan="6" style="text-align:center;padding:32px;color:var(--text-dim);">Loading…</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
       </div>
 
       <!-- ════════════════════════════════════
@@ -1100,8 +1188,101 @@
            + '</div></div></div>';
     }).join('');
   }
+  /* ── Load Partners section ── */
+  async function loadPartners() {
+    var db = window._adminDb;
+    if (!db) return;
+    try {
+      /* Load partners */
+      var pSnap = await db.collection('partners').orderBy('joinedAt','desc').limit(200).get();
+      var partners = pSnap.docs.map(d => d.data());
+
+      /* KPIs */
+      var totalRefs     = partners.reduce((s,p) => s + (p.totalReferrals||0), 0);
+      var totalPending  = partners.reduce((s,p) => s + (p.pendingPayout||0),  0);
+      var totalPaidOut  = partners.reduce((s,p) => s + (p.paidOut||0),        0);
+      setText('statTotalPartners',     partners.length);
+      setText('statTotalRefs',         totalRefs);
+      setText('statPendingPayoutAdmin','₹' + totalPending);
+      setText('statPaidOutAdmin',      '₹' + totalPaidOut);
+
+      /* Partners table */
+      var tbody = document.getElementById('partnersTableBody');
+      if (tbody) {
+        tbody.innerHTML = partners.length ? partners.map(function(p) {
+          var joined = p.joinedAt ? new Date(p.joinedAt.toDate()).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}) : '—';
+          var statusBadge = p.status === 'active'
+            ? '<span class="badge badge-pro">Active</span>'
+            : '<span class="badge badge-free">Suspended</span>';
+          return '<tr>'
+            + '<td><div style="display:flex;align-items:center;gap:8px;"><div class="user-initials">' + (p.name||'P')[0].toUpperCase() + '</div><div><div style="font-size:13px;font-weight:600;color:#fff;">' + p.name + '</div><div style="font-size:11px;color:var(--text-dim);">' + p.email + '</div></div></div></td>'
+            + '<td><span style="font-family:monospace;font-size:13px;font-weight:700;color:var(--accent);">' + p.refCode + '</span></td>'
+            + '<td>' + (p.city||'—') + '</td>'
+            + '<td>' + (p.mode||'—') + '</td>'
+            + '<td style="font-weight:700;color:#fff;">' + (p.totalReferrals||0) + '</td>'
+            + '<td style="color:var(--green);font-weight:700;">₹' + (p.totalEarnings||0) + '</td>'
+            + '<td style="color:var(--accent);font-weight:700;">₹' + (p.pendingPayout||0) + '</td>'
+            + '<td>' + statusBadge + '</td>'
+            + '<td>' + joined + '</td>'
+            + '<td><a href="/partner-dashboard.html" target="_blank" class="action-btn action-btn-orange" style="font-size:10px;">View →</a></td>'
+            + '</tr>';
+        }).join('') : '<tr><td colspan="10" style="text-align:center;padding:40px;color:var(--text-dim);">No partners registered yet.</td></tr>';
+      }
+
+      /* Payout requests */
+      var prSnap = await db.collection('payout_requests').orderBy('requestedAt','desc').limit(50).get();
+      var payouts = prSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+      var ptbody  = document.getElementById('payoutsTableBody');
+      if (ptbody) {
+        ptbody.innerHTML = payouts.length ? payouts.map(function(pr) {
+          var reqDate = pr.requestedAt ? new Date(pr.requestedAt.toDate()).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}) : '—';
+          var statusColor = {pending:'var(--accent)',approved:'var(--blue)',paid:'var(--green)'}[pr.status]||'#fff';
+          return '<tr>'
+            + '<td>' + (pr.partnerName||pr.partnerUid||'—') + '<br><span style="font-size:11px;color:var(--text-dim);">' + (pr.partnerEmail||'') + '</span></td>'
+            + '<td style="font-weight:800;color:var(--green);">₹' + pr.amount + '</td>'
+            + '<td><code style="font-size:12px;color:var(--text-sub);">' + (pr.upiId||'—') + '</code></td>'
+            + '<td>' + reqDate + '</td>'
+            + '<td><span style="font-weight:700;color:' + statusColor + ';text-transform:uppercase;font-size:12px;">' + pr.status + '</span></td>'
+            + '<td>' + (pr.status==='pending' ? '<button class="action-btn action-btn-green" onclick="markPayoutPaid(\'' + pr.id + '\',\'' + (pr.partnerUid||'') + '\',' + pr.amount + ')">Mark Paid ✓</button>' : '—') + '</td>'
+            + '</tr>';
+        }).join('') : '<tr><td colspan="6" style="text-align:center;padding:32px;color:var(--text-dim);">No payout requests yet.</td></tr>';
+      }
+    } catch(e) { console.error('[Partners]', e); }
+  }
+
+  async function markPayoutPaid(requestId, partnerUid, amount) {
+    if (!confirm('Mark this payout of ₹' + amount + ' as PAID?\n\nThis will deduct the amount from the partner\'s pending balance.')) return;
+    var db = window._adminDb;
+    if (!db) return;
+    try {
+      await db.collection('payout_requests').doc(requestId).update({ status: 'paid', paidAt: firebase.firestore.FieldValue.serverTimestamp() });
+      if (partnerUid) {
+        await db.collection('partners').doc(partnerUid).update({
+          pendingPayout: firebase.firestore.FieldValue.increment(-amount),
+          paidOut:       firebase.firestore.FieldValue.increment(amount)
+        });
+      }
+      adminToast('✅ Payout marked as Paid. Partner balance updated.');
+      loadPartners();
+    } catch(e) {
+      adminToast('❌ Failed: ' + e.message, true);
+    }
+  }
+
+  /* Hook into showSection to auto-load partners data */
+  var _origShowSection = typeof showSection === 'function' ? showSection : null;
+  document.addEventListener('DOMContentLoaded', function() {
+    setTimeout(function() {
+      var orig = window.showSection;
+      window.showSection = function(sec) {
+        orig(sec);
+        if (sec === 'partners') loadPartners();
+      };
+    }, 500);
+  });
 </script>
 <script src="/js/pages/admin.js"></script>
+
 
 </body>
 </html>
