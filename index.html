@@ -127,7 +127,7 @@
 
       <!-- Title &mdash; cinematic entry -->
       <h1 class="hero-title">
-        <span class="hero-title-text" id="heroTitleText">clar<span id="clarix-i-ref" style="position:relative;">i</span>x</span>
+        <span class="hero-title-text" id="heroTitleText">clarix</span>
       </h1>
 
       <!-- Subtitle typewriter -->
@@ -621,120 +621,196 @@
       }, 4000);
     })();
   </script>
-  <!-- ✦ Falling Star Animation: drops from top and sits above the 'i' in clarix -->
+  <!-- ✦ Star Sweep Animation: rolls across full screen then sits above the 'i' in clarix -->
   <script>
   (function() {
-    function runStarDrop() {
-      var iRef = document.getElementById('clarix-i-ref');
-      if (!iRef) return;
+    /* Inject keyframes into <head> once */
+    function injectKF() {
+      if (document.getElementById('clarix-star-kf')) return;
+      var s = document.createElement('style');
+      s.id = 'clarix-star-kf';
+      s.textContent =
+        '@keyframes starSettle {' +
+        '  0%,100% { text-shadow:0 0 10px rgba(255,112,67,0.7),0 0 26px rgba(255,112,67,0.3); transform:scale(1) rotate(0deg); }' +
+        '  50%     { text-shadow:0 0 22px rgba(255,112,67,1),0 0 48px rgba(255,152,0,0.6); transform:scale(1.15) rotate(15deg); }' +
+        '}' +
+        '@keyframes starTrail {' +
+        '  0%   { opacity:0.7; transform:scaleX(1); }' +
+        '  100% { opacity:0;   transform:scaleX(3); }' +
+        '}';
+      document.head.appendChild(s);
+    }
 
-      /* Get the position of the 'i' letter */
-      var rect = iRef.getBoundingClientRect();
-      var starSize = 32; /* approx font-size of star at hero scale */
+    /* Use Range API to find EXACT pixel rect of the 'i' character in "clarix"
+       "clarix": c=0, l=1, a=2, r=3, i=4, x=5  →  'i' is at offset 4 */
+    function getIRect() {
+      var titleSpan = document.getElementById('heroTitleText');
+      if (!titleSpan) return null;
+      var textNode = titleSpan.firstChild;
+      if (!textNode || textNode.nodeType !== 3) return null; /* must be text node */
+      try {
+        var range = document.createRange();
+        range.setStart(textNode, 4); /* before 'i' */
+        range.setEnd(textNode, 5);   /* after  'i' */
+        return range.getBoundingClientRect();
+      } catch(e) { return null; }
+    }
 
-      /* Final resting position: horizontally centered on 'i', just above it */
-      var finalX = rect.left + rect.width / 2 - starSize / 2;
-      var finalY = rect.top - starSize - 6; /* 6px gap above the letter */
+    function runStarSweep() {
+      var iRect = getIRect();
+      if (!iRect || iRect.width === 0) {
+        /* Retry once more after a short delay if layout not ready */
+        setTimeout(runStarSweep, 500);
+        return;
+      }
 
-      /* Create star element */
+      injectKF();
+
+      var STAR_SIZE = Math.min(38, iRect.height * 0.28); /* scale star to title */
+      var finalX    = iRect.left + iRect.width / 2 - STAR_SIZE / 2;
+      var finalY    = iRect.top  - STAR_SIZE - 4;          /* sits just above 'i' */
+
+      /* ── Create star ── */
       var star = document.createElement('div');
-      star.id = 'clarix-hero-star';
+      star.id  = 'clarix-hero-star';
       star.textContent = '✦';
-      star.style.cssText = [
-        'position:fixed',
-        'z-index:10000',
-        'pointer-events:none',
-        'font-size:' + starSize + 'px',
-        'color:#ff7043',
-        'left:' + finalX + 'px',
-        'top:-60px', /* start above viewport */
-        'line-height:1',
-        'text-shadow:0 0 20px rgba(255,112,67,0.8), 0 0 40px rgba(255,112,67,0.4)',
-        'filter:drop-shadow(0 0 8px rgba(255,112,67,0.9))',
-        'will-change:transform',
-        'transition:none'
-      ].join(';');
+      Object.assign(star.style, {
+        position:       'fixed',
+        zIndex:         '10000',
+        pointerEvents:  'none',
+        fontSize:       STAR_SIZE + 'px',
+        lineHeight:     '1',
+        color:          '#ff7043',
+        textShadow:     '0 0 16px rgba(255,112,67,0.9), 0 0 36px rgba(255,112,67,0.5)',
+        filter:         'drop-shadow(0 0 10px rgba(255,112,67,1))',
+        willChange:     'top, left, transform',
+        left:           '-60px',   /* start off-screen left */
+        top:            (finalY * 0.25) + 'px',  /* slightly above midpoint */
+        opacity:        '0',
+        transition:     'none'
+      });
       document.body.appendChild(star);
 
-      /* --- Physics-based bounce drop --- */
-      var startY    = -60;
-      var targetY   = finalY;
-      var distance  = targetY - startY;
-      var startTime = null;
-      var fallDur   = 700;  /* ms for main drop */
+      /* ── Phase 1: sweep LEFT→RIGHT across full screen width (parabolic arc) ── */
+      var sweepDur   = 900;   /* ms */
+      var sweepStart = null;
+      var W          = window.innerWidth;
+      /* Arc: start left-offscreen, sweep to just past the 'i', curving downward */
+      var sweepStartX = -60;
+      var sweepEndX   = finalX + STAR_SIZE / 2; /* arrive at 'i' center */
+      /* Arc height: starts at 15% view height, descends to finalY */
+      var arcStartY  = window.innerHeight * 0.15;
+      var arcEndY    = finalY;
 
-      /* Spring bounce: overshoot then settle */
-      function easeSpring(t) {
-        /* Damped spring — overshoots slightly then settles */
-        return 1 - Math.pow(Math.E, -8 * t) * Math.cos(12 * t);
-      }
+      /* Comet trail element */
+      var trail = document.createElement('div');
+      trail.id   = 'clarix-star-trail';
+      Object.assign(trail.style, {
+        position:    'fixed',
+        zIndex:      '9999',
+        pointerEvents:'none',
+        color:       '#ff7043',
+        fontSize:    (STAR_SIZE * 0.7) + 'px',
+        lineHeight:  '1',
+        opacity:     '0',
+        filter:      'blur(2px)',
+        transformOrigin: 'right center'
+      });
+      trail.textContent = '✦';
+      document.body.appendChild(trail);
 
-      function animateFall(ts) {
-        if (!startTime) startTime = ts;
-        var elapsed  = ts - startTime;
-        var progress = Math.min(elapsed / fallDur, 1);
-        var eased    = easeSpring(progress);
-        var currentY = startY + distance * eased;
+      function sweepStep(ts) {
+        if (!sweepStart) sweepStart = ts;
+        var t = Math.min((ts - sweepStart) / sweepDur, 1);
+        /* ease-in-out cubic */
+        var ease = t < 0.5 ? 4*t*t*t : 1 - Math.pow(-2*t+2, 3)/2;
 
-        star.style.top = currentY + 'px';
+        var cx = sweepStartX + (sweepEndX - sweepStartX) * ease;
+        /* parabolic arc down */
+        var cy = arcStartY  + (arcEndY  - arcStartY)  * ease;
 
-        /* Squeeze/squash at impact (last 15% of animation) */
-        if (progress > 0.85) {
-          var squash = 1 - (1 - progress) * 0.4;
-          var scaleX = 1 + (1 - squash) * 0.3;
-          star.style.transform = 'scaleX(' + scaleX + ') scaleY(' + squash + ')';
+        star.style.left    = cx + 'px';
+        star.style.top     = cy + 'px';
+        star.style.opacity = String(Math.min(t * 3, 1));   /* fade in quickly */
+        /* slight spin during sweep */
+        star.style.transform = 'rotate(' + (ease * 360) + 'deg)';
+
+        /* Trail follows ~80ms behind */
+        trail.style.left    = (cx - STAR_SIZE * 2) + 'px';
+        trail.style.top     = (cy + STAR_SIZE * 0.05) + 'px';
+        trail.style.opacity = String(Math.min(t * 2, 0.5) * (1 - ease * 0.8));
+        trail.style.transform = 'scaleX(' + (1 + ease * 2) + ')';
+
+        if (t < 1) {
+          requestAnimationFrame(sweepStep);
         } else {
-          star.style.transform = '';
+          /* Remove trail */
+          trail.remove();
+          /* ── Phase 2: spring-bounce to exact landing spot ── */
+          runBounce(cx, cy);
         }
+      }
+      requestAnimationFrame(sweepStep);
 
-        if (progress < 1) {
-          requestAnimationFrame(animateFall);
-        } else {
-          /* Settle: restore scale, add a gentle golden pulse */
-          star.style.top       = targetY + 'px';
-          star.style.transform = 'scale(1)';
-          star.style.transition = 'opacity 0.3s ease';
-          star.style.animation  = 'starPulse 2.5s ease-in-out infinite 0.4s';
+      /* ── Phase 2: spring bounce from arrival point down to final seat ── */
+      function runBounce(fromX, fromY) {
+        var bounceDur  = 500;
+        var bounceStart = null;
 
-          /* Add keyframes once */
-          if (!document.getElementById('clarix-star-kf')) {
-            var kf = document.createElement('style');
-            kf.id  = 'clarix-star-kf';
-            kf.textContent =
-              '@keyframes starPulse {' +
-              '  0%,100% { text-shadow:0 0 12px rgba(255,112,67,0.7),0 0 28px rgba(255,112,67,0.3); transform:scale(1); }' +
-              '  50%    { text-shadow:0 0 24px rgba(255,112,67,1),0 0 50px rgba(255,152,0,0.6); transform:scale(1.12); }' +
-              '}';
-            document.head.appendChild(kf);
+        function bounceStep(ts) {
+          if (!bounceStart) bounceStart = ts;
+          var t = Math.min((ts - bounceStart) / bounceDur, 1);
+          /* Damped spring */
+          var spring = 1 - Math.pow(Math.E, -9 * t) * Math.cos(14 * t);
+
+          var cy = fromY + (finalY - fromY) * spring;
+
+          /* Squash on impact */
+          var squashPhase = Math.max(0, t - 0.75) / 0.25;
+          var scaleX = 1 + squashPhase * 0.25;
+          var scaleY = 1 - squashPhase * 0.2;
+
+          star.style.top       = cy + 'px';
+          star.style.left      = finalX + 'px'; /* snap X to exact position */
+          star.style.transform = 'rotate(0deg) scaleX(' + scaleX + ') scaleY(' + scaleY + ')';
+
+          if (t < 1) {
+            requestAnimationFrame(bounceStep);
+          } else {
+            /* ── Phase 3: settled — gentle pulse forever ── */
+            star.style.top       = finalY + 'px';
+            star.style.left      = finalX + 'px';
+            star.style.transform = 'scale(1)';
+            star.style.animation = 'starSettle 2.8s ease-in-out infinite 0.3s';
           }
         }
+        requestAnimationFrame(bounceStep);
       }
-
-      requestAnimationFrame(animateFall);
     }
 
-    /* Wait for hero title to be visible (after clarixBlast animation, ~1.7s delay) */
+    /* Wait for clarixBlast title animation to finish (~1.7s), then run */
+    function onReady() {
+      setTimeout(runStarSweep, 1900);
+    }
     if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', function() {
-        setTimeout(runStarDrop, 1800);
-      });
+      document.addEventListener('DOMContentLoaded', onReady);
     } else {
-      setTimeout(runStarDrop, 1800);
+      onReady();
     }
 
-    /* Reposition on window resize */
-    var resizeTimer;
+    /* Reposition on resize */
+    var rTimer;
     window.addEventListener('resize', function() {
-      clearTimeout(resizeTimer);
-      resizeTimer = setTimeout(function() {
-        var existing = document.getElementById('clarix-hero-star');
-        var iRef = document.getElementById('clarix-i-ref');
-        if (!existing || !iRef) return;
-        var rect  = iRef.getBoundingClientRect();
-        var sz    = 32;
-        existing.style.left = (rect.left + rect.width / 2 - sz / 2) + 'px';
-        existing.style.top  = (rect.top - sz - 6) + 'px';
-      }, 150);
+      clearTimeout(rTimer);
+      rTimer = setTimeout(function() {
+        var el = document.getElementById('clarix-hero-star');
+        if (!el) return;
+        var r = getIRect();
+        if (!r || r.width === 0) return;
+        var sz = parseFloat(el.style.fontSize) || 34;
+        el.style.left = (r.left + r.width/2 - sz/2) + 'px';
+        el.style.top  = (r.top  - sz - 4) + 'px';
+      }, 200);
     });
   })();
   </script>
