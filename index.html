@@ -621,23 +621,158 @@
       }, 4000);
     })();
   </script>
-  <!-- ✦ Star Sweep Animation: rolls across full screen then sits above the 'i' in clarix -->
+  <!-- ✦ Star Drop: falls from top of screen, multi-bounce, lands on dot of 'ı' in clarix -->
   <script>
   (function() {
-    /* Inject keyframes into <head> once */
-    function injectKF() {
-      if (document.getElementById('clarix-star-kf')) return;
-      var s = document.createElement('style');
-      s.id = 'clarix-star-kf';
-      s.textContent =
-        '@keyframes starSettle {' +
-        '  0%,100% { text-shadow:0 0 10px rgba(255,112,67,0.7),0 0 26px rgba(255,112,67,0.3); transform:scale(1) rotate(0deg); }' +
-        '  50%     { text-shadow:0 0 22px rgba(255,112,67,1),0 0 48px rgba(255,152,0,0.6); transform:scale(1.15) rotate(15deg); }' +
-        '}' +
-        '@keyframes starTrail {' +
-        '  0%   { opacity:0.7; transform:scaleX(1); }' +
-        '  100% { opacity:0;   transform:scaleX(3); }' +
-        '}';
+
+    /* ── easeOutBounce: natural multi-bounce physics (ball drop) ── */
+    function easeOutBounce(t) {
+      if (t < 1 / 2.75)  return 7.5625 * t * t;
+      if (t < 2 / 2.75)  { t -= 1.5   / 2.75; return 7.5625 * t * t + 0.75;    }
+      if (t < 2.5 / 2.75){ t -= 2.25  / 2.75; return 7.5625 * t * t + 0.9375;  }
+                            t -= 2.625 / 2.75; return 7.5625 * t * t + 0.984375;
+    }
+
+    /* ── Use Range API to get the bounding rect of the dotless-ı (offset 4 in "clarıx") ── */
+    function getIRect() {
+      var span = document.getElementById('heroTitleText');
+      if (!span) return null;
+      var node = span.firstChild;
+      if (!node || node.nodeType !== 3) return null;
+      try {
+        var range = document.createRange();
+        range.setStart(node, 4);
+        range.setEnd(node, 5);
+        return range.getBoundingClientRect();
+      } catch(e) { return null; }
+    }
+
+    function runDrop() {
+      var r = getIRect();
+      if (!r || r.width < 2) { setTimeout(runDrop, 400); return; }
+
+      /* ── Compute exact dot position ──
+         Range rect for a single char = FULL LINE-BOX height (ascender → descender).
+         For dotless-ı in Outfit font, the visible glyph top ≈ 28% into the line box.
+         The dot of 'i' would sit just at or just above the glyph top ≈ 26-28%.
+         We place the star CENTER at that exact Y so it looks like the missing dot. */
+      var lineH    = r.height;
+      var dotFrac  = 0.27;                         /* fraction from line-box top to dot */
+      var dotCX    = r.left + r.width / 2;         /* horizontal center of 'ı' */
+      var dotCY    = r.top  + lineH * dotFrac;     /* vertical center of dot   */
+
+      /* Star size: proportional to font — smaller = looks like real dot */
+      var STAR_SIZE = Math.min(28, Math.max(14, lineH * 0.14));
+
+      /* Final resting top-left of star element */
+      var finalX = dotCX - STAR_SIZE / 2;
+      var finalY = dotCY - STAR_SIZE / 2;
+
+      /* Start: above viewport, horizontally aligned with 'ı' already */
+      var startY = -STAR_SIZE - 20;
+
+      /* ── Create star ── */
+      if (document.getElementById('clarix-hero-star')) return; /* already running */
+
+      var star = document.createElement('div');
+      star.id  = 'clarix-hero-star';
+      star.textContent = '\u2756'; /* ✦ */
+      Object.assign(star.style, {
+        position:      'fixed',
+        zIndex:        '10000',
+        pointerEvents: 'none',
+        left:          finalX + 'px',
+        top:           startY + 'px',
+        fontSize:      STAR_SIZE + 'px',
+        lineHeight:    '1',
+        color:         '#ff7043',
+        textShadow:    '0 0 14px rgba(255,112,67,0.9)',
+        filter:        'drop-shadow(0 0 8px rgba(255,112,67,0.8))',
+        willChange:    'top',
+        transition:    'none',
+        opacity:       '1'
+      });
+      document.body.appendChild(star);
+
+      /* ── Animate: straight vertical drop with multi-bounce ── */
+      var distance    = finalY - startY;
+      var totalDur    = 4200;            /* total ms — slow, visible, satisfying */
+      var startTime   = null;
+
+      function frame(ts) {
+        if (!startTime) startTime = ts;
+        var elapsed  = ts - startTime;
+        var progress = Math.min(elapsed / totalDur, 1);
+        var eased    = easeOutBounce(progress);
+        var currentY = startY + distance * eased;
+
+        star.style.top = currentY + 'px';
+
+        /* Squash on each major bounce impact */
+        var squash = 1;
+        /* detect the peak bounce moments (eased goes up briefly) */
+        if (progress > 0.45 && progress < 0.52) { squash = 1.25; }  /* 1st bounce peak */
+        else if (progress > 0.65 && progress < 0.70) { squash = 1.12; } /* 2nd */
+        else if (progress > 0.80 && progress < 0.84) { squash = 1.06; } /* 3rd */
+        star.style.transform = squash > 1 ? 'scaleX(' + squash + ') scaleY(' + (2 - squash) + ')' : 'none';
+
+        if (progress < 1) {
+          requestAnimationFrame(frame);
+        } else {
+          /* Snap to final exact position */
+          star.style.top       = finalY + 'px';
+          star.style.transform = 'none';
+          /* Gentle glowing pulse once settled */
+          if (!document.getElementById('clarix-star-kf')) {
+            var s = document.createElement('style');
+            s.id  = 'clarix-star-kf';
+            s.textContent =
+              '@keyframes starGlow{' +
+              '0%,100%{text-shadow:0 0 8px rgba(255,112,67,0.6),0 0 20px rgba(255,112,67,0.2);transform:scale(1)}' +
+              '50%{text-shadow:0 0 18px rgba(255,112,67,1),0 0 36px rgba(255,152,0,0.5);transform:scale(1.18)}' +
+              '}';
+            document.head.appendChild(s);
+          }
+          star.style.animation = 'starGlow 3s ease-in-out infinite 0.5s';
+        }
+      }
+      requestAnimationFrame(frame);
+    }
+
+    /* Fire after hero title finishes its CSS blast animation (0.8s delay + 0.9s dur = 1.7s).
+       We wait 2.4s to be safe, ensuring the layout is fully painted. */
+    function onReady() { setTimeout(runDrop, 2400); }
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', onReady);
+    } else {
+      onReady();
+    }
+
+    /* Reposition on window resize */
+    var rTimer;
+    window.addEventListener('resize', function() {
+      clearTimeout(rTimer);
+      rTimer = setTimeout(function() {
+        var el = document.getElementById('clarix-hero-star');
+        if (!el) return;
+        var r2 = getIRect();
+        if (!r2 || r2.width < 2) return;
+        var sz  = parseFloat(el.style.fontSize) || 20;
+        var dCX = r2.left + r2.width / 2;
+        var dCY = r2.top  + r2.height * 0.27;
+        el.style.left = (dCX - sz/2) + 'px';
+        el.style.top  = (dCY - sz/2) + 'px';
+      }, 200);
+    });
+
+  })();
+  </script>
+
+</body>
+</html>
+
+
+
       document.head.appendChild(s);
     }
 
