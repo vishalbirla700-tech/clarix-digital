@@ -62,13 +62,27 @@ const ClarixState = {
   },
 
   canEnhance() {
+    /* ── Admin shortcut: check stored email before anything else ── */
+    const ADMIN_EMAILS = ['vishalbirla700@gmail.com'];
+    const storedEmail = (localStorage.getItem('clarix_admin_email') || '').toLowerCase();
+    if (ADMIN_EMAILS.indexOf(storedEmail) !== -1) return true;
+
     /* Prefer Firebase cross-device tracking */
     if (typeof ClarixAuth !== 'undefined') {
       if (ClarixAuth.currentUser) {
+        /* Cache admin email so subsequent calls are instant */
+        const email = (ClarixAuth.currentUser.email || '').toLowerCase();
+        if (ADMIN_EMAILS.indexOf(email) !== -1) {
+          localStorage.setItem('clarix_admin_email', email);
+          return true;
+        }
         return ClarixAuth.canEnhance();
       }
-      /* Auth exists but user not loaded yet — block until auth resolves.
-         This prevents unauthenticated usage via localStorage manipulation. */
+      /* Auth exists but currentUser not resolved yet.
+         If localStorage has a uid (returning user), allow through
+         rather than showing the upgrade modal during the grace period. */
+      if (localStorage.getItem('clarix_uid')) return true;
+      /* Truly unauthenticated — block */
       return false;
     }
     /* Fallback: localStorage (only if Firebase SDK not loaded at all) */
