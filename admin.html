@@ -561,11 +561,12 @@
         <div style="background:rgba(96,165,250,0.06);border:1px solid rgba(96,165,250,0.18);border-radius:12px;padding:14px 18px;margin-bottom:20px;display:flex;gap:12px;align-items:flex-start;">
           <div style="font-size:18px;flex-shrink:0;">&#128202;</div>
           <div>
-            <div style="font-size:13px;font-weight:700;color:rgba(255,255,255,0.9);margin-bottom:4px;">Why does Google Analytics show more users?</div>
-            <div style="font-size:12px;color:rgba(255,255,255,0.5);line-height:1.7;">
-              <strong style="color:rgba(255,255,255,0.75);">Admin Portal (Firestore)</strong> counts only people who clicked <em>Sign in with Google</em> and completed auth.<br>
-              <strong style="color:rgba(255,255,255,0.75);">Google Analytics</strong> counts every visitor: guests, bots, crawlers, and users who never signed in.<br>
-              This is normal — GA traffic &gt; Firestore users is expected. Focus on Firestore for real registered accounts.
+            <div style="font-size:13px;font-weight:700;color:rgba(255,255,255,0.9);margin-bottom:4px;">Why does Google Analytics show far more users?</div>
+            <div style="font-size:12px;color:rgba(255,255,255,0.5);line-height:1.8;">
+              <strong style="color:rgba(255,255,255,0.75);">GA counts every page visit</strong> — including the public landing page, about page, terms, and onepager which require no sign-in.<br>
+              <strong style="color:rgba(255,255,255,0.75);">Firestore (this portal)</strong> counts only users who completed <em>Google Sign-In</em>.<br>
+              The 105 India / 42 US GA users are visitors to <em>index.html</em> — most never clicked Sign In.<br>
+              <strong style="color:#22c55e;">Focus: your real conversion metric is Visitors → Sign-ups. Currently very low — push people to sign in.</strong>
             </div>
           </div>
         </div>
