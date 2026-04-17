@@ -29,6 +29,11 @@ var GuestMode = {
     var next = this.getCount() + 1;
     localStorage.setItem(this.KEY, next);
     this._updateBanner();
+    /* Nudge to sign up after 2nd prompt — optimal conversion moment */
+    if (next === 2) {
+      var self = this;
+      setTimeout(function() { self._showEarlyNudge(); }, 800);
+    }
     return next;
   },
 
@@ -86,6 +91,76 @@ var GuestMode = {
         } else if (typeof ClarixAuth !== 'undefined') {
           ClarixAuth._showLoginModal();
         }
+      };
+    }
+  },
+
+  /* ── Early nudge modal (shown after 2nd prompt) ── */
+  _showEarlyNudge: function() {
+    if (!this.isGuest()) return; /* signed in already */
+    if (document.getElementById('clarix-early-nudge')) return;
+    if (localStorage.getItem('clarix_nudge_dismissed')) return;
+
+    var overlay = document.createElement('div');
+    overlay.id  = 'clarix-early-nudge';
+    overlay.style.cssText = [
+      'position:fixed;inset:0;z-index:99998',
+      'background:rgba(0,0,0,0.6)',
+      'display:flex;align-items:center;justify-content:center',
+      'padding:20px;backdrop-filter:blur(8px)',
+      'animation:guestFadeIn 0.3s ease'
+    ].join(';');
+
+    overlay.innerHTML = [
+      '<style>@keyframes guestFadeIn{from{opacity:0;transform:scale(0.97)}to{opacity:1;transform:scale(1)}}</style>',
+      '<div style="background:linear-gradient(135deg,#0f0f1a 0%,#1a0825 100%);',
+        'border:1px solid rgba(255,112,67,0.25);border-radius:24px;',
+        'padding:40px 32px;max-width:400px;width:100%;text-align:center;',
+        'box-shadow:0 24px 80px rgba(0,0,0,0.6);">',
+        '<div style="font-size:36px;margin-bottom:12px">&#128293;</div>',
+        '<div style="font-size:20px;font-weight:900;color:#fff;letter-spacing:-0.5px;margin-bottom:8px">',
+          'You\'re on a roll!',
+        '</div>',
+        '<div style="font-size:14px;color:rgba(255,255,255,0.55);line-height:1.8;margin-bottom:24px">',
+          'Sign in free to <strong style="color:#ff7043">save this prompt</strong> &amp; unlock <strong style="color:#ff7043">20 more</strong> instantly.<br>',
+          '<span style="color:rgba(255,255,255,0.3);font-size:12px">No credit card &middot; No cost &middot; Takes 5 seconds</span>',
+        '</div>',
+        '<button id="earlyNudgeSignIn" style="',
+          'width:100%;padding:14px;background:#fff;color:#222;',
+          'border:none;border-radius:14px;font-size:15px;font-weight:700;',
+          'cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;',
+          'margin-bottom:14px;transition:transform 0.2s;">',
+          '<img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="20" height="20">',
+          'Continue with Google &#8212; Free',
+        '</button>',
+        '<button id="earlyNudgeDismiss" style="',
+          'background:none;border:none;color:rgba(255,255,255,0.3);',
+          'font-size:13px;cursor:pointer;padding:4px 8px;">',
+          'I\'ll keep my 3 remaining prompts',
+        '</button>',
+      '</div>'
+    ].join('');
+
+    document.body.appendChild(overlay);
+
+    var signInBtn = document.getElementById('earlyNudgeSignIn');
+    if (signInBtn) {
+      signInBtn.onmouseover = function() { this.style.transform = 'translateY(-2px)'; };
+      signInBtn.onmouseout  = function() { this.style.transform = ''; };
+      signInBtn.onclick = function() {
+        overlay.remove();
+        if (typeof AuthModal !== 'undefined' && AuthModal.show) {
+          AuthModal.show();
+        } else if (typeof ClarixAuth !== 'undefined') {
+          ClarixAuth._showLoginModal();
+        }
+      };
+    }
+    var dismissBtn = document.getElementById('earlyNudgeDismiss');
+    if (dismissBtn) {
+      dismissBtn.onclick = function() {
+        localStorage.setItem('clarix_nudge_dismissed', '1');
+        overlay.remove();
       };
     }
   },

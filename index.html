@@ -162,6 +162,27 @@
         <div class="stat-div"></div>
         <div class="stat"><span class="stat-num">&#127470;&#127475;</span><span class="stat-label">Made in India</span></div>
       </div>
+
+      <!-- Social Proof Strip -->
+      <div id="socialProofStrip" style="
+        display:none;
+        margin-top:24px;
+        background:rgba(255,255,255,0.04);
+        border:1px solid rgba(255,112,67,0.2);
+        border-radius:40px;
+        padding:10px 20px;
+        font-size:12px;
+        color:rgba(255,255,255,0.65);
+        display:flex;
+        align-items:center;
+        gap:10px;
+        justify-content:center;
+        flex-wrap:wrap;
+        backdrop-filter:blur(10px);
+      ">
+        <span style="display:flex;align-items:center;gap:-4px;" id="socialProofAvatars"></span>
+        <span id="socialProofText">&#10022; Creators from India, US, France &amp; more are already using Clarix &mdash; <strong style="color:#ff7043;cursor:pointer;" onclick="ClarixAuth._showLoginModal()">Join free &#8594;</strong></span>
+      </div>
     </div>
   </section>
 
@@ -522,5 +543,83 @@
   </script>
   <script src="js/pwa.js?v=20260413Q"></script>
   <script src="js/push.js?v=20260415P"></script>
+
+  <!-- Conversion: Social Proof + Sticky CTA (guests only) -->
+  <script>
+    (function() {
+      // Only show to non-logged-in visitors
+      if (localStorage.getItem('clarix_uid')) return;
+
+      // 1) Show social proof strip after 1.5s
+      setTimeout(function() {
+        var strip = document.getElementById('socialProofStrip');
+        if (strip) {
+          strip.style.display = 'flex';
+          strip.style.animation = 'fadeInUp 0.5s ease';
+        }
+      }, 1500);
+
+      // 2) Sticky bottom CTA bar after 4s
+      setTimeout(function() {
+        if (localStorage.getItem('clarix_uid')) return; // signed in during wait
+        if (document.getElementById('clarixStickyCTA')) return;
+
+        var bar = document.createElement('div');
+        bar.id = 'clarixStickyCTA';
+        bar.style.cssText = [
+          'position:fixed;bottom:0;left:0;right:0;z-index:9980',
+          'background:linear-gradient(135deg,#1a0a05 0%,#0a0a18 100%)',
+          'border-top:1px solid rgba(255,112,67,0.3)',
+          'padding:14px 20px',
+          'display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap',
+          'box-shadow:0 -4px 30px rgba(0,0,0,0.5)',
+          'animation:slideUpCTA 0.4s cubic-bezier(0.34,1.56,0.64,1)',
+          'font-family:Inter,sans-serif'
+        ].join(';');
+
+        bar.innerHTML =
+          '<style>' +
+          '@keyframes slideUpCTA{from{transform:translateY(100%)}to{transform:translateY(0)}}' +
+          '@keyframes fadeInUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}' +
+          '</style>' +
+          '<div style="flex:1;min-width:200px;">' +
+            '<div style="font-size:14px;font-weight:700;color:#fff;margin-bottom:2px;">&#9889; Get 25 Free AI Prompts</div>' +
+            '<div style="font-size:12px;color:rgba(255,255,255,0.5);">Hindi, Hinglish, English &amp; 20+ languages &mdash; no credit card needed</div>' +
+          '</div>' +
+          '<div style="display:flex;align-items:center;gap:10px;flex-shrink:0;">' +
+            '<button id="stickyCTASignIn" style="' +
+              'background:#fff;color:#1a1a2e;' +
+              'border:none;border-radius:10px;padding:10px 20px;' +
+              'font-size:13px;font-weight:800;cursor:pointer;' +
+              'display:flex;align-items:center;gap:8px;' +
+              'transition:transform 0.2s;white-space:nowrap;font-family:inherit;' +
+            '">' +
+              '<img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="16" height="16">' +
+              'Continue with Google &mdash; Free' +
+            '</button>' +
+            '<button onclick="this.parentElement.parentElement.remove()" style="' +
+              'background:none;border:none;color:rgba(255,255,255,0.35);' +
+              'font-size:20px;cursor:pointer;padding:4px;line-height:1;' +
+            '">&times;</button>' +
+          '</div>';
+
+        document.body.appendChild(bar);
+
+        document.getElementById('stickyCTASignIn').onclick = function() {
+          if (typeof ClarixAuth !== 'undefined') ClarixAuth._showLoginModal();
+          bar.remove();
+        };
+        document.getElementById('stickyCTASignIn').onmouseover = function() { this.style.transform = 'translateY(-1px)'; };
+        document.getElementById('stickyCTASignIn').onmouseout  = function() { this.style.transform = ''; };
+
+        // Remove if user signs in
+        var poll = setInterval(function() {
+          if (localStorage.getItem('clarix_uid')) {
+            bar.remove(); clearInterval(poll);
+          }
+        }, 1500);
+      }, 4000);
+    })();
+  </script>
 </body>
 </html>

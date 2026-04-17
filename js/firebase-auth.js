@@ -496,19 +496,19 @@ var ClarixAuth = {
     modal.className = 'clarix-login-overlay';
     modal.innerHTML = [
       '<div class="clarix-login-box">',
-        '<div class="clb-logo"><span class="clb-star">✦</span> clarix</div>',
-        '<div class="clb-title">India\'s First AI Prompt Engine</div>',
-        '<div class="clb-sub">Sign in to get <strong>25 free prompts</strong> — synced across all your devices.</div>',
-        '<div class="clb-features">',
-          '<div class="clbf-item"><span>📱</span> Works on mobile + desktop</div>',
-          '<div class="clbf-item"><span>🌍</span> Personalised for your country & language</div>',
-          '<div class="clbf-item"><span>🔒</span> Secure · No password needed</div>',
+        '<div class="clb-logo"><span class="clb-star">&#10022;</span> clarix</div>',
+        '<div class="clb-title">You\'ve seen what Clarix can do.</div>',
+        '<div class="clb-sub">Sign in free &amp; claim your <strong style="color:#ff7043">25 lifetime prompts</strong> &mdash; takes 5 seconds. No credit card. Ever.</div>',
+        '<div style="display:flex;gap:6px;justify-content:center;margin:14px 0 18px;flex-wrap:wrap;">',
+          '<span style="background:rgba(255,112,67,0.12);border:1px solid rgba(255,112,67,0.25);border-radius:20px;padding:4px 12px;font-size:11px;font-weight:600;color:#ff8a65;">&#9889; Instant AI upgrade</span>',
+          '<span style="background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.2);border-radius:20px;padding:4px 12px;font-size:11px;font-weight:600;color:#4ade80;">&#127760; 20+ languages</span>',
+          '<span style="background:rgba(96,165,250,0.1);border:1px solid rgba(96,165,250,0.2);border-radius:20px;padding:4px 12px;font-size:11px;font-weight:600;color:#60a5fa;">&#128274; No password</span>',
         '</div>',
         '<button class="clb-google-btn" id="clarixGoogleSignIn">',
           '<img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="G" style="width:20px;height:20px;margin-right:10px;">',
-          'Continue with Google',
+          'Continue with Google &mdash; It\'s Free',
         '</button>',
-        '<div class="clb-terms">By signing in you agree to our <a href="/terms" target="_blank">Terms</a> & <a href="/privacy" target="_blank">Privacy Policy</a></div>',
+        '<div style="font-size:11px;color:rgba(255,255,255,0.25);text-align:center;margin-top:14px;">By signing in you agree to our <a href="/terms" target="_blank" style="color:rgba(255,255,255,0.4);">Terms</a> &amp; <a href="/privacy" target="_blank" style="color:rgba(255,255,255,0.4);">Privacy Policy</a></div>',
       '</div>'
     ].join('');
     document.body.appendChild(modal);
