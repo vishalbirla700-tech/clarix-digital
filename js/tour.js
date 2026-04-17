@@ -1,15 +1,16 @@
 /* ═══════════════════════════════════════════════════════════
-   CLARIX — PRODUCT TOUR  (tour.js)
+   CLARIX — PRODUCT TOUR  (tour.js)  v20260417F
    Spotlit, step-by-step interactive guide for first visitors.
-   Uses: spotlight overlay + animated hand/arrow + tooltip.
    - Shows ONCE per page per app version (version-aware)
-   - Floating "?" button lets any user replay at any time
+   - Floating "?" button always visible (z:10001, above overlay)
+   - 30-second idle auto-advance per step
+   - Double-rAF positioning so getBoundingClientRect is accurate
 ═══════════════════════════════════════════════════════════ */
 
 const ClarixTour = window.ClarixTour = {
 
   /* ── Tour version: bump to force tour reset for all users who already saw it ── */
-  TOUR_VERSION: '20260417P',
+  TOUR_VERSION: '20260417F',
 
   /* ── State ── */
   _steps: [],
@@ -19,41 +20,44 @@ const ClarixTour = window.ClarixTour = {
   _tooltip: null,
   _hand: null,
   _keyHandler: null,
+  _idleTimer: null,       /* 30s auto-advance timer */
+  _countdownInterval: null,
+  _IDLE_SECS: 30,         /* seconds before auto-advance */
 
   /* ── Page step definitions ── */
   TOURS: {
     write: [
       {
         target: 'langBlock',
-        title: '1 \u00B7 Choose Your Language',
+        title: '1 · Choose Your Language',
         body:  'Pick from 20+ Indian & world languages. Clarix will tailor every prompt to your tongue.',
         arrow: 'bottom',
         hand:  'point-down'
       },
       {
         target: 'modeTabs',
-        title: '2 \u00B7 Select a Platform',
+        title: '2 · Select a Platform',
         body:  'Are you writing for an AI tool like ChatGPT, or a social app like Instagram? Pick the right mode.',
         arrow: 'bottom',
         hand:  'point-down'
       },
       {
         target: 'promptInput',
-        title: '3 \u00B7 Type Your Idea',
-        body:  'Write your rough idea in any language \u2014 Hindi, Hinglish, English, anything! Even a single line works.',
+        title: '3 · Type Your Idea',
+        body:  'Write your rough idea in any language — Hindi, Hinglish, English, anything! Even a single line works.',
         arrow: 'right',
         hand:  'point-right'
       },
       {
         target: 'enhanceBtn',
-        title: '4 \u00B7 Hit Enhance \u2756',
+        title: '4 · Hit Enhance ✦',
         body:  'Tap this button and watch Clarix transform your idea into a powerful, AI-optimised prompt in seconds.',
         arrow: 'top',
         hand:  'tap'
       },
       {
         target: 'resultsPanel',
-        title: '5 \u00B7 Your Results Appear Here',
+        title: '5 · Your Results Appear Here',
         body:  'Three prompt variations will appear. Pick your favourite, copy it, or open directly in your AI tool!',
         arrow: 'left',
         hand:  'point-left'
@@ -63,22 +67,22 @@ const ClarixTour = window.ClarixTour = {
     inspire: [
       {
         target: 'uploadZone',
-        title: '1 \u00B7 Upload Your Photo',
+        title: '1 · Upload Your Photo',
         body:  'Drag & drop any image, or tap to upload. Gemini Vision will analyse it and generate a perfect prompt.',
         arrow: 'bottom',
         hand:  'point-down'
       },
       {
         target: 'categoryFilter',
-        title: '2 \u00B7 Filter by Category',
+        title: '2 · Filter by Category',
         body:  'Switch between Cinematic, Fashion, 3D, Video and more to find prompts that match your creative style.',
         arrow: 'bottom',
         hand:  'point-down'
       },
       {
         target: 'galleryGrid',
-        title: '3 \u00B7 Tap Any Image',
-        body:  'Click any gallery card to open it in the prompt editor \u2014 then enhance, copy or send it directly to Write.',
+        title: '3 · Tap Any Image',
+        body:  'Click any gallery card to open it in the prompt editor — then enhance, copy or send it directly to Write.',
         arrow: 'top',
         hand:  'tap'
       }
@@ -94,7 +98,6 @@ const ClarixTour = window.ClarixTour = {
   hasSeen(page) {
     const done    = localStorage.getItem(this._key(page)) === 'done';
     const version = localStorage.getItem(this._versionKey(page));
-    /* Old version seen = treat as not seen → auto-reset for new tour */
     if (done && version !== this.TOUR_VERSION) {
       localStorage.removeItem(this._key(page));
       return false;
@@ -114,15 +117,11 @@ const ClarixTour = window.ClarixTour = {
     if (!steps || !steps.length) return;
     this._steps = steps;
 
-    /* Delay long enough for:
-       - Firebase auth to resolve (3s grace period)
-       - Onboarding modal to complete
-       - Login modal to appear and be handled
-       This prevents the tour from conflicting with auth UI. */
+    /* Delay: let Firebase auth + onboarding resolve first */
     setTimeout(() => this.start(), 4000);
   },
 
-  /* ── Floating "?" replay button ── */
+  /* ── Floating "?" replay button — z:10001 so it's ABOVE the tour overlay ── */
   _addHelpButton(page) {
     if (document.getElementById('ct-help-btn')) return;
     const btn = document.createElement('button');
@@ -134,17 +133,17 @@ const ClarixTour = window.ClarixTour = {
       'position:fixed',
       'bottom:80px',
       'right:16px',
-      'width:40px',
-      'height:40px',
+      'width:44px',
+      'height:44px',
       'border-radius:50%',
       'background:linear-gradient(135deg,#ff7043,#e64a19)',
       'color:#fff',
-      'font-size:18px',
+      'font-size:20px',
       'font-weight:900',
       'border:none',
       'cursor:pointer',
-      'z-index:9999',
-      'box-shadow:0 4px 16px rgba(255,112,67,0.5)',
+      'z-index:10001',          /* above the overlay (9000) AND tooltip (10000) */
+      'box-shadow:0 4px 20px rgba(255,112,67,0.6)',
       'display:flex',
       'align-items:center',
       'justify-content:center',
@@ -153,12 +152,12 @@ const ClarixTour = window.ClarixTour = {
     ].join(';');
 
     btn.addEventListener('mouseenter', () => {
-      btn.style.transform  = 'scale(1.12)';
-      btn.style.boxShadow  = '0 8px 24px rgba(255,112,67,0.65)';
+      btn.style.transform = 'scale(1.12)';
+      btn.style.boxShadow = '0 8px 28px rgba(255,112,67,0.7)';
     });
     btn.addEventListener('mouseleave', () => {
-      btn.style.transform  = 'scale(1)';
-      btn.style.boxShadow  = '0 4px 16px rgba(255,112,67,0.5)';
+      btn.style.transform = 'scale(1)';
+      btn.style.boxShadow = '0 4px 20px rgba(255,112,67,0.6)';
     });
     btn.addEventListener('click', () => this.replay(page));
     document.body.appendChild(btn);
@@ -184,6 +183,7 @@ const ClarixTour = window.ClarixTour = {
 
   _buildDOM() {
     document.getElementById('clarix-tour-root')?.remove();
+    this._clearIdle();
 
     const root = document.createElement('div');
     root.id = 'clarix-tour-root';
@@ -205,8 +205,8 @@ const ClarixTour = window.ClarixTour = {
           <div class="ct-footer">
             <div class="ct-dots" id="ct-dots"></div>
             <div class="ct-nav">
-              <button class="ct-btn ct-btn-prev" id="ct-prev">\u2190 Prev</button>
-              <button class="ct-btn ct-btn-next" id="ct-next">Next \u2192</button>
+              <button class="ct-btn ct-btn-prev" id="ct-prev">← Prev</button>
+              <button class="ct-btn ct-btn-next" id="ct-next">Next →</button>
             </div>
           </div>
         </div>
@@ -226,10 +226,10 @@ const ClarixTour = window.ClarixTour = {
     this._tooltip = document.getElementById('ct-tooltip');
     this._hand    = document.getElementById('ct-hand');
 
-    document.getElementById('ct-next').addEventListener('click', () => this._next());
-    document.getElementById('ct-prev').addEventListener('click', () => this._prev());
-    document.getElementById('ct-skip-btn').addEventListener('click', () => this.finish(true));
-    this._overlay.addEventListener('click', () => this._next());
+    document.getElementById('ct-next').addEventListener('click', () => { this._clearIdle(); this._next(); });
+    document.getElementById('ct-prev').addEventListener('click', () => { this._clearIdle(); this._prev(); });
+    document.getElementById('ct-skip-btn').addEventListener('click', () => { this._clearIdle(); this.finish(true); });
+    this._overlay.addEventListener('click', () => { this._clearIdle(); this._next(); });
   },
 
   /* ── Show a step ── */
@@ -250,15 +250,49 @@ const ClarixTour = window.ClarixTour = {
     const prevBtn = document.getElementById('ct-prev');
     const nextBtn = document.getElementById('ct-next');
     prevBtn.style.display = index === 0 ? 'none' : '';
-    nextBtn.textContent   = index === this._steps.length - 1 ? '\uD83D\uDE80 Get Started!' : 'Next \u2192';
+    const isLast = index === this._steps.length - 1;
+    nextBtn.textContent = isLast ? '🚀 Get Started!' : 'Next →';
+
+    /* Start 30-second idle auto-advance */
+    this._startIdle(nextBtn, isLast);
 
     if (target) {
+      /* scrollIntoView then wait TWO animation frames so the browser
+         has committed the scroll position before we read getBoundingClientRect */
       target.scrollIntoView({ behavior: 'auto', block: 'center' });
-      target.classList.add('ct-target-glow');
-      this._positionSpotlight(target);
-      this._positionTooltip(target, step.arrow);
-      this._positionHand(target, step.hand);
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          target.classList.add('ct-target-glow');
+          this._positionSpotlight(target);
+          this._positionTooltip(target, step.arrow);
+          this._positionHand(target, step.hand);
+        });
+      });
     }
+  },
+
+  /* ── 30-second idle timer: counts down inside Next button, then auto-advances ── */
+  _startIdle(nextBtn, isLast) {
+    this._clearIdle();
+    let secs = this._IDLE_SECS;
+    const origText = nextBtn.textContent;
+
+    this._countdownInterval = setInterval(() => {
+      secs--;
+      if (document.getElementById('ct-next')) {
+        document.getElementById('ct-next').textContent =
+          isLast ? `🚀 Get Started! (${secs}s)` : `Next → (${secs}s)`;
+      }
+      if (secs <= 0) {
+        this._clearIdle();
+        this._next();  /* auto-advance (or finish if last step) */
+      }
+    }, 1000);
+  },
+
+  _clearIdle() {
+    if (this._idleTimer)        { clearTimeout(this._idleTimer);         this._idleTimer = null; }
+    if (this._countdownInterval){ clearInterval(this._countdownInterval); this._countdownInterval = null; }
   },
 
   _positionSpotlight(el) {
@@ -281,7 +315,7 @@ const ClarixTour = window.ClarixTour = {
     const tp  = this._tooltip;
     const r   = el.getBoundingClientRect();
     const tw  = Math.min(300, window.innerWidth - 32);
-    const th  = 180;
+    const th  = 190;
 
     tp.className       = 'ct-tooltip ct-tooltip-' + (arrowDir || 'bottom');
     tp.style.width     = tw + 'px';
@@ -306,7 +340,7 @@ const ClarixTour = window.ClarixTour = {
     tp.style.top  = top  + 'px';
 
     requestAnimationFrame(() => {
-      tp.style.transition = 'opacity 0.3s ease, transform 0.3s var(--ease-spring, cubic-bezier(0.34,1.56,0.64,1))';
+      tp.style.transition = 'opacity 0.25s ease, transform 0.25s cubic-bezier(0.34,1.56,0.64,1)';
       tp.style.opacity    = '1';
       tp.style.transform  = 'scale(1)';
     });
@@ -357,15 +391,16 @@ const ClarixTour = window.ClarixTour = {
 
   _bindKeys() {
     this._keyHandler = (e) => {
-      if (e.key === 'ArrowRight' || e.key === 'Enter') this._next();
-      if (e.key === 'ArrowLeft')  this._prev();
-      if (e.key === 'Escape')     this.finish(true);
+      if (e.key === 'ArrowRight' || e.key === 'Enter') { this._clearIdle(); this._next(); }
+      if (e.key === 'ArrowLeft')  { this._clearIdle(); this._prev(); }
+      if (e.key === 'Escape')     { this._clearIdle(); this.finish(true); }
     };
     document.addEventListener('keydown', this._keyHandler);
   },
 
   /* ── Finish: stamp version so future bumps auto-reset ── */
   finish(skipped) {
+    this._clearIdle();
     document.querySelectorAll('.ct-target-glow').forEach(el => el.classList.remove('ct-target-glow'));
     document.getElementById('clarix-tour-root')?.remove();
     if (this._keyHandler) document.removeEventListener('keydown', this._keyHandler);
