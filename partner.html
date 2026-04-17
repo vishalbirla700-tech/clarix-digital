@@ -664,7 +664,7 @@ FREE to start! &#10022;
 /* ── Earning Calculator ── */
 function updateCalc(val) {
   document.getElementById('calcClients').textContent = val;
-  document.getElementById('calcResult').textContent = '&#8377;' + (val * 50);
+  document.getElementById('calcResult').textContent = '₹' + (val * 50);
 }
 
 /* ── FAQ toggle ── */
@@ -678,10 +678,10 @@ function toggleFaq(el) {
 /* ── Copy share message ── */
 function copyShareMessage() {
   var code = localStorage.getItem('clarix_partner_code') || 'YOURCODE';
-  var msg = '&#128640; Try Clarix AI — India\'s First AI Prompt Engine!\n\nWrite better prompts in Hindi, Hinglish, English & 20+ languages.\nWorks with ChatGPT, Midjourney, Claude & 25+ platforms.\nFREE to start! &#10022;\n\n&#128073; https://clarix.digital/?ref=' + code;
+  var msg = '🚀 Try Clarix AI — India\'s First AI Prompt Engine!\n\nWrite better prompts in Hindi, Hinglish, English & 20+ languages.\nWorks with ChatGPT, Midjourney, Claude & 25+ platforms.\nFREE to start! ✦\n\n👉 https://clarix.digital/?ref=' + code;
   navigator.clipboard.writeText(msg).then(function() {
     var btn = document.getElementById('copyShareMsg');
-    if (btn) { btn.textContent = '&#10003; Copied!'; setTimeout(function() { btn.textContent = '&#128203; Copy Message'; }, 2000); }
+    if (btn) { btn.textContent = '✓ Copied!'; setTimeout(function() { btn.textContent = '📋 Copy Message'; }, 2000); }
   });
 }
 
