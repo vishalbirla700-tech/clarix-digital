@@ -127,7 +127,7 @@
 
       <!-- Title &mdash; cinematic entry -->
       <h1 class="hero-title">
-        <span class="hero-title-text" id="heroTitleText">clarix</span>
+        <span class="hero-title-text" id="heroTitleText">clar<span id="clarix-i-ref" style="position:relative;">i</span>x</span>
       </h1>
 
       <!-- Subtitle typewriter -->
@@ -620,6 +620,123 @@
         }, 1500);
       }, 4000);
     })();
+  </script>
+  <!-- ✦ Falling Star Animation: drops from top and sits above the 'i' in clarix -->
+  <script>
+  (function() {
+    function runStarDrop() {
+      var iRef = document.getElementById('clarix-i-ref');
+      if (!iRef) return;
+
+      /* Get the position of the 'i' letter */
+      var rect = iRef.getBoundingClientRect();
+      var starSize = 32; /* approx font-size of star at hero scale */
+
+      /* Final resting position: horizontally centered on 'i', just above it */
+      var finalX = rect.left + rect.width / 2 - starSize / 2;
+      var finalY = rect.top - starSize - 6; /* 6px gap above the letter */
+
+      /* Create star element */
+      var star = document.createElement('div');
+      star.id = 'clarix-hero-star';
+      star.textContent = '✦';
+      star.style.cssText = [
+        'position:fixed',
+        'z-index:10000',
+        'pointer-events:none',
+        'font-size:' + starSize + 'px',
+        'color:#ff7043',
+        'left:' + finalX + 'px',
+        'top:-60px', /* start above viewport */
+        'line-height:1',
+        'text-shadow:0 0 20px rgba(255,112,67,0.8), 0 0 40px rgba(255,112,67,0.4)',
+        'filter:drop-shadow(0 0 8px rgba(255,112,67,0.9))',
+        'will-change:transform',
+        'transition:none'
+      ].join(';');
+      document.body.appendChild(star);
+
+      /* --- Physics-based bounce drop --- */
+      var startY    = -60;
+      var targetY   = finalY;
+      var distance  = targetY - startY;
+      var startTime = null;
+      var fallDur   = 700;  /* ms for main drop */
+
+      /* Spring bounce: overshoot then settle */
+      function easeSpring(t) {
+        /* Damped spring — overshoots slightly then settles */
+        return 1 - Math.pow(Math.E, -8 * t) * Math.cos(12 * t);
+      }
+
+      function animateFall(ts) {
+        if (!startTime) startTime = ts;
+        var elapsed  = ts - startTime;
+        var progress = Math.min(elapsed / fallDur, 1);
+        var eased    = easeSpring(progress);
+        var currentY = startY + distance * eased;
+
+        star.style.top = currentY + 'px';
+
+        /* Squeeze/squash at impact (last 15% of animation) */
+        if (progress > 0.85) {
+          var squash = 1 - (1 - progress) * 0.4;
+          var scaleX = 1 + (1 - squash) * 0.3;
+          star.style.transform = 'scaleX(' + scaleX + ') scaleY(' + squash + ')';
+        } else {
+          star.style.transform = '';
+        }
+
+        if (progress < 1) {
+          requestAnimationFrame(animateFall);
+        } else {
+          /* Settle: restore scale, add a gentle golden pulse */
+          star.style.top       = targetY + 'px';
+          star.style.transform = 'scale(1)';
+          star.style.transition = 'opacity 0.3s ease';
+          star.style.animation  = 'starPulse 2.5s ease-in-out infinite 0.4s';
+
+          /* Add keyframes once */
+          if (!document.getElementById('clarix-star-kf')) {
+            var kf = document.createElement('style');
+            kf.id  = 'clarix-star-kf';
+            kf.textContent =
+              '@keyframes starPulse {' +
+              '  0%,100% { text-shadow:0 0 12px rgba(255,112,67,0.7),0 0 28px rgba(255,112,67,0.3); transform:scale(1); }' +
+              '  50%    { text-shadow:0 0 24px rgba(255,112,67,1),0 0 50px rgba(255,152,0,0.6); transform:scale(1.12); }' +
+              '}';
+            document.head.appendChild(kf);
+          }
+        }
+      }
+
+      requestAnimationFrame(animateFall);
+    }
+
+    /* Wait for hero title to be visible (after clarixBlast animation, ~1.7s delay) */
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', function() {
+        setTimeout(runStarDrop, 1800);
+      });
+    } else {
+      setTimeout(runStarDrop, 1800);
+    }
+
+    /* Reposition on window resize */
+    var resizeTimer;
+    window.addEventListener('resize', function() {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(function() {
+        var existing = document.getElementById('clarix-hero-star');
+        var iRef = document.getElementById('clarix-i-ref');
+        if (!existing || !iRef) return;
+        var rect  = iRef.getBoundingClientRect();
+        var sz    = 32;
+        existing.style.left = (rect.left + rect.width / 2 - sz / 2) + 'px';
+        existing.style.top  = (rect.top - sz - 6) + 'px';
+      }, 150);
+    });
+  })();
   </script>
 </body>
 </html>
